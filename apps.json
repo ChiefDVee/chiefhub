@@ -1,0 +1,34 @@
+[
+  {
+    "name": "ChiefMix",
+    "url": "https://chiefmix.com",
+    "tag": "Privacy",
+    "category": "SecurityApplication",
+    "desc": "Password-based AES-256 encryption for text and files. Not a coin mixer — it's for messages, not money.",
+    "points": ["Encrypt text or files with a password", "Runs in your browser — server sees nothing", "No account, no uploads, no cloud"]
+  },
+  {
+    "name": "ChiefDCA",
+    "url": "https://chiefdca.com",
+    "tag": "Bitcoin",
+    "category": "FinanceApplication",
+    "desc": "Backtest a Bitcoin DCA strategy against real price history.",
+    "points": ["Pick amount, interval and start date", "See what stacking sats would've done", "Real price history, no hindsight fairy tales"]
+  },
+  {
+    "name": "ChiefCount",
+    "url": "https://chiefcount.com",
+    "tag": "Trainer",
+    "category": "GameApplication",
+    "desc": "Blackjack basic strategy trainer. The house still wins, just slower.",
+    "points": ["Drill basic strategy hand by hand", "Instant feedback on every decision", "Practice without losing actual money"]
+  },
+  {
+    "name": "ChiefFees",
+    "url": "https://fees.chiefke.com",
+    "tag": "Bitcoin",
+    "category": "FinanceApplication",
+    "desc": "Live Bitcoin fees and mempool. Know before you overpay.",
+    "points": ["Current sat/vB per priority", "Next block, hashrate, difficulty", "Fee calculator for your transaction"]
+  }
+]

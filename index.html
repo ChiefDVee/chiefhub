@@ -4,17 +4,97 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>chiefke — Chief's Tools</title>
-<meta name="description" content="A small collection of no-signup, no-tracker web tools by Chief: client-side encryption, Bitcoin DCA backtesting, blackjack training and live Bitcoin fees.">
+<meta name="description" content="Free, no-signup tools by @ChiefXBelgium: ChiefMix (text/file encryption), ChiefDCA (Bitcoin DCA backtester), ChiefCount (blackjack strategy trainer), ChiefFees (live Bitcoin fees).">
 <link rel="canonical" href="https://chiefke.com/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://chiefke.com/">
 <meta property="og:title" content="chiefke — Chief's Tools">
-<meta property="og:description" content="No signup. No trackers. Just tools.">
+<meta property="og:description" content="Free, no-signup tools by @ChiefXBelgium: ChiefMix (text/file encryption), ChiefDCA (Bitcoin DCA backtester), ChiefCount (blackjack strategy trainer), ChiefFees (live Bitcoin fees).">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@ChiefXBelgium">
 <meta name="theme-color" content="#0a0a0a">
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0a0a'/%3E%3Cpath d='M22.5 10.2A8 8 0 1 0 22.5 21.8' fill='none' stroke='%23f7931a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<!-- JSONLD:START -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Chief's Tools",
+  "url": "https://chiefke.com/",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "item": {
+        "@type": "SoftwareApplication",
+        "name": "ChiefMix",
+        "url": "https://chiefmix.com",
+        "description": "Password-based AES-256 encryption for text and files. Not a coin mixer — it's for messages, not money.",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR"
+        }
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "item": {
+        "@type": "SoftwareApplication",
+        "name": "ChiefDCA",
+        "url": "https://chiefdca.com",
+        "description": "Backtest a Bitcoin DCA strategy against real price history.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR"
+        }
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "item": {
+        "@type": "SoftwareApplication",
+        "name": "ChiefCount",
+        "url": "https://chiefcount.com",
+        "description": "Blackjack basic strategy trainer. The house still wins, just slower.",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR"
+        }
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "item": {
+        "@type": "SoftwareApplication",
+        "name": "ChiefFees",
+        "url": "https://fees.chiefke.com",
+        "description": "Live Bitcoin fees and mempool. Know before you overpay.",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR"
+        }
+      }
+    }
+  ]
+}
+</script>
+<!-- JSONLD:END -->
 <style>
   :root {
     --bg: #0a0a0a;
@@ -113,8 +193,42 @@
 </header>
 
 <main class="wrap">
-  <ul class="grid" id="apps" aria-label="Apps"></ul>
-  <noscript><p>JavaScript is off. The apps: chiefmix.com, chiefdca.com, chiefcount.com, fees.chiefke.com</p></noscript>
+  <ul class="grid" id="apps" aria-label="Apps">
+    <!-- APPS:START -->
+    <li>
+      <a class="card" href="https://chiefmix.com" rel="noopener">
+        <div class="card-top"><h2>ChiefMix</h2><span class="tag">Privacy</span></div>
+        <p>Password-based AES-256 encryption for text and files. Not a coin mixer — it's for messages, not money.</p>
+        <ul class="points"><li>Encrypt text or files with a password</li><li>Runs in your browser — server sees nothing</li><li>No account, no uploads, no cloud</li></ul>
+        <span class="host">chiefmix.com</span>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="https://chiefdca.com" rel="noopener">
+        <div class="card-top"><h2>ChiefDCA</h2><span class="tag">Bitcoin</span></div>
+        <p>Backtest a Bitcoin DCA strategy against real price history.</p>
+        <ul class="points"><li>Pick amount, interval and start date</li><li>See what stacking sats would've done</li><li>Real price history, no hindsight fairy tales</li></ul>
+        <span class="host">chiefdca.com</span>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="https://chiefcount.com" rel="noopener">
+        <div class="card-top"><h2>ChiefCount</h2><span class="tag">Trainer</span></div>
+        <p>Blackjack basic strategy trainer. The house still wins, just slower.</p>
+        <ul class="points"><li>Drill basic strategy hand by hand</li><li>Instant feedback on every decision</li><li>Practice without losing actual money</li></ul>
+        <span class="host">chiefcount.com</span>
+      </a>
+    </li>
+    <li>
+      <a class="card" href="https://fees.chiefke.com" rel="noopener">
+        <div class="card-top"><h2>ChiefFees</h2><span class="tag">Bitcoin</span></div>
+        <p>Live Bitcoin fees and mempool. Know before you overpay.</p>
+        <ul class="points"><li>Current sat/vB per priority</li><li>Next block, hashrate, difficulty</li><li>Fee calculator for your transaction</li></ul>
+        <span class="host">fees.chiefke.com</span>
+      </a>
+    </li>
+    <!-- APPS:END -->
+  </ul>
   <section class="why" aria-labelledby="why-title">
     <h2 id="why-title">Why these exist</h2>
     <p>I built these because I needed them, and every alternative wanted an account first. No signup, no trackers, no personal data collected — there's nothing here worth harvesting anyway. They're free and stay free. If one saved you time or sats, <a href="https://ko-fi.com/chiefxbelgium" target="_blank" rel="noopener">Ko-fi</a> is the polite way to say thanks.</p>
@@ -127,58 +241,9 @@
       <a class="kofi" href="https://ko-fi.com/chiefxbelgium" target="_blank" rel="noopener">☕ Buy me a coffee</a>
       <a class="x" href="https://x.com/ChiefXBelgium" target="_blank" rel="noopener">𝕏 @ChiefXBelgium</a>
     </div>
-    <p class="small">© <span id="year">2026</span> chiefke.com · Made in Belgium</p>
+    <p class="small">© 2026 chiefke.com · Made in Belgium</p>
   </div>
 </footer>
 
-<script>
-  // New app = one entry. Fields: name, url, desc (one sentence), tag, points (2–3 bullets, ~8 words max).
-  const APPS = [
-    { name: "ChiefMix",   url: "https://chiefmix.com",     tag: "Privacy", desc: "AES-256 encryption, 100% client-side — nothing leaves your browser.",
-      points: ["Encrypt text or files with a password", "Runs in your browser — server sees nothing", "No account, no uploads, no cloud"] },
-    { name: "ChiefDCA",   url: "https://chiefdca.com",     tag: "Bitcoin", desc: "Backtest a Bitcoin DCA strategy against real price history.",
-      points: ["Pick amount, interval and start date", "See what stacking sats would've done", "Real price history, no hindsight fairy tales"] },
-    { name: "ChiefCount", url: "https://chiefcount.com",   tag: "Trainer", desc: "Blackjack basic strategy trainer. The house still wins, just slower.",
-      points: ["Drill basic strategy hand by hand", "Instant feedback on every decision", "Practice without losing actual money"] },
-    { name: "ChiefFees",  url: "https://fees.chiefke.com", tag: "Bitcoin", desc: "Live Bitcoin fees and mempool. Know before you overpay.",
-      points: ["Current sat/vB per priority", "Next block, hashrate, difficulty", "Fee calculator for your transaction"] },
-  ];
-
-  const list = document.getElementById("apps");
-  for (const app of APPS) {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.className = "card";
-    a.href = app.url;
-    a.rel = "noopener";
-
-    const top = document.createElement("div");
-    top.className = "card-top";
-    const h2 = document.createElement("h2");
-    h2.textContent = app.name;
-    const tag = document.createElement("span");
-    tag.className = "tag";
-    tag.textContent = app.tag;
-    top.append(h2, tag);
-
-    const p = document.createElement("p");
-    p.textContent = app.desc;
-    const ul = document.createElement("ul");
-    ul.className = "points";
-    for (const pt of app.points || []) {
-      const item = document.createElement("li");
-      item.textContent = pt;
-      ul.append(item);
-    }
-    const host = document.createElement("span");
-    host.className = "host";
-    host.textContent = app.url.replace(/^https?:\/\//, "").replace(/\/$/, "");
-
-    a.append(top, p, ul, host);
-    li.append(a);
-    list.append(li);
-  }
-  document.getElementById("year").textContent = new Date().getFullYear();
-</script>
 </body>
 </html>

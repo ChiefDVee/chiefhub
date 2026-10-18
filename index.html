@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chief's Tools</title>
+<meta name="description" content="A small collection of no-signup, no-tracker web tools by Chief: client-side encryption, Bitcoin DCA backtesting, blackjack training and live Bitcoin fees.">
+<link rel="canonical" href="https://chiefke.com/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://chiefke.com/">
+<meta property="og:title" content="Chief's Tools">
+<meta property="og:description" content="No signup. No trackers. Just tools.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@ChiefXBelgium">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0a0a'/%3E%3Cpath d='M22.5 10.2A8 8 0 1 0 22.5 21.8' fill='none' stroke='%23f7931a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface-2: #1c1c1c;
+    --border: #2a2a2a;
+    --text: #ededed;
+    --muted: #9a9a9a;
+    --accent: #f7931a;
+    --accent-dim: rgba(247, 147, 26, 0.12);
+    --radius: 14px;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  a { color: inherit; }
+  .wrap { width: 100%; max-width: 960px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
+
+  header { padding: 48px 0 28px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand svg { flex: none; width: 40px; height: 40px; }
+  h1 { margin: 0; font-size: clamp(1.8rem, 6vw, 2.6rem); letter-spacing: -0.02em; line-height: 1.1; }
+  h1 span { color: var(--accent); }
+  .tagline { margin: 14px 0 0; color: var(--muted); font-size: 1.05rem; max-width: 36em; }
+
+  main { flex: 1; padding-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 14px; list-style: none; margin: 0; padding: 0; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(2, 1fr); gap: 18px; } }
+
+  .card {
+    display: flex; flex-direction: column; height: 100%;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    text-decoration: none;
+    transition: border-color .15s ease, background .15s ease, transform .15s ease;
+  }
+  .card:hover, .card:focus-visible { border-color: var(--accent); background: var(--surface-2); transform: translateY(-2px); }
+  .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .card h2 { margin: 0; font-size: 1.25rem; }
+  .tag {
+    flex: none;
+    font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--accent); background: var(--accent-dim);
+    padding: 3px 9px; border-radius: 999px;
+  }
+  .card p { margin: 10px 0 16px; color: var(--muted); }
+  .host { margin-top: auto; font-size: .85rem; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+  .host::after { content: " →"; color: var(--accent); }
+
+  footer { border-top: 1px solid var(--border); padding: 24px 0 32px; color: var(--muted); font-size: .9rem; }
+  .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+  .links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .kofi {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 16px; border-radius: 999px;
+    background: var(--accent); color: #0a0a0a; font-weight: 700; text-decoration: none;
+  }
+  .kofi:hover, .kofi:focus-visible { filter: brightness(1.1); }
+  .x { text-decoration: none; padding: 9px 4px; }
+  .x:hover, .x:focus-visible { color: var(--text); }
+  .small { margin: 0; }
+
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#141414" stroke="#2a2a2a"/><path d="M22.5 10.2A8 8 0 1 0 22.5 21.8" fill="none" stroke="#f7931a" stroke-width="4" stroke-linecap="round"/></svg>
+    <h1>Chief's <span>Tools</span></h1>
+  </div>
+  <p class="tagline">Built because the alternatives all wanted an email address. No signup, no trackers, no newsletter you'll regret.</p>
+</header>
+
+<main class="wrap">
+  <ul class="grid" id="apps" aria-label="Apps"></ul>
+  <noscript><p>JavaScript is off. The apps: chiefmix.com, chiefdca.com, chiefcount.com, chiefdvee.github.io/chieffees/</p></noscript>
+</main>
+
+<footer class="wrap">
+  <div class="foot">
+    <div class="links">
+      <a class="kofi" href="https://ko-fi.com/chiefxbelgium" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+      <a class="x" href="https://x.com/ChiefXBelgium" target="_blank" rel="noopener">𝕏 @ChiefXBelgium</a>
+    </div>
+    <p class="small">© <span id="year">2026</span> Chief · Made in Belgium</p>
+  </div>
+</footer>
+
+<script>
+  // New app = one line. Fields: name, url, desc (one sentence), tag.
+  const APPS = [
+    { name: "ChiefMix",   url: "https://chiefmix.com",                    desc: "AES-256 encryption, 100% client-side — nothing leaves your browser.", tag: "Privacy" },
+    { name: "ChiefDCA",   url: "https://chiefdca.com",                    desc: "Backtest a Bitcoin DCA strategy against real price history.",        tag: "Bitcoin" },
+    { name: "ChiefCount", url: "https://chiefcount.com",                  desc: "Blackjack basic strategy trainer. The house still wins, just slower.", tag: "Game" },
+    { name: "ChiefFees",  url: "https://chiefdvee.github.io/chieffees/",  desc: "Live Bitcoin fees and mempool dashboard.",                           tag: "Bitcoin" },
+  ];
+
+  const list = document.getElementById("apps");
+  for (const app of APPS) {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.className = "card";
+    a.href = app.url;
+    a.rel = "noopener";
+
+    const top = document.createElement("div");
+    top.className = "card-top";
+    const h2 = document.createElement("h2");
+    h2.textContent = app.name;
+    const tag = document.createElement("span");
+    tag.className = "tag";
+    tag.textContent = app.tag;
+    top.append(h2, tag);
+
+    const p = document.createElement("p");
+    p.textContent = app.desc;
+    const host = document.createElement("span");
+    host.className = "host";
+    host.textContent = app.url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+
+    a.append(top, p, host);
+    li.append(a);
+    list.append(li);
+  }
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>

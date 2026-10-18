@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chief's Tools</title>
+<title>chiefke — Chief's Tools</title>
 <meta name="description" content="A small collection of no-signup, no-tracker web tools by Chief: client-side encryption, Bitcoin DCA backtesting, blackjack training and live Bitcoin fees.">
 <link rel="canonical" href="https://chiefke.com/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://chiefke.com/">
-<meta property="og:title" content="Chief's Tools">
+<meta property="og:title" content="chiefke — Chief's Tools">
 <meta property="og:description" content="No signup. No trackers. Just tools.">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@ChiefXBelgium">
@@ -44,8 +44,10 @@
   header { padding: 48px 0 28px; }
   .brand { display: flex; align-items: center; gap: 12px; }
   .brand svg { flex: none; width: 40px; height: 40px; }
-  h1 { margin: 0; font-size: clamp(1.8rem, 6vw, 2.6rem); letter-spacing: -0.02em; line-height: 1.1; }
+  .brand svg { align-self: flex-start; margin-top: 4px; }
+  h1 { margin: 0; font-size: clamp(2rem, 7vw, 2.9rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
   h1 span { color: var(--accent); }
+  .subtitle { margin: 4px 0 0; font-size: 1rem; font-weight: 600; color: var(--muted); letter-spacing: .01em; }
   .tagline { margin: 14px 0 0; color: var(--muted); font-size: 1.05rem; max-width: 36em; }
 
   main { flex: 1; padding-bottom: 40px; }
@@ -71,9 +73,17 @@
     color: var(--accent); background: var(--accent-dim);
     padding: 3px 9px; border-radius: 999px;
   }
-  .card p { margin: 10px 0 16px; color: var(--muted); }
+  .card p { margin: 10px 0 12px; color: var(--muted); }
+  .points { list-style: none; margin: 0 0 18px; padding: 0; font-size: .9rem; color: var(--text); }
+  .points li { position: relative; padding-left: 16px; margin: 4px 0; }
+  .points li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
   .host { margin-top: auto; font-size: .85rem; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
   .host::after { content: " →"; color: var(--accent); }
+
+  .why { margin-top: 36px; padding: 20px; border: 1px dashed var(--border); border-radius: var(--radius); color: var(--muted); }
+  .why h2 { margin: 0 0 8px; font-size: 1rem; color: var(--text); }
+  .why p { margin: 0; max-width: 46em; }
+  .why a { color: var(--accent); }
 
   footer { border-top: 1px solid var(--border); padding: 24px 0 32px; color: var(--muted); font-size: .9rem; }
   .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
@@ -96,7 +106,10 @@
 <header class="wrap">
   <div class="brand">
     <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#141414" stroke="#2a2a2a"/><path d="M22.5 10.2A8 8 0 1 0 22.5 21.8" fill="none" stroke="#f7931a" stroke-width="4" stroke-linecap="round"/></svg>
-    <h1>Chief's <span>Tools</span></h1>
+    <div>
+      <h1>chief<span>ke</span></h1>
+      <p class="subtitle">Chief's Tools</p>
+    </div>
   </div>
   <p class="tagline">Built because the alternatives all wanted an email address. No signup, no trackers, no newsletter you'll regret.</p>
 </header>
@@ -104,6 +117,10 @@
 <main class="wrap">
   <ul class="grid" id="apps" aria-label="Apps"></ul>
   <noscript><p>JavaScript is off. The apps: chiefmix.com, chiefdca.com, chiefcount.com, fees.chiefke.com</p></noscript>
+  <section class="why" aria-labelledby="why-title">
+    <h2 id="why-title">Why these exist</h2>
+    <p>I built these because I needed them, and every alternative wanted an account first. No signup, no trackers, no personal data collected — there's nothing here worth harvesting anyway. They're free and stay free. If one saved you time or sats, <a href="https://ko-fi.com/chiefxbelgium" target="_blank" rel="noopener">Ko-fi</a> is the polite way to say thanks.</p>
+  </section>
 </main>
 
 <footer class="wrap">
@@ -112,17 +129,21 @@
       <a class="kofi" href="https://ko-fi.com/chiefxbelgium" target="_blank" rel="noopener">☕ Buy me a coffee</a>
       <a class="x" href="https://x.com/ChiefXBelgium" target="_blank" rel="noopener">𝕏 @ChiefXBelgium</a>
     </div>
-    <p class="small">© <span id="year">2026</span> Chief · Made in Belgium</p>
+    <p class="small">© <span id="year">2026</span> chiefke.com · Made in Belgium</p>
   </div>
 </footer>
 
 <script>
-  // New app = one line. Fields: name, url, desc (one sentence), tag.
+  // New app = one entry. Fields: name, url, desc (one sentence), tag, points (2–3 bullets, ~8 words max).
   const APPS = [
-    { name: "ChiefMix",   url: "https://chiefmix.com",                    desc: "AES-256 encryption, 100% client-side — nothing leaves your browser.", tag: "Privacy" },
-    { name: "ChiefDCA",   url: "https://chiefdca.com",                    desc: "Backtest a Bitcoin DCA strategy against real price history.",        tag: "Bitcoin" },
-    { name: "ChiefCount", url: "https://chiefcount.com",                  desc: "Blackjack basic strategy trainer. The house still wins, just slower.", tag: "Game" },
-    { name: "ChiefFees",  url: "https://fees.chiefke.com",                desc: "Live Bitcoin fees and mempool dashboard.",                           tag: "Bitcoin" },
+    { name: "ChiefMix",   url: "https://chiefmix.com",     tag: "Privacy", desc: "AES-256 encryption, 100% client-side — nothing leaves your browser.",
+      points: ["Encrypt text or files with a password", "Runs in your browser — server sees nothing", "No account, no uploads, no cloud"] },
+    { name: "ChiefDCA",   url: "https://chiefdca.com",     tag: "Bitcoin", desc: "Backtest a Bitcoin DCA strategy against real price history.",
+      points: ["Pick amount, interval and start date", "See what stacking sats would've done", "Real price history, no hindsight fairy tales"] },
+    { name: "ChiefCount", url: "https://chiefcount.com",   tag: "Trainer", desc: "Blackjack basic strategy trainer. The house still wins, just slower.",
+      points: ["Drill basic strategy hand by hand", "Instant feedback on every decision", "Practice without losing actual money"] },
+    { name: "ChiefFees",  url: "https://fees.chiefke.com", tag: "Bitcoin", desc: "Live Bitcoin fees and mempool. Know before you overpay.",
+      points: ["Current sat/vB per priority", "Next block, hashrate, difficulty", "Fee calculator for your transaction"] },
   ];
 
   const list = document.getElementById("apps");
@@ -144,11 +165,18 @@
 
     const p = document.createElement("p");
     p.textContent = app.desc;
+    const ul = document.createElement("ul");
+    ul.className = "points";
+    for (const pt of app.points || []) {
+      const item = document.createElement("li");
+      item.textContent = pt;
+      ul.append(item);
+    }
     const host = document.createElement("span");
     host.className = "host";
     host.textContent = app.url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
-    a.append(top, p, host);
+    a.append(top, p, ul, host);
     li.append(a);
     list.append(li);
   }

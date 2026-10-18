@@ -6,7 +6,8 @@
 #
 # Genereert de app-kaarten en de JSON-LD in index.html uit apps.json,
 # tussen <!-- APPS:START -->/<!-- APPS:END --> en
-# <!-- JSONLD:START -->/<!-- JSONLD:END -->. Statische HTML zodat
+# <!-- JSONLD:START -->/<!-- JSONLD:END -->, en meta description +
+# og:description tussen <!-- META:START -->/<!-- META:END -->. Statische HTML zodat
 # crawlers en AI-fetchers (geen JS) de beschrijvingen zien.
 # Idempotent: zelfde apps.json → identieke index.html.
 #
@@ -24,7 +25,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 APPS_JSON = os.path.join(HERE, "apps.json")
 INDEX = os.path.join(HERE, "index.html")
-REQUIRED = ("name", "url", "tag", "category", "desc", "points")
+REQUIRED = ("name", "short", "url", "tag", "category", "desc", "points")
+META_PREFIX = "Free, no-signup tools by @ChiefXBelgium: "
 
 
 def fail(msg):
@@ -53,6 +55,15 @@ def load_apps():
 
 def host(url):
     return re.sub(r"/$", "", re.sub(r"^https?://", "", url))
+
+
+def render_meta(apps, nl, indent):
+    desc = META_PREFIX + ", ".join("%s (%s)" % (a["name"], a["short"]) for a in apps) + "."
+    attr = html.escape(desc)
+    return nl.join([
+        indent + '<meta name="description" content="%s">' % attr,
+        indent + '<meta property="og:description" content="%s">' % attr,
+    ])
 
 
 def render_cards(apps, nl, indent):
@@ -119,6 +130,7 @@ def main():
     nl = "\r\n" if "\r\n" in src else "\n"
     out = replace_block(src, "APPS", lambda n, i: render_cards(apps, n, i), nl)
     out = replace_block(out, "JSONLD", lambda n, i: render_jsonld(apps, n, i), nl)
+    out = replace_block(out, "META", lambda n, i: render_meta(apps, n, i), nl)
     if out == src:
         print("index.html up-to-date (%d apps)" % len(apps))
         return 0

@@ -1,6 +1,7 @@
 [
   {
     "name": "ChiefMix",
+    "short": "text/file encryption",
     "url": "https://chiefmix.com",
     "tag": "Privacy",
     "category": "SecurityApplication",
@@ -9,6 +10,7 @@
   },
   {
     "name": "ChiefDCA",
+    "short": "Bitcoin DCA backtester",
     "url": "https://chiefdca.com",
     "tag": "Bitcoin",
     "category": "FinanceApplication",
@@ -17,6 +19,7 @@
   },
   {
     "name": "ChiefCount",
+    "short": "blackjack strategy trainer",
     "url": "https://chiefcount.com",
     "tag": "Trainer",
     "category": "GameApplication",
@@ -25,6 +28,7 @@
   },
   {
     "name": "ChiefFees",
+    "short": "live Bitcoin fees",
     "url": "https://fees.chiefke.com",
     "tag": "Bitcoin",
     "category": "FinanceApplication",

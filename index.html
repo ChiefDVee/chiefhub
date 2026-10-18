@@ -42,13 +42,14 @@
   .wrap { width: 100%; max-width: 960px; margin: 0 auto; padding-left: 16px; padding-right: 16px; }
 
   header { padding: 48px 0 28px; }
-  .brand { display: flex; align-items: center; gap: 12px; }
-  .brand svg { flex: none; width: 40px; height: 40px; }
-  .brand svg { align-self: flex-start; margin-top: 4px; }
-  h1 { margin: 0; font-size: clamp(2rem, 7vw, 2.9rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .brand { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .55rem; row-gap: 2px; }
+  h1 { margin: 0; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
   h1 span { color: var(--accent); }
-  .subtitle { margin: 4px 0 0; font-size: 1rem; font-weight: 600; color: var(--muted); letter-spacing: .01em; }
-  .tagline { margin: 14px 0 0; color: var(--muted); font-size: 1.05rem; max-width: 36em; }
+  .subtitle { margin: 0; display: inline-flex; align-items: baseline; gap: .55rem; font-size: 1rem; font-weight: 400; color: var(--muted); }
+  .subtitle::before { content: "/"; color: #4a4a4a; }
+  @media (min-width: 640px) { h1 { font-size: 2.25rem; } }
+  @media (max-width: 419px) { .subtitle { flex-basis: 100%; } .subtitle::before { display: none; } }
+  .tagline { margin: 14px 0 0; color: var(--muted); font-size: 1.05rem; max-width: 42rem; }
 
   main { flex: 1; padding-bottom: 40px; }
   .grid { display: grid; grid-template-columns: 1fr; gap: 14px; list-style: none; margin: 0; padding: 0; }
@@ -105,11 +106,8 @@
 
 <header class="wrap">
   <div class="brand">
-    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#141414" stroke="#2a2a2a"/><path d="M22.5 10.2A8 8 0 1 0 22.5 21.8" fill="none" stroke="#f7931a" stroke-width="4" stroke-linecap="round"/></svg>
-    <div>
-      <h1>chief<span>ke</span></h1>
-      <p class="subtitle">Chief's Tools</p>
-    </div>
+    <h1>chief<span>ke</span></h1>
+    <p class="subtitle">Chief's Tools</p>
   </div>
   <p class="tagline">Built because the alternatives all wanted an email address. No signup, no trackers, no newsletter you'll regret.</p>
 </header>

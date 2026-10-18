@@ -126,7 +126,8 @@
   header { padding: 48px 0 28px; }
   .brand { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: .55rem; row-gap: 2px; }
   h1 { margin: 0; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
-  h1 span { color: var(--accent); }
+  h1 .ke { color: var(--accent); }
+  h1 .tld { color: var(--muted); font-size: .55em; font-weight: 500; letter-spacing: 0; }
   .subtitle { margin: 0; display: inline-flex; align-items: baseline; gap: .55rem; font-size: 1rem; font-weight: 400; color: var(--muted); }
   .subtitle::before { content: "/"; color: #4a4a4a; }
   @media (min-width: 640px) { h1 { font-size: 2.25rem; } }
@@ -169,8 +170,8 @@
   .why a { color: var(--accent); }
 
   footer { border-top: 1px solid var(--border); padding: 24px 0 32px; color: var(--muted); font-size: .9rem; }
-  .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
-  .links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .foot { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+  .links { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .5rem 1rem; }
   .kofi {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 9px 16px; border-radius: 999px;
@@ -179,7 +180,7 @@
   .kofi:hover, .kofi:focus-visible { filter: brightness(1.1); }
   .x { text-decoration: none; padding: 9px 4px; }
   .x:hover, .x:focus-visible { color: var(--text); }
-  .small { margin: 0; }
+  .small { margin: 0; font-size: .8rem; }
 
   @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }
 </style>
@@ -188,7 +189,7 @@
 
 <header class="wrap">
   <div class="brand">
-    <h1>chief<span>ke</span></h1>
+    <h1>chief<span class="ke">ke</span><span class="tld">.com</span></h1>
     <p class="subtitle">Chief's Tools</p>
   </div>
   <p class="tagline">Built because the alternatives all wanted an email address. No signup, no trackers, no newsletter you'll regret.</p>
@@ -243,7 +244,7 @@
       <a class="kofi" href="https://ko-fi.com/chiefxbelgium" target="_blank" rel="noopener">☕ Buy me a coffee</a>
       <a class="x" href="https://x.com/ChiefXBelgium" target="_blank" rel="noopener">𝕏 @ChiefXBelgium</a>
     </div>
-    <p class="small">chiefke.com · Since 2026 · Made in Belgium</p>
+    <p class="small">Since 2026 · Made in Belgium</p>
   </div>
 </footer>
 

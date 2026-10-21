@@ -34,5 +34,14 @@
     "category": "FinanceApplication",
     "desc": "Live Bitcoin fees and mempool. Know before you overpay.",
     "points": ["Current sat/vB per priority", "Next block, hashrate, difficulty", "Fee calculator for your transaction"]
+  },
+  {
+    "name": "QOTD Archive",
+    "short": "daily dark quotes",
+    "url": "https://chiefke.com/qotd/",
+    "tag": "Quotes",
+    "category": "EntertainmentApplication",
+    "desc": "Every CHIEF'S QOTD quote in one searchable archive. One dry, dark quote a day.",
+    "points": ["Search every quote, or pull a random one", "Share a link or save it as an image", "New one daily — Shorts on YouTube"]
   }
 ]

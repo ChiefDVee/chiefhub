@@ -43,5 +43,14 @@
     "category": "EntertainmentApplication",
     "desc": "Every CHIEF'S QOTD quote in one searchable archive. One dry, dark quote a day.",
     "points": ["Search every quote, or pull a random one", "Share a link or save it as an image", "New one daily — Shorts on YouTube"]
+  },
+  {
+    "name": "Bingomolen",
+    "short": "bingo number caller",
+    "url": "https://chiefke.com/bingo/",
+    "tag": "Game",
+    "category": "GameApplication",
+    "desc": "Bingo ball caller for 75 or 90 balls, in Dutch. Draw on your phone, call it out loud.",
+    "points": ["75-ball (B-I-N-G-O) or 90-ball games", "Reads each number aloud in Dutch", "Game survives closing the page"]
   }
 ]

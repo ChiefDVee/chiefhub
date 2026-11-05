@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14121c">
+<title>Chief's Bingomolen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;600;800&display=swap">
+<style>
+/* Layout: één kolom, grote ball bovenaan als duim-zone, bord eronder — dauber-inkt op bingopapier */
+:root{
+  --bg:#f3f1f6; --paper:#ffffff; --ink:#1d1a2b; --muted:#6c6680;
+  --dauber:#d6246e; --dauber-ink:#ffffff; --line:#ddd8e6; --hit:#d6246e; --hit-soft:#fbe3ee;
+  --display:"Bowlby One","Arial Black",Impact,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#14121c; --paper:#1f1c2b; --ink:#f1eef8; --muted:#9a93ad;
+  --dauber:#ff4f93; --dauber-ink:#1a0610; --line:#332e44; --hit:#ff4f93; --hit-soft:#3a1b2b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14121c; --paper:#1f1c2b; --ink:#f1eef8; --muted:#9a93ad;
+  --dauber:#ff4f93; --dauber-ink:#1a0610; --line:#332e44; --hit:#ff4f93; --hit-soft:#3a1b2b; color-scheme:dark}
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 32px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-size:1.35rem;margin:0;letter-spacing:.01em}
+.seg{display:inline-flex;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;color:var(--muted);font:600 .9rem var(--body);padding:6px 14px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.stage{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.ball{width:min(62vw,240px);aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--dauber);color:var(--dauber-ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  box-shadow:inset -14px -18px 0 rgba(0,0,0,.12)}
+.ball .letter{font-family:var(--display);font-size:1.6rem;line-height:1;opacity:.85;min-height:1.6rem}
+.ball .num{font-family:var(--display);font-size:clamp(4rem,20vw,6.5rem);line-height:1;font-variant-numeric:tabular-nums}
+.ball.idle{background:var(--hit-soft);color:var(--muted);box-shadow:none}
+.ball.idle .num{font-size:1.4rem;font-family:var(--body);font-weight:800}
+.ball.pop{animation:pop .35s ease-out}
+@keyframes pop{0%{transform:scale(.7)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.ball.pop{animation:none}}
+.count{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+.recent{display:flex;gap:6px;min-height:34px;flex-wrap:wrap;justify-content:center}
+.recent span{min-width:34px;height:34px;padding:0 6px;border-radius:999px;border:2px solid var(--hit);color:var(--hit);
+  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-variant-numeric:tabular-nums;font-size:.9rem}
+.recent span:first-child{background:var(--hit);color:var(--dauber-ink)}
+.draw{width:100%;border:0;border-radius:16px;background:var(--ink);color:var(--bg);font:400 1.5rem var(--display);padding:18px;cursor:pointer;letter-spacing:.02em}
+.draw:active{transform:translateY(1px)}
+.draw:disabled{opacity:.4;cursor:default}
+.tools{display:flex;gap:8px;width:100%;flex-wrap:wrap}
+.tools button{flex:1 1 30%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 8px;font:600 .9rem var(--body);cursor:pointer}
+.tools button[aria-pressed="true"]{border-color:var(--hit);color:var(--hit)}
+button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
+.confirm{width:100%;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--hit-soft);border-radius:12px;padding:10px 12px}
+.confirm p{margin:0;font-weight:600}
+.confirm div{display:flex;gap:8px}
+.confirm button{border:0;border-radius:10px;padding:8px 14px;font:700 .9rem var(--body);cursor:pointer}
+.confirm .yes{background:var(--hit);color:var(--dauber-ink)}
+.confirm .no{background:var(--paper);color:var(--ink)}
+.board{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:14px}
+.board h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px}
+.grid{display:grid;gap:4px}
+.cell{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;
+  font-size:clamp(.65rem,2.6vw,.85rem);color:var(--muted);font-variant-numeric:tabular-nums;border:1px solid var(--line)}
+.cell.on{background:var(--hit);border-color:var(--hit);color:var(--dauber-ink);font-weight:800}
+.cell.last{outline:3px solid var(--ink);outline-offset:1px}
+.colhead{font-family:var(--display);text-align:center;color:var(--hit);font-size:1rem}
+footer{color:var(--muted);font-size:.8rem;text-align:center}
+.home{align-self:flex-start;color:var(--muted);font-size:.85rem;font-weight:600;text-decoration:none}
+.home:hover,.home:focus-visible{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <a class="home" href="/">← chiefke.com</a>
+  <header>
+    <h1>Bingomolen</h1>
+    <div class="seg" role="group" aria-label="Spelvariant">
+      <button id="m75" type="button">75 ballen</button>
+      <button id="m90" type="button">90 ballen</button>
+    </div>
+  </header>
+
+  <section class="stage">
+    <div id="ball" class="ball idle" aria-live="assertive"><span class="letter" id="letter"></span><span class="num" id="num">Draai!</span></div>
+    <div class="count" id="count">0 / 75 getrokken</div>
+    <div class="recent" id="recent" aria-label="Laatst getrokken"></div>
+    <button class="draw" id="draw" type="button">Trek bal</button>
+    <div class="tools">
+      <button id="undo" type="button">Ongedaan</button>
+      <button id="voice" type="button" aria-pressed="false">Voorlezen</button>
+      <button id="reset" type="button">Nieuw spel</button>
+    </div>
+    <div class="confirm" id="confirm" hidden>
+      <p id="confirmText">Nieuw spel starten?</p>
+      <div><button class="no" id="cNo" type="button">Annuleer</button><button class="yes" id="cYes" type="button">Ja, opnieuw</button></div>
+    </div>
+  </section>
+
+  <section class="board">
+    <h2>Controlebord</h2>
+    <div class="grid" id="grid"></div>
+  </section>
+  <footer>Volgorde geschud met crypto.getRandomValues bij de start. Spel blijft bewaard als je de pagina sluit.</footer>
+</div>
+
+<script>
+(()=>{
+const KEY="chief-bingo-v1";
+let S={mode:75,order:[],idx:0,voice:false};
+let pendingMode=null;
+
+function rnd(n){const a=new Uint32Array(1);const lim=Math.floor(0x100000000/n)*n;let x;do{crypto.getRandomValues(a);x=a[0]}while(x>=lim);return x%n}
+function shuffle(n){const arr=Array.from({length:n},(_,i)=>i+1);for(let i=n-1;i>0;i--){const j=rnd(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+function letter(n){return S.mode===75?"BINGO"[Math.floor((n-1)/15)]:""}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.order)&&s.order.length===s.mode)S=s}catch(e){}}
+function newGame(mode){S.mode=mode;S.order=shuffle(mode);S.idx=0;save();render(false)}
+
+const $=id=>document.getElementById(id);
+function drawn(){return S.order.slice(0,S.idx)}
+
+function buildGrid(){
+  const g=$("grid");g.innerHTML="";
+  if(S.mode===75){
+    g.style.gridTemplateColumns="repeat(5,1fr)";
+    for(const L of "BINGO"){const h=document.createElement("div");h.className="colhead";h.textContent=L;g.appendChild(h)}
+    for(let r=0;r<15;r++)for(let c=0;c<5;c++)addCell(g,c*15+r+1);
+  }else{
+    g.style.gridTemplateColumns="repeat(10,1fr)";
+    for(let n=1;n<=90;n++)addCell(g,n);
+  }
+}
+function addCell(g,n){const d=document.createElement("div");d.className="cell";d.id="c"+n;d.textContent=n;g.appendChild(d)}
+
+function render(anim){
+  $("m75").setAttribute("aria-pressed",S.mode===75);$("m90").setAttribute("aria-pressed",S.mode===90);
+  $("voice").setAttribute("aria-pressed",!!S.voice);
+  buildGrid();
+  const d=drawn();const set=new Set(d);
+  for(let n=1;n<=S.mode;n++){const c=$("c"+n);c.classList.toggle("on",set.has(n))}
+  const last=d[d.length-1];const b=$("ball");
+  if(last){b.classList.remove("idle");$("num").textContent=last;$("letter").textContent=letter(last);$("c"+last).classList.add("last")}
+  else{b.classList.add("idle");$("num").textContent="Draai!";$("letter").textContent=""}
+  if(anim){b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop")}
+  $("count").textContent=`${d.length} / ${S.mode} getrokken`;
+  $("recent").innerHTML=d.slice(-6).reverse().slice(1).map(n=>`<span>${letter(n)}${n}</span>`).join("");
+  $("draw").disabled=S.idx>=S.mode;$("draw").textContent=S.idx>=S.mode?"Alle ballen op":"Trek bal";
+  $("undo").disabled=S.idx===0;
+}
+
+function speak(n){
+  if(!S.voice||!("speechSynthesis" in window))return;
+  try{
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance((letter(n)?letter(n)+" ":"")+n);
+    u.lang="nl-BE";
+    const v=speechSynthesis.getVoices().find(v=>/^nl/i.test(v.lang));if(v)u.voice=v;
+    u.rate=.9;speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+let wake=null;
+async function keepAwake(){try{if(!wake&&navigator.wakeLock){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>wake=null)}}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")keepAwake()});
+
+$("draw").onclick=()=>{if(S.idx>=S.mode)return;S.idx++;save();render(true);speak(S.order[S.idx-1]);keepAwake();
+  if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}};
+$("undo").onclick=()=>{if(S.idx>0){S.idx--;save();render(false)}};
+$("voice").onclick=()=>{S.voice=!S.voice;save();render(false);if(S.voice&&S.idx)speak(S.order[S.idx-1])};
+function ask(mode,text){
+  if(S.idx===0){newGame(mode);return}
+  pendingMode=mode;$("confirmText").textContent=text;$("confirm").hidden=false;
+}
+$("reset").onclick=()=>ask(S.mode,"Nieuw spel starten? Huidige trekking gaat verloren.");
+$("m75").onclick=()=>{if(S.mode!==75)ask(75,"Wisselen naar 75 ballen? Huidig spel stopt.")};
+$("m90").onclick=()=>{if(S.mode!==90)ask(90,"Wisselen naar 90 ballen? Huidig spel stopt.")};
+$("cNo").onclick=()=>{$("confirm").hidden=true;pendingMode=null};
+$("cYes").onclick=()=>{$("confirm").hidden=true;newGame(pendingMode);pendingMode=null};
+
+load();
+if(!S.order.length)S.order=shuffle(S.mode);
+render(false);
+})();
+</script>
+</body>
+</html>

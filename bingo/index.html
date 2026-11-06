@@ -98,13 +98,13 @@ footer{color:var(--muted);font-size:.8rem;text-align:center}
 .focus .hist span small{font-size:.45em;color:var(--hit);margin-bottom:.15em}
 .focus .hist span:first-child{border-color:var(--hit)}
 .focus .hlabel{color:var(--muted);font:800 .8rem var(--body);letter-spacing:.14em;text-transform:uppercase}
+.focus .hside{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
 @media (orientation:landscape){
   .focus{flex-direction:row;gap:4vw}
   .focus .fn{font-size:min(40vw,62vh)}
   .focus .hside{width:min(42vw,560px)}
   .focus .hist span{font-size:min(4vw,9vh,3rem)}
 }
-.focus .hside{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
 .focus .fx,.focus .fh{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));height:44px;border-radius:999px;border:1px solid var(--line);
   background:var(--paper);color:var(--ink);font:800 .95rem var(--body);cursor:pointer}
 .focus .fx{right:calc(12px + env(safe-area-inset-right,0px));width:44px;font-size:1.2rem}
@@ -288,7 +288,7 @@ $("fClose").onclick=e=>{e.stopPropagation();closeFocus()};
 $("fHist").onclick=e=>{e.stopPropagation();S.hist=HIST[(HIST.indexOf(S.hist)+1)%HIST.length];save();render(false)};
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&!$("focus").hidden){closeFocus();return}
-  if((e.key===" "||e.key==="Enter")&&!$("focus").hidden){e.preventDefault();$("focus").click()}
+  if((e.key===" "||e.key==="Enter")&&!$("focus").hidden&&!e.target.closest("button")){e.preventDefault();$("focus").click()}
 });
 
 /* Controls */

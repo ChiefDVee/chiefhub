@@ -270,7 +270,7 @@ document.addEventListener("visibilitychange",()=>{if(document.visibilityState===
 
 /* Caller view */
 function openFocus(){
-  $("focus").hidden=false;render(false);keepAwake();
+  $("focus").hidden=false;try{document.activeElement&&document.activeElement.blur()}catch(e){}render(false);keepAwake();
   const el=document.documentElement;
   try{const r=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen&&el.webkitRequestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(e){}
 }
@@ -288,7 +288,7 @@ $("fClose").onclick=e=>{e.stopPropagation();closeFocus()};
 $("fHist").onclick=e=>{e.stopPropagation();S.hist=HIST[(HIST.indexOf(S.hist)+1)%HIST.length];save();render(false)};
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&!$("focus").hidden){closeFocus();return}
-  if((e.key===" "||e.key==="Enter")&&!$("focus").hidden&&!e.target.closest("button")){e.preventDefault();$("focus").click()}
+  if((e.key===" "||e.key==="Enter")&&!$("focus").hidden&&!e.target.closest("#focus button")){e.preventDefault();$("focus").click()}
 });
 
 /* Controls */

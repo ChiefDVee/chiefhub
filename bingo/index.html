@@ -1,14 +1,15 @@
 <!doctype html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#14121c">
-<title>Chief's Bingomolen</title>
+<title>ChiefBingo</title>
+<meta name="description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer and a full-screen caller view.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;600;800&display=swap">
 <style>
-/* Layout: één kolom, grote ball bovenaan als duim-zone, bord eronder — dauber-inkt op bingopapier */
+/* Layout: one column, big ball on top as thumb zone, board below — dauber ink on bingo paper */
 :root{
   --bg:#f3f1f6; --paper:#ffffff; --ink:#1d1a2b; --muted:#6c6680;
   --dauber:#d6246e; --dauber-ink:#ffffff; --line:#ddd8e6; --hit:#d6246e; --hit-soft:#fbe3ee;
@@ -26,10 +27,14 @@ html{color-scheme:light}
 body{margin:0}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 32px}
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(32px + env(safe-area-inset-bottom,0px))}
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.home{align-self:flex-start;color:var(--muted);font-size:.85rem;font-weight:600;text-decoration:none}
+.home:hover,.home:focus-visible{color:var(--ink)}
 header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 h1{font-family:var(--display);font-size:1.35rem;margin:0;letter-spacing:.01em}
+h1 span{color:var(--hit)}
 .seg{display:inline-flex;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px}
 .seg button{border:0;background:none;color:var(--muted);font:600 .9rem var(--body);padding:6px 14px;border-radius:999px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
@@ -41,20 +46,30 @@ h1{font-family:var(--display);font-size:1.35rem;margin:0;letter-spacing:.01em}
 .ball .num{font-family:var(--display);font-size:clamp(4rem,20vw,6.5rem);line-height:1;font-variant-numeric:tabular-nums}
 .ball.idle{background:var(--hit-soft);color:var(--muted);box-shadow:none}
 .ball.idle .num{font-size:1.4rem;font-family:var(--body);font-weight:800}
-.ball.pop{animation:pop .35s ease-out}
+.pop{animation:pop .35s ease-out}
 @keyframes pop{0%{transform:scale(.7)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){.ball.pop{animation:none}}
-.count{color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.pop{animation:none}}
+.meta{display:flex;gap:18px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;flex-wrap:wrap;justify-content:center}
+.meta b{color:var(--ink)}
+.bar{width:100%;height:6px;border-radius:999px;background:var(--hit-soft);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--hit);border-radius:inherit}
 .recent{display:flex;gap:6px;min-height:34px;flex-wrap:wrap;justify-content:center}
 .recent span{min-width:34px;height:34px;padding:0 6px;border-radius:999px;border:2px solid var(--hit);color:var(--hit);
   display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-variant-numeric:tabular-nums;font-size:.9rem}
-.recent span:first-child{background:var(--hit);color:var(--dauber-ink)}
 .draw{width:100%;border:0;border-radius:16px;background:var(--ink);color:var(--bg);font:400 1.5rem var(--display);padding:18px;cursor:pointer;letter-spacing:.02em}
 .draw:active{transform:translateY(1px)}
 .draw:disabled{opacity:.4;cursor:default}
-.tools{display:flex;gap:8px;width:100%;flex-wrap:wrap}
-.tools button{flex:1 1 30%;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 8px;font:600 .9rem var(--body);cursor:pointer}
+.auto{width:100%;display:flex;gap:8px;align-items:stretch}
+.auto .go{flex:1;border:2px solid var(--hit);background:none;color:var(--hit);border-radius:12px;font:800 1rem var(--body);padding:10px;cursor:pointer}
+.auto .go[aria-pressed="true"]{background:var(--hit);color:var(--dauber-ink)}
+.auto .go:disabled{opacity:.4;cursor:default}
+.step{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.step button{border:0;background:none;color:var(--ink);font:800 1.2rem var(--body);width:42px;height:100%;min-height:44px;cursor:pointer}
+.step output{min-width:56px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
+.tools button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 4px;font:600 .85rem var(--body);cursor:pointer}
 .tools button[aria-pressed="true"]{border-color:var(--hit);color:var(--hit)}
+.tools button:disabled{opacity:.4;cursor:default}
 button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 .confirm{width:100%;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--hit-soft);border-radius:12px;padding:10px 12px}
 .confirm p{margin:0;font-weight:600}
@@ -71,122 +86,213 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 .cell.last{outline:3px solid var(--ink);outline-offset:1px}
 .colhead{font-family:var(--display);text-align:center;color:var(--hit);font-size:1rem}
 footer{color:var(--muted);font-size:.8rem;text-align:center}
-.home{align-self:flex-start;color:var(--muted);font-size:.85rem;font-weight:600;text-decoration:none}
-.home:hover,.home:focus-visible{color:var(--ink)}
+
+/* Caller view: number only */
+.focus{position:fixed;inset:0;z-index:50;background:var(--dauber);color:var(--dauber-ink);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.focus .fl{font-family:var(--display);font-size:min(14vmin,9rem);line-height:1;opacity:.8;min-height:1em}
+.focus .fn{font-family:var(--display);font-size:min(66vw,62vh);line-height:.9;font-variant-numeric:tabular-nums}
+.focus .fn.small{font-family:var(--body);font-weight:800;font-size:min(8vmin,3rem)}
+.focus .fx{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));
+  width:44px;height:44px;border-radius:50%;border:0;background:rgba(0,0,0,.18);color:inherit;font:800 1.2rem var(--body);cursor:pointer}
+.focus .fs{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:.85rem;opacity:.8}
+.focus .fb{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(0,0,0,.15)}
+.focus .fb i{display:block;height:100%;width:0;background:var(--dauber-ink);opacity:.7}
 </style>
 </head>
 <body>
-
 <div class="wrap">
   <a class="home" href="/">← chiefke.com</a>
   <header>
-    <h1>Bingomolen</h1>
-    <div class="seg" role="group" aria-label="Spelvariant">
-      <button id="m75" type="button">75 ballen</button>
-      <button id="m90" type="button">90 ballen</button>
+    <h1>Chief<span>Bingo</span></h1>
+    <div class="seg" role="group" aria-label="Game type">
+      <button id="m75" type="button">75 balls</button>
+      <button id="m90" type="button">90 balls</button>
     </div>
   </header>
 
   <section class="stage">
-    <div id="ball" class="ball idle" aria-live="assertive"><span class="letter" id="letter"></span><span class="num" id="num">Draai!</span></div>
-    <div class="count" id="count">0 / 75 getrokken</div>
-    <div class="recent" id="recent" aria-label="Laatst getrokken"></div>
-    <button class="draw" id="draw" type="button">Trek bal</button>
+    <div id="ball" class="ball idle" aria-live="assertive"><span class="letter" id="letter"></span><span class="num" id="num">Ready</span></div>
+    <div class="meta"><span id="count"><b>0</b> / 75 drawn</span><span>Game time <b id="clock">0:00</b></span></div>
+    <div class="bar" id="bar" hidden><i id="barFill"></i></div>
+    <div class="recent" id="recent" aria-label="Previous balls"></div>
+    <button class="draw" id="draw" type="button">Draw ball</button>
+    <div class="auto">
+      <button class="go" id="auto" type="button" aria-pressed="false">Start auto</button>
+      <div class="step" role="group" aria-label="Seconds between balls">
+        <button id="iMinus" type="button" aria-label="Shorter">−</button>
+        <output id="iVal">10 s</output>
+        <button id="iPlus" type="button" aria-label="Longer">+</button>
+      </div>
+    </div>
     <div class="tools">
-      <button id="undo" type="button">Ongedaan</button>
-      <button id="voice" type="button" aria-pressed="false">Voorlezen</button>
-      <button id="reset" type="button">Nieuw spel</button>
+      <button id="undo" type="button">Undo</button>
+      <button id="voice" type="button" aria-pressed="false">Voice</button>
+      <button id="full" type="button">Full screen</button>
+      <button id="reset" type="button">New game</button>
     </div>
     <div class="confirm" id="confirm" hidden>
-      <p id="confirmText">Nieuw spel starten?</p>
-      <div><button class="no" id="cNo" type="button">Annuleer</button><button class="yes" id="cYes" type="button">Ja, opnieuw</button></div>
+      <p id="confirmText">Start a new game?</p>
+      <div><button class="no" id="cNo" type="button">Cancel</button><button class="yes" id="cYes" type="button">Yes, restart</button></div>
     </div>
   </section>
 
   <section class="board">
-    <h2>Controlebord</h2>
+    <h2>Check board</h2>
     <div class="grid" id="grid"></div>
   </section>
-  <footer>Volgorde geschud met crypto.getRandomValues bij de start. Spel blijft bewaard als je de pagina sluit.</footer>
+  <footer>Balls are shuffled with crypto.getRandomValues when a game starts. Your game is saved on this device.</footer>
+</div>
+
+<div class="focus" id="focus" hidden role="dialog" aria-label="Caller view">
+  <button class="fx" id="fClose" type="button" aria-label="Close full screen">✕</button>
+  <span class="fl" id="fLetter"></span>
+  <span class="fn" id="fNum"></span>
+  <span class="fs" id="fStatus"></span>
+  <div class="fb" id="fBar" hidden><i id="fBarFill"></i></div>
 </div>
 
 <script>
 (()=>{
 const KEY="chief-bingo-v1";
-let S={mode:75,order:[],idx:0,voice:false};
-let pendingMode=null;
+const STEPS=[3,5,8,10,15,20,30,45,60];
+let S={mode:75,order:[],idx:0,voice:false,interval:10,startedAt:null,endedAt:null};
+let pendingMode=null, auto=false, wasAuto=false, due=0, timer=null, raf=0;
 
 function rnd(n){const a=new Uint32Array(1);const lim=Math.floor(0x100000000/n)*n;let x;do{crypto.getRandomValues(a);x=a[0]}while(x>=lim);return x%n}
 function shuffle(n){const arr=Array.from({length:n},(_,i)=>i+1);for(let i=n-1;i>0;i--){const j=rnd(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
 function letter(n){return S.mode===75?"BINGO"[Math.floor((n-1)/15)]:""}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.order)&&s.order.length===s.mode)S=s}catch(e){}}
-function newGame(mode){S.mode=mode;S.order=shuffle(mode);S.idx=0;save();render(false)}
-
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.order)&&s.order.length===s.mode)S=Object.assign(S,s)}catch(e){}
+  if(!STEPS.includes(S.interval))S.interval=10}
 const $=id=>document.getElementById(id);
-function drawn(){return S.order.slice(0,S.idx)}
+const drawn=()=>S.order.slice(0,S.idx);
+const done=()=>S.idx>=S.mode;
+
+function newGame(mode){stopAuto();S.mode=mode;S.order=shuffle(mode);S.idx=0;S.startedAt=null;S.endedAt=null;save();buildGrid();render(false)}
 
 function buildGrid(){
   const g=$("grid");g.innerHTML="";
+  const add=n=>{const d=document.createElement("div");d.className="cell";d.id="c"+n;d.textContent=n;g.appendChild(d)};
   if(S.mode===75){
     g.style.gridTemplateColumns="repeat(5,1fr)";
     for(const L of "BINGO"){const h=document.createElement("div");h.className="colhead";h.textContent=L;g.appendChild(h)}
-    for(let r=0;r<15;r++)for(let c=0;c<5;c++)addCell(g,c*15+r+1);
-  }else{
-    g.style.gridTemplateColumns="repeat(10,1fr)";
-    for(let n=1;n<=90;n++)addCell(g,n);
-  }
+    for(let r=0;r<15;r++)for(let c=0;c<5;c++)add(c*15+r+1);
+  }else{g.style.gridTemplateColumns="repeat(10,1fr)";for(let n=1;n<=90;n++)add(n)}
 }
-function addCell(g,n){const d=document.createElement("div");d.className="cell";d.id="c"+n;d.textContent=n;g.appendChild(d)}
+
+function fmt(ms){const t=Math.max(0,Math.floor(ms/1000)),h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;
+  return h?`${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${m}:${String(s).padStart(2,"0")}`}
+function tickClock(){$("clock").textContent=S.startedAt?fmt((S.endedAt||Date.now())-S.startedAt):"0:00"}
+
+function bump(el){el.classList.remove("pop");void el.offsetWidth;el.classList.add("pop")}
 
 function render(anim){
   $("m75").setAttribute("aria-pressed",S.mode===75);$("m90").setAttribute("aria-pressed",S.mode===90);
   $("voice").setAttribute("aria-pressed",!!S.voice);
-  buildGrid();
-  const d=drawn();const set=new Set(d);
-  for(let n=1;n<=S.mode;n++){const c=$("c"+n);c.classList.toggle("on",set.has(n))}
-  const last=d[d.length-1];const b=$("ball");
+  $("iVal").textContent=S.interval+" s";
+  $("iMinus").disabled=S.interval===STEPS[0];$("iPlus").disabled=S.interval===STEPS[STEPS.length-1];
+  const d=drawn(),set=new Set(d);
+  document.querySelectorAll(".cell").forEach(c=>{const n=+c.textContent;c.classList.toggle("on",set.has(n));c.classList.remove("last")});
+  const last=d[d.length-1],b=$("ball");
   if(last){b.classList.remove("idle");$("num").textContent=last;$("letter").textContent=letter(last);$("c"+last).classList.add("last")}
-  else{b.classList.add("idle");$("num").textContent="Draai!";$("letter").textContent=""}
-  if(anim){b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop")}
-  $("count").textContent=`${d.length} / ${S.mode} getrokken`;
-  $("recent").innerHTML=d.slice(-6).reverse().slice(1).map(n=>`<span>${letter(n)}${n}</span>`).join("");
-  $("draw").disabled=S.idx>=S.mode;$("draw").textContent=S.idx>=S.mode?"Alle ballen op":"Trek bal";
+  else{b.classList.add("idle");$("num").textContent="Ready";$("letter").textContent=""}
+  $("fNum").textContent=last||"Tap to draw";$("fNum").classList.toggle("small",!last);$("fLetter").textContent=last?letter(last):"";
+  if(anim){bump(b);if(!$("focus").hidden)bump($("fNum"))}
+  $("count").innerHTML=`<b>${d.length}</b> / ${S.mode} drawn`;
+  $("recent").innerHTML=d.slice(0,-1).slice(-5).reverse().map(n=>`<span>${letter(n)}${n}</span>`).join("");
+  $("draw").disabled=done();$("draw").textContent=done()?"All balls drawn":"Draw ball";
   $("undo").disabled=S.idx===0;
+  $("auto").disabled=done();
+  $("auto").setAttribute("aria-pressed",auto);
+  $("auto").textContent=auto?"Pause auto":(S.idx&&!done()?"Resume auto":"Start auto");
+  $("bar").hidden=!auto;$("fBar").hidden=!auto;
+  $("fStatus").textContent=done()?"All balls drawn":(!auto&&wasAuto&&S.idx?"Paused · tap to resume":"");
+  tickClock();
 }
 
 function speak(n){
   if(!S.voice||!("speechSynthesis" in window))return;
   try{
     speechSynthesis.cancel();
+    const lang=navigator.language||"en";
     const u=new SpeechSynthesisUtterance((letter(n)?letter(n)+" ":"")+n);
-    u.lang="nl-BE";
-    const v=speechSynthesis.getVoices().find(v=>/^nl/i.test(v.lang));if(v)u.voice=v;
-    u.rate=.9;speechSynthesis.speak(u);
+    u.lang=lang;
+    const base=lang.slice(0,2).toLowerCase();
+    const vs=speechSynthesis.getVoices();
+    const v=vs.find(v=>v.lang===lang)||vs.find(v=>v.lang.slice(0,2).toLowerCase()===base);
+    if(v)u.voice=v;
+    u.rate=.95;speechSynthesis.speak(u);
   }catch(e){}
 }
+
+function drawOne(){
+  if(done())return;
+  if(!S.startedAt)S.startedAt=Date.now();
+  S.idx++;
+  if(done()){S.endedAt=Date.now();stopAuto()}
+  save();render(true);speak(S.order[S.idx-1]);keepAwake();
+  if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}
+  if(auto)schedule();
+}
+
+function schedule(){clearTimeout(timer);due=Date.now()+S.interval*1000;timer=setTimeout(drawOne,S.interval*1000);loop()}
+function loop(){cancelAnimationFrame(raf);const step=()=>{if(!auto)return;
+  const p=Math.min(1,1-(due-Date.now())/(S.interval*1000));const w=(p*100).toFixed(1)+"%";
+  $("barFill").style.width=w;$("fBarFill").style.width=w;raf=requestAnimationFrame(step)};step()}
+function startAuto(){if(done())return;auto=true;wasAuto=true;render(false);if(!S.idx)drawOne();else schedule();keepAwake()}
+function stopAuto(){auto=false;clearTimeout(timer);cancelAnimationFrame(raf);$("barFill").style.width="0";$("fBarFill").style.width="0";render(false)}
 
 let wake=null;
 async function keepAwake(){try{if(!wake&&navigator.wakeLock){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>wake=null)}}catch(e){}}
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")keepAwake()});
 
-$("draw").onclick=()=>{if(S.idx>=S.mode)return;S.idx++;save();render(true);speak(S.order[S.idx-1]);keepAwake();
-  if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}};
-$("undo").onclick=()=>{if(S.idx>0){S.idx--;save();render(false)}};
+/* Caller view */
+function openFocus(){
+  $("focus").hidden=false;render(false);keepAwake();
+  const el=document.documentElement;
+  try{const r=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen&&el.webkitRequestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(e){}
+}
+function closeFocus(){
+  $("focus").hidden=true;
+  try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else if(document.webkitFullscreenElement)document.webkitExitFullscreen()}catch(e){}
+}
+document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement&&!$("focus").hidden)$("focus").hidden=true});
+$("focus").addEventListener("click",e=>{
+  if(e.target.closest("#fClose"))return;
+  if(done())return;
+  if(auto)stopAuto();else if(wasAuto&&S.idx)startAuto();else drawOne();
+});
+$("fClose").onclick=e=>{e.stopPropagation();closeFocus()};
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&!$("focus").hidden){closeFocus();return}
+  if((e.key===" "||e.key==="Enter")&&!$("focus").hidden){e.preventDefault();$("focus").click()}
+});
+
+/* Controls */
+$("draw").onclick=()=>{if(!auto)wasAuto=false;drawOne()};
+$("auto").onclick=()=>auto?stopAuto():startAuto();
+$("iMinus").onclick=()=>{const i=STEPS.indexOf(S.interval);if(i>0){S.interval=STEPS[i-1];save();render(false);if(auto)schedule()}};
+$("iPlus").onclick=()=>{const i=STEPS.indexOf(S.interval);if(i<STEPS.length-1){S.interval=STEPS[i+1];save();render(false);if(auto)schedule()}};
+$("undo").onclick=()=>{if(S.idx>0){stopAuto();S.idx--;S.endedAt=null;if(!S.idx)S.startedAt=null;save();render(false)}};
 $("voice").onclick=()=>{S.voice=!S.voice;save();render(false);if(S.voice&&S.idx)speak(S.order[S.idx-1])};
+$("full").onclick=openFocus;
 function ask(mode,text){
   if(S.idx===0){newGame(mode);return}
   pendingMode=mode;$("confirmText").textContent=text;$("confirm").hidden=false;
 }
-$("reset").onclick=()=>ask(S.mode,"Nieuw spel starten? Huidige trekking gaat verloren.");
-$("m75").onclick=()=>{if(S.mode!==75)ask(75,"Wisselen naar 75 ballen? Huidig spel stopt.")};
-$("m90").onclick=()=>{if(S.mode!==90)ask(90,"Wisselen naar 90 ballen? Huidig spel stopt.")};
+$("reset").onclick=()=>ask(S.mode,"Start a new game? The current draw will be lost.");
+$("m75").onclick=()=>{if(S.mode!==75)ask(75,"Switch to 75 balls? The current game ends.")};
+$("m90").onclick=()=>{if(S.mode!==90)ask(90,"Switch to 90 balls? The current game ends.")};
 $("cNo").onclick=()=>{$("confirm").hidden=true;pendingMode=null};
-$("cYes").onclick=()=>{$("confirm").hidden=true;newGame(pendingMode);pendingMode=null};
+$("cYes").onclick=()=>{$("confirm").hidden=true;wasAuto=false;newGame(pendingMode);pendingMode=null};
 
+if("speechSynthesis" in window)try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(e){}
 load();
 if(!S.order.length)S.order=shuffle(S.mode);
-render(false);
+buildGrid();render(false);
+setInterval(tickClock,500);
 })();
 </script>
 </body>

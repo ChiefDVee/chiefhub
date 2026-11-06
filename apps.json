@@ -45,12 +45,12 @@
     "points": ["Search every quote, or pull a random one", "Share a link or save it as an image", "New one daily — Shorts on YouTube"]
   },
   {
-    "name": "Bingomolen",
+    "name": "ChiefBingo",
     "short": "bingo number caller",
     "url": "https://chiefke.com/bingo/",
     "tag": "Game",
     "category": "GameApplication",
-    "desc": "Bingo ball caller for 75 or 90 balls, in Dutch. Draw on your phone, call it out loud.",
-    "points": ["75-ball (B-I-N-G-O) or 90-ball games", "Reads each number aloud in Dutch", "Game survives closing the page"]
+    "desc": "Bingo ball caller for 75 or 90 balls. Draw by hand or on a timer, show the number full screen, call it out loud.",
+    "points": ["75-ball (B-I-N-G-O) or 90-ball games", "Auto-draw every 3–60 s, plus a game clock", "Full-screen caller view, read aloud in your device language"]
   }
 ]

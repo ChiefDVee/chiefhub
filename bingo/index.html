@@ -3,27 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#14121c">
+<meta name="theme-color" content="#0a0a0a">
 <title>ChiefBingo</title>
 <meta name="description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer and a full-screen caller view.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;600;800&display=swap">
 <style>
-/* Layout: one column, big ball on top as thumb zone, board below — dauber ink on bingo paper */
+/* Layout: one column, big ball on top as thumb zone, board below — chiefke.com palette: black + bitcoin orange, dark only */
 :root{
-  --bg:#f3f1f6; --paper:#ffffff; --ink:#1d1a2b; --muted:#6c6680;
-  --dauber:#d6246e; --dauber-ink:#ffffff; --line:#ddd8e6; --hit:#d6246e; --hit-soft:#fbe3ee;
+  --bg:#0a0a0a; --paper:#141414; --ink:#ededed; --muted:#9a9a9a;
+  --dauber:#f7931a; --dauber-ink:#0a0a0a; --line:#2a2a2a; --hit:#f7931a; --hit-soft:#2a1c08;
   --display:"Bowlby One","Arial Black",Impact,sans-serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#14121c; --paper:#1f1c2b; --ink:#f1eef8; --muted:#9a93ad;
-  --dauber:#ff4f93; --dauber-ink:#1a0610; --line:#332e44; --hit:#ff4f93; --hit-soft:#3a1b2b; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#14121c; --paper:#1f1c2b; --ink:#f1eef8; --muted:#9a93ad;
-  --dauber:#ff4f93; --dauber-ink:#1a0610; --line:#332e44; --hit:#ff4f93; --hit-soft:#3a1b2b; color-scheme:dark}
 *{box-sizing:border-box}
-html{color-scheme:light}
+html{color-scheme:dark}
 body{margin:0}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;
@@ -37,7 +32,7 @@ h1{font-family:var(--display);font-size:1.35rem;margin:0;letter-spacing:.01em}
 h1 span{color:var(--hit)}
 .seg{display:inline-flex;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px}
 .seg button{border:0;background:none;color:var(--muted);font:600 .9rem var(--body);padding:6px 14px;border-radius:999px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button[aria-pressed="true"]{background:var(--hit);color:var(--dauber-ink)}
 .stage{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
 .ball{width:min(62vw,240px);aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--dauber);color:var(--dauber-ink);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -56,7 +51,7 @@ h1 span{color:var(--hit)}
 .recent{display:flex;gap:6px;min-height:34px;flex-wrap:wrap;justify-content:center}
 .recent span{min-width:34px;height:34px;padding:0 6px;border-radius:999px;border:2px solid var(--hit);color:var(--hit);
   display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-variant-numeric:tabular-nums;font-size:.9rem}
-.draw{width:100%;border:0;border-radius:16px;background:var(--ink);color:var(--bg);font:400 1.5rem var(--display);padding:18px;cursor:pointer;letter-spacing:.02em}
+.draw{width:100%;border:0;border-radius:16px;background:var(--hit);color:var(--dauber-ink);font:400 1.5rem var(--display);padding:18px;cursor:pointer;letter-spacing:.02em}
 .draw:active{transform:translateY(1px)}
 .draw:disabled{opacity:.4;cursor:default}
 .auto{width:100%;display:flex;gap:8px;align-items:stretch}
@@ -88,17 +83,35 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 footer{color:var(--muted);font-size:.8rem;text-align:center}
 
 /* Caller view: number only */
-.focus{position:fixed;inset:0;z-index:50;background:var(--dauber);color:var(--dauber-ink);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;
-  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
-.focus .fl{font-family:var(--display);font-size:min(14vmin,9rem);line-height:1;opacity:.8;min-height:1em}
-.focus .fn{font-family:var(--display);font-size:min(66vw,62vh);line-height:.9;font-variant-numeric:tabular-nums}
-.focus .fn.small{font-family:var(--body);font-weight:800;font-size:min(8vmin,3rem)}
-.focus .fx{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));
-  width:44px;height:44px;border-radius:50%;border:0;background:rgba(0,0,0,.18);color:inherit;font:800 1.2rem var(--body);cursor:pointer}
-.focus .fs{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:.85rem;opacity:.8}
-.focus .fb{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(0,0,0,.15)}
-.focus .fb i{display:block;height:100%;width:0;background:var(--dauber-ink);opacity:.7}
+.focus{position:fixed;inset:0;z-index:50;background:var(--bg);color:var(--hit);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;cursor:pointer;user-select:none;-webkit-user-select:none;
+  padding:calc(64px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(48px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.focus .now{display:flex;flex-direction:column;align-items:center;min-height:0}
+.focus .fl{font-family:var(--display);font-size:min(12vmin,8rem);line-height:1;opacity:.75;min-height:1em}
+.focus .fn{font-family:var(--display);font-size:min(60vw,46vh);line-height:.9;font-variant-numeric:tabular-nums}
+.focus.nohist .fn{font-size:min(66vw,62vh)}
+.focus .fn.small{font-family:var(--body);font-weight:800;font-size:min(8vmin,3rem);color:var(--ink)}
+.focus .hist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:min(2vw,12px);width:min(100%,720px)}
+.focus .hist span{aspect-ratio:1;border-radius:50%;border:3px solid var(--line);color:var(--ink);background:var(--paper);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1;
+  font:400 min(7vw,5vh,3rem) var(--display);font-variant-numeric:tabular-nums}
+.focus .hist span small{font-size:.45em;color:var(--hit);margin-bottom:.15em}
+.focus .hist span:first-child{border-color:var(--hit)}
+.focus .hlabel{color:var(--muted);font:800 .8rem var(--body);letter-spacing:.14em;text-transform:uppercase}
+@media (orientation:landscape){
+  .focus{flex-direction:row;gap:4vw}
+  .focus .fn{font-size:min(40vw,62vh)}
+  .focus .hside{width:min(42vw,560px)}
+  .focus .hist span{font-size:min(4vw,9vh,3rem)}
+}
+.focus .hside{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.focus .fx,.focus .fh{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));height:44px;border-radius:999px;border:1px solid var(--line);
+  background:var(--paper);color:var(--ink);font:800 .95rem var(--body);cursor:pointer}
+.focus .fx{right:calc(12px + env(safe-area-inset-right,0px));width:44px;font-size:1.2rem}
+.focus .fh{left:calc(12px + env(safe-area-inset-left,0px));padding:0 16px}
+.focus .fs{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:.85rem;color:var(--muted)}
+.focus .fb{position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--line)}
+.focus .fb i{display:block;height:100%;width:0;background:var(--hit)}
 </style>
 </head>
 <body>
@@ -147,8 +160,9 @@ footer{color:var(--muted);font-size:.8rem;text-align:center}
 
 <div class="focus" id="focus" hidden role="dialog" aria-label="Caller view">
   <button class="fx" id="fClose" type="button" aria-label="Close full screen">✕</button>
-  <span class="fl" id="fLetter"></span>
-  <span class="fn" id="fNum"></span>
+  <button class="fh" id="fHist" type="button">Last 10</button>
+  <div class="now"><span class="fl" id="fLetter"></span><span class="fn" id="fNum"></span></div>
+  <div class="hside" id="fSide"><span class="hlabel" id="fLabel">Previous</span><div class="hist" id="fList"></div></div>
   <span class="fs" id="fStatus"></span>
   <div class="fb" id="fBar" hidden><i id="fBarFill"></i></div>
 </div>
@@ -157,7 +171,8 @@ footer{color:var(--muted);font-size:.8rem;text-align:center}
 (()=>{
 const KEY="chief-bingo-v1";
 const STEPS=[3,5,8,10,15,20,30,45,60];
-let S={mode:75,order:[],idx:0,voice:false,interval:10,startedAt:null,endedAt:null};
+let S={mode:75,order:[],idx:0,voice:false,interval:10,startedAt:null,endedAt:null,hist:10};
+const HIST=[10,5,0];
 let pendingMode=null, auto=false, wasAuto=false, due=0, timer=null, raf=0;
 
 function rnd(n){const a=new Uint32Array(1);const lim=Math.floor(0x100000000/n)*n;let x;do{crypto.getRandomValues(a);x=a[0]}while(x>=lim);return x%n}
@@ -165,7 +180,7 @@ function shuffle(n){const arr=Array.from({length:n},(_,i)=>i+1);for(let i=n-1;i>
 function letter(n){return S.mode===75?"BINGO"[Math.floor((n-1)/15)]:""}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.order)&&s.order.length===s.mode)S=Object.assign(S,s)}catch(e){}
-  if(!STEPS.includes(S.interval))S.interval=10}
+  if(!STEPS.includes(S.interval))S.interval=10;if(!HIST.includes(S.hist))S.hist=10}
 const $=id=>document.getElementById(id);
 const drawn=()=>S.order.slice(0,S.idx);
 const done=()=>S.idx>=S.mode;
@@ -201,6 +216,11 @@ function render(anim){
   $("fNum").textContent=last||"Tap to draw";$("fNum").classList.toggle("small",!last);$("fLetter").textContent=last?letter(last):"";
   if(anim){bump(b);if(!$("focus").hidden)bump($("fNum"))}
   $("count").innerHTML=`<b>${d.length}</b> / ${S.mode} drawn`;
+  const prev=d.slice(0,-1).reverse().slice(0,S.hist);
+  $("fList").innerHTML=prev.map(n=>`<span>${letter(n)?`<small>${letter(n)}</small>`:""}${n}</span>`).join("");
+  $("fSide").hidden=!S.hist||!prev.length;
+  $("focus").classList.toggle("nohist",$("fSide").hidden);
+  $("fHist").textContent=S.hist?`Last ${S.hist}`:"History off";
   $("recent").innerHTML=d.slice(0,-1).slice(-5).reverse().map(n=>`<span>${letter(n)}${n}</span>`).join("");
   $("draw").disabled=done();$("draw").textContent=done()?"All balls drawn":"Draw ball";
   $("undo").disabled=S.idx===0;
@@ -260,11 +280,12 @@ function closeFocus(){
 }
 document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement&&!$("focus").hidden)$("focus").hidden=true});
 $("focus").addEventListener("click",e=>{
-  if(e.target.closest("#fClose"))return;
+  if(e.target.closest("#fClose,#fHist"))return;
   if(done())return;
   if(auto)stopAuto();else if(wasAuto&&S.idx)startAuto();else drawOne();
 });
 $("fClose").onclick=e=>{e.stopPropagation();closeFocus()};
+$("fHist").onclick=e=>{e.stopPropagation();S.hist=HIST[(HIST.indexOf(S.hist)+1)%HIST.length];save();render(false)};
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&!$("focus").hidden){closeFocus();return}
   if((e.key===" "||e.key==="Enter")&&!$("focus").hidden){e.preventDefault();$("focus").click()}

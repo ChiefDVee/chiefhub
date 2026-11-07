@@ -65,6 +65,8 @@ h1 span{color:var(--hit)}
 .tools button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 4px;font:600 .85rem var(--body);cursor:pointer}
 .tools button[aria-pressed="true"]{border-color:var(--hit);color:var(--hit)}
 .tools button:disabled{opacity:.4;cursor:default}
+.tools button.copy{grid-column:1/-1}
+.tools button.copy.ok{border-color:var(--hit);color:var(--hit)}
 button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 .confirm{width:100%;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--hit-soft);border-radius:12px;padding:10px 12px}
 .confirm p{margin:0;font-weight:600}
@@ -144,6 +146,7 @@ footer{color:var(--muted);font-size:.8rem;text-align:center}
       <button id="voice" type="button" aria-pressed="false">Voice</button>
       <button id="full" type="button">Full screen</button>
       <button id="reset" type="button">New game</button>
+      <button class="copy" id="copy" type="button" title="Copy drawn balls in draw order">Copy calls</button>
     </div>
     <div class="confirm" id="confirm" hidden>
       <p id="confirmText">Start a new game?</p>
@@ -224,6 +227,7 @@ function render(anim){
   $("recent").innerHTML=d.slice(0,-1).slice(-5).reverse().map(n=>`<span>${letter(n)}${n}</span>`).join("");
   $("draw").disabled=done();$("draw").textContent=done()?"All balls drawn":"Draw ball";
   $("undo").disabled=S.idx===0;
+  $("copy").disabled=S.idx===0;if(S.idx===0)copyDone();
   $("auto").disabled=done();
   $("auto").setAttribute("aria-pressed",auto);
   $("auto").textContent=auto?"Pause auto":(S.idx&&!done()?"Resume auto":"Start auto");
@@ -299,6 +303,26 @@ $("iPlus").onclick=()=>{const i=STEPS.indexOf(S.interval);if(i<STEPS.length-1){S
 $("undo").onclick=()=>{if(S.idx>0){stopAuto();S.idx--;S.endedAt=null;if(!S.idx)S.startedAt=null;save();render(false)}};
 $("voice").onclick=()=>{S.voice=!S.voice;save();render(false);if(S.voice&&S.idx)speak(S.order[S.idx-1])};
 $("full").onclick=openFocus;
+/* Copy calls: draw order, "B-12,I-23" (75) or "12,23" (90) */
+let copyT=null;
+function copyDone(){clearTimeout(copyT);copyT=null;const b=$("copy");b.textContent="Copy calls";b.classList.remove("ok")}
+function callsText(){return drawn().map(n=>S.mode===75?letter(n)+"-"+n:String(n)).join(",")}
+function copyFallback(t){
+  const ta=document.createElement("textarea");ta.value=t;ta.setAttribute("readonly","");
+  ta.style.cssText="position:fixed;top:0;left:0;opacity:0;pointer-events:none";
+  document.body.appendChild(ta);ta.focus();ta.select();try{ta.setSelectionRange(0,t.length)}catch(e){}
+  let ok=false;try{ok=document.execCommand("copy")}catch(e){}
+  document.body.removeChild(ta);return ok;
+}
+$("copy").onclick=async e=>{
+  e.stopPropagation();
+  const n=S.idx;if(!n)return;const t=callsText();let ok=false;
+  try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(t);ok=true}}catch(err){}
+  if(!ok)ok=copyFallback(t);
+  const b=$("copy");clearTimeout(copyT);
+  b.textContent=ok?`Copied ✓ (${n})`:"Copy failed";b.classList.toggle("ok",ok);
+  copyT=setTimeout(copyDone,2000);
+};
 function ask(mode,text){
   if(S.idx===0){newGame(mode);return}
   pendingMode=mode;$("confirmText").textContent=text;$("confirm").hidden=false;

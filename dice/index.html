@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
+<title>ChiefDice</title>
+<meta name="description" content="ChiefDice: roll 1 to 10 six-sided dice. Hold dice between rolls, see the last 10 rolls, and switch to a full-screen table view. Fair rolls with crypto.getRandomValues.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;600;800&display=swap">
+<style>
+/* Layout: the page is exactly one screen tall; the dice area takes what is left and JS sizes the dice to fit it.
+   Portrait = one column, landscape (≥700 px wide) = dice left, controls right. chiefke.com palette, dark only. */
+:root{
+  --bg:#0a0a0a; --paper:#141414; --ink:#ededed; --muted:#9a9a9a; --line:#2a2a2a;
+  --hit:#f7931a; --hit-ink:#0a0a0a; --die:#f4f1ea; --pip:#0a0a0a;
+  --display:"Bowlby One","Arial Black",Impact,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark;height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px}
+[hidden]{display:none!important}
+html.fopen,html.fopen body{overflow:hidden}
+.app{height:100vh;height:100dvh;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:10px;
+  padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.home{color:var(--muted);font-size:.85rem;font-weight:600;text-decoration:none}
+.home:hover,.home:focus-visible{color:var(--ink)}
+h1{font-family:var(--display);font-size:1.35rem;margin:0;letter-spacing:.01em;line-height:1.1}
+h1 span{color:var(--hit)}
+.main{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:10px}
+.area{flex:1 1 0;min-height:0;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:12px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;
+  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.dice{display:flex;flex-wrap:wrap;justify-content:center;align-content:center;gap:calc(var(--s,100px) * .14)}
+.die{position:relative;flex:none;width:var(--s,100px);height:var(--s,100px);padding:0;border:0;background:none;color:inherit;
+  border-radius:calc(var(--s,100px) * .2);cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.die .fc,.die svg{display:block;width:100%;height:100%;pointer-events:none}
+.die svg rect{fill:var(--die)}
+.die svg circle{fill:var(--pip)}
+.die svg circle.one{fill:var(--hit)}
+.die.held{outline:max(3px,calc(var(--s) * .04)) solid var(--hit);outline-offset:max(2px,calc(var(--s) * .02))}
+.die .hold{position:absolute;left:50%;bottom:0;transform:translate(-50%,50%);display:none;pointer-events:none;
+  background:var(--hit);color:var(--hit-ink);font:800 max(10px,calc(var(--s) * .1))/1 var(--body);letter-spacing:.08em;padding:.25em .6em;border-radius:999px}
+.die.held .hold{display:block}
+.die:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.die.held:focus-visible{outline-color:var(--hit)}
+.tumble .fc{animation:tumble .6s cubic-bezier(.3,.7,.4,1)}
+@keyframes tumble{0%{transform:rotate(0) scale(1)}20%{transform:rotate(-16deg) scale(.88)}45%{transform:rotate(12deg) scale(1.05)}
+  70%{transform:rotate(-6deg) scale(.97)}100%{transform:rotate(0) scale(1)}}
+@media (prefers-reduced-motion:reduce){.tumble .fc{animation:none}}
+.hint{margin:-4px 0 0;color:var(--muted);font-size:.78rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.total{display:flex;align-items:baseline;justify-content:center;gap:12px;min-height:3.2rem}
+.total .tl{color:var(--muted);font:800 .75rem var(--body);letter-spacing:.14em;text-transform:uppercase}
+.total b{font:400 clamp(2.4rem,6.5vh,4.4rem)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums}
+.total b.idle{font:800 1.15rem/1.6 var(--body);color:var(--muted)}
+.total b.busy{opacity:.45}
+.actions{display:grid;grid-template-columns:1fr auto;gap:8px}
+.roll{border:0;border-radius:16px;background:var(--hit);color:var(--hit-ink);font:400 1.6rem var(--display);padding:14px;cursor:pointer;letter-spacing:.02em;touch-action:manipulation}
+.roll:active{transform:translateY(1px)}
+.ghost{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:8px 12px;font:600 .85rem var(--body);cursor:pointer;touch-action:manipulation}
+.ghost[aria-pressed="true"]{border-color:var(--hit);color:var(--hit)}
+.ghost:disabled,.step button:disabled{opacity:.4;cursor:default}
+button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
+.ctrls{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));gap:8px}
+.ctrls.nohaptic{grid-template-columns:auto repeat(2,minmax(0,1fr))}
+.step{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.step button{border:0;background:none;color:var(--ink);font:800 1.25rem var(--body);width:44px;min-height:44px;cursor:pointer;touch-action:manipulation}
+.step output{min-width:62px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
+.hrow{display:flex;align-items:center;gap:8px;min-width:0}
+.hrow .hl{color:var(--muted);font:800 .7rem var(--body);letter-spacing:.12em;text-transform:uppercase}
+.strip{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.strip::-webkit-scrollbar{display:none}
+.strip:empty::before{content:"No rolls yet";color:var(--muted);font-size:.85rem}
+.strip span{flex:none;display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;
+  white-space:nowrap;font-variant-numeric:tabular-nums;font-size:.85rem}
+.strip span:first-child{border-color:var(--hit)}
+.strip b{color:var(--hit);font-weight:800}
+.strip small{color:var(--muted);font-size:.78rem}
+.hrow .ghost{padding:6px 10px;font-size:.8rem}
+@media (orientation:landscape) and (min-width:700px){
+  .main{flex-direction:row}
+  .side{width:clamp(270px,28vw,340px);justify-content:center}
+  .ctrls{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .ctrls.nohaptic{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ctrls .step{grid-column:1/-1;justify-content:space-between}
+  .hint{display:none}
+  .total{flex-direction:column;align-items:center;gap:4px}
+  .total b{font-size:clamp(3rem,10vh,5.5rem)}
+}
+/* Full screen: dice + total + roll only; tap anywhere (except a button) = roll */
+.focus{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;gap:2vh;cursor:pointer;
+  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+  height:100vh;height:100dvh;
+  padding:calc(68px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.focus .farea{flex:1 1 0;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px}
+.focus .ftot{text-align:center;font:400 min(15vmin,8rem)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums}
+.focus .ftot.idle{font:800 min(6vmin,2rem)/1.4 var(--body);color:var(--muted)}
+.focus .ftot.busy{opacity:.45}
+.focus .fbar{display:flex;align-items:center;justify-content:center;gap:min(5vw,40px)}
+.focus .ftot{flex:0 1 auto;min-width:2ch}
+.focus .roll{flex:0 1 420px;min-width:0;font-size:min(7vmin,2.2rem);padding:min(3vmin,20px)}
+.focus .fx{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));
+  width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:800 1.2rem var(--body);cursor:pointer}
+.focus .die{cursor:pointer}
+@media (orientation:landscape) and (max-height:500px){.focus{padding-top:calc(14px + env(safe-area-inset-top,0px));padding-right:calc(68px + env(safe-area-inset-right,0px))}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <a class="home" href="/">← chiefke.com</a>
+    <h1>Chief<span>Dice</span></h1>
+  </header>
+  <div class="main">
+    <section class="area" id="area" aria-label="Dice — tap a die to hold it, tap the table to roll">
+      <div class="dice" id="dice"></div>
+    </section>
+    <div class="side">
+      <p class="hint">Tap a die to hold it · tap the table or press Space to roll</p>
+      <div class="total"><span class="tl">Total</span><b id="total" aria-live="polite">Tap to roll</b></div>
+      <div class="actions">
+        <button class="roll" id="roll" type="button">Roll</button>
+        <button class="ghost" id="release" type="button">Release all</button>
+      </div>
+      <div class="ctrls" id="ctrls">
+        <div class="step" role="group" aria-label="Number of dice">
+          <button id="minus" type="button" aria-label="Fewer dice">−</button>
+          <output id="cnt">2 dice</output>
+          <button id="plus" type="button" aria-label="More dice">+</button>
+        </div>
+        <button class="ghost" id="sound" type="button" aria-pressed="false">Sound</button>
+        <button class="ghost" id="haptic" type="button" aria-pressed="false">Haptic</button>
+        <button class="ghost" id="full" type="button">Full screen</button>
+      </div>
+      <div class="hrow">
+        <span class="hl">Last 10</span>
+        <div class="strip" id="hist" aria-label="Last 10 rolls, newest first"></div>
+        <button class="ghost" id="clear" type="button">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="focus" id="focus" hidden role="dialog" aria-label="Full-screen dice">
+  <button class="fx" id="fClose" type="button" aria-label="Close full screen">✕</button>
+  <div class="farea" id="fArea"><div class="dice" id="fDice"></div></div>
+  <div class="fbar"><div class="ftot" id="fTotal" aria-live="polite"></div><button class="roll" id="fRoll" type="button">Roll</button></div>
+</div>
+
+<script>
+(()=>{
+const KEY="chief-dice-v1",MIN=1,MAX=10,ANIM=600,TICK=75,HMAX=10;
+const S={count:2,sound:false,haptic:false,values:[],held:[],hist:[],rolled:false};
+let rolling=false,shown=[],shuffleT=0,animT=0,rollCount=0,msg="",msgT=0;
+const $=id=>document.getElementById(id);
+const RM=window.matchMedia?matchMedia("(prefers-reduced-motion: reduce)"):{matches:false};
+const canVibrate=typeof navigator.vibrate==="function";
+
+/* Fair die: crypto.getRandomValues + rejection sampling (no modulo bias). Math.random is never used on this page. */
+function rnd(n){const a=new Uint32Array(1),lim=Math.floor(0x100000000/n)*n;let x;do{crypto.getRandomValues(a);x=a[0]}while(x>=lim);return x%n}
+const die=()=>rnd(6)+1;
+const okVal=v=>Number.isInteger(v)&&v>=1&&v<=6;
+const sum=a=>a.reduce((x,y)=>x+y,0);
+
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){
+  let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  if(s&&typeof s==="object"){
+    if(Number.isInteger(s.count)&&s.count>=MIN&&s.count<=MAX)S.count=s.count;
+    S.sound=s.sound===true;S.haptic=s.haptic===true;
+    if(Array.isArray(s.values)&&s.values.length===S.count&&s.values.every(okVal)){
+      S.values=s.values.slice();S.rolled=s.rolled===true;
+      if(Array.isArray(s.held)&&s.held.length===S.count)S.held=s.held.map(x=>x===true);
+    }
+    if(Array.isArray(s.hist))S.hist=s.hist.filter(h=>h&&Array.isArray(h.v)&&h.v.length>=MIN&&h.v.length<=MAX&&h.v.every(okVal))
+      .slice(0,HMAX).map(h=>({v:h.v.slice()}));
+  }
+  resize();
+}
+function resize(){
+  while(S.values.length<S.count)S.values.push(die());
+  S.values.length=S.count;
+  if(S.held.length!==S.count)S.held=Array(S.count).fill(false);
+}
+
+/* Faces: SVG pips on a 100×100 die */
+const P={tl:[27,27],tr:[73,27],ml:[27,50],c:[50,50],mr:[73,50],bl:[27,73],br:[73,73]};
+const F={1:["c"],2:["tr","bl"],3:["tr","c","bl"],4:["tl","tr","bl","br"],5:["tl","tr","c","bl","br"],6:["tl","tr","ml","mr","bl","br"]};
+function face(v){
+  const pips=v===1?'<circle class="one" cx="50" cy="50" r="13"/>':F[v].map(k=>`<circle cx="${P[k][0]}" cy="${P[k][1]}" r="9.5"/>`).join("");
+  return `<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><rect x="2" y="2" width="96" height="96" rx="18"/>${pips}</svg>`;
+}
+
+/* Fit: pick the column count that gives the biggest square die inside the area (gap 14 %, room for HOLD badge + outline) */
+const G=.14,RX=.14,RY=.2;
+function fit(box,maxS){
+  const area=box.parentElement;if(!area)return;
+  const cs=getComputedStyle(area);
+  const w=area.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+  const h=area.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+  if(w<=0||h<=0)return;
+  const n=box.children.length||S.count;let best=0,bc=1;
+  for(let c=1;c<=n;c++){const r=Math.ceil(n/c);const s=Math.min(w/(c+G*(c-1)+RX),h/(r+G*(r-1)+RY));if(s>best+.01){best=s;bc=c}}
+  const s=Math.max(24,Math.floor(Math.min(best,maxS)));
+  box.style.setProperty("--s",s+"px");
+  box.style.width=Math.ceil(bc*s+(bc-1)*s*G+1)+"px";
+}
+function fitAll(){fit($("dice"),380);if(!$("focus").hidden)fit($("fDice"),460)}
+
+function renderDice(box,interactive){
+  const n=S.count,vals=rolling?shown:S.values;let rebuilt=false;
+  if(box.children.length!==n){
+    box.innerHTML="";rebuilt=true;
+    for(let i=0;i<n;i++){
+      const d=document.createElement(interactive?"button":"div");
+      d.className="die";d.dataset.i=i;if(interactive)d.type="button";
+      d.innerHTML='<span class="fc"></span><span class="hold">HOLD</span>';box.appendChild(d);
+    }
+  }
+  [...box.children].forEach((d,i)=>{
+    const v=vals[i];
+    if(d.dataset.v!==String(v)){d.firstChild.innerHTML=face(v);d.dataset.v=v}
+    d.classList.toggle("held",S.held[i]);
+    if(interactive){d.setAttribute("aria-pressed",S.held[i]);d.setAttribute("aria-label",`Die ${i+1}: ${v}${S.held[i]?", held":""}`)}
+  });
+  if(rebuilt)fit(box,interactive?380:460);
+}
+
+function render(){
+  const n=S.count;
+  $("cnt").textContent=n+(n===1?" die":" dice");
+  $("minus").disabled=n<=MIN;$("plus").disabled=n>=MAX;
+  $("sound").setAttribute("aria-pressed",S.sound);$("haptic").setAttribute("aria-pressed",S.haptic);
+  $("release").disabled=!S.held.some(Boolean);
+  renderDice($("dice"),true);
+  if(!$("focus").hidden)renderDice($("fDice"),false);
+  let txt,idle=false;
+  if(rolling)txt="…";else if(msg){txt=msg;idle=true}else if(S.rolled)txt=String(sum(S.values));else{txt="Tap to roll";idle=true}
+  for(const t of [$("total"),$("fTotal")]){t.textContent=txt;t.classList.toggle("idle",idle);t.classList.toggle("busy",rolling)}
+  $("hist").innerHTML=S.hist.map(h=>`<span><b>${sum(h.v)}</b>${h.v.length>1?`<small>${h.v.join("·")}</small>`:""}</span>`).join("");
+  $("clear").disabled=!S.hist.length;
+}
+
+function flash(t){msg=t;clearTimeout(msgT);msgT=setTimeout(()=>{msg="";render()},1600);render()}
+function tumble(on){
+  for(const box of [$("dice"),$("fDice")])[...box.children].forEach((d,i)=>{
+    d.classList.remove("tumble");
+    if(on&&!S.held[i]){void d.offsetWidth;d.classList.add("tumble")}
+  });
+}
+
+/* Roll: held dice keep their value. Ignored while an animation runs (double tap = one roll). */
+function roll(opt){
+  if(rolling)return false;
+  if(S.held.length&&S.held.every(Boolean)){flash("All dice held");return false}
+  const target=S.values.map((v,i)=>S.held[i]?v:die());
+  const test=!!(opt&&opt.instant);
+  if(test||RM.matches){finish(target,!test);return true}
+  rolling=true;msg="";clearTimeout(msgT);
+  shown=S.values.slice();
+  sfx("rattle");buzz([12,40,12,40,12]);
+  render();tumble(true);
+  /* shuffle faces: always a different face than the one showing */
+  shuffleT=setInterval(()=>{shown=shown.map((v,i)=>S.held[i]?v:(v+rnd(5))%6+1);render()},TICK);
+  animT=setTimeout(()=>{clearInterval(shuffleT);rolling=false;finish(target,true)},ANIM);
+  return true;
+}
+function finish(target,fx){
+  S.values=target;shown=target.slice();S.rolled=true;rollCount++;
+  S.hist.unshift({v:target.slice()});if(S.hist.length>HMAX)S.hist.length=HMAX;
+  save();
+  if(fx)tumble(false);
+  render();
+  if(fx){sfx("land");buzz(25)}
+}
+function setCount(n){
+  if(rolling)return;
+  n=Math.max(MIN,Math.min(MAX,n));if(n===S.count)return;
+  S.count=n;S.held=[];S.rolled=false;msg="";resize();save();render();
+}
+function toggleHold(i){if(rolling||!(i>=0&&i<S.count))return;S.held[i]=!S.held[i];save();render();buzz(8)}
+
+/* Sound: short noise clicks through a band-pass filter (WebAudio, no files; noise from crypto too) */
+let ac=null,nb=null;
+function actx(){
+  try{
+    if(!ac){
+      const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
+      ac=new C();const len=Math.floor(ac.sampleRate*.05);nb=ac.createBuffer(1,len,ac.sampleRate);
+      const d=nb.getChannelData(0),u=new Uint8Array(len);
+      for(let o=0;o<len;o+=65536)crypto.getRandomValues(u.subarray(o,Math.min(len,o+65536)));
+      for(let i=0;i<len;i++)d[i]=(u[i]/127.5-1)*Math.pow(1-i/len,3);
+    }
+    if(ac.state==="suspended"){const p=ac.resume();if(p&&p.catch)p.catch(()=>{})}
+    return ac;
+  }catch(e){return null}
+}
+function click(t,f,g){
+  const s=ac.createBufferSource(),bp=ac.createBiquadFilter(),gn=ac.createGain();
+  s.buffer=nb;bp.type="bandpass";bp.frequency.value=f;bp.Q.value=1.2;gn.gain.value=g;
+  s.connect(bp);bp.connect(gn);gn.connect(ac.destination);s.start(t);
+}
+const RATTLE=[[0,2600,.5],[.07,1900,.45],[.15,3100,.4],[.22,2200,.45],[.31,2800,.35],[.39,1700,.4],[.47,2400,.3]];
+function sfx(kind){
+  if(!S.sound)return;const a=actx();if(!a)return;
+  try{const t=a.currentTime+.01;if(kind==="rattle")RATTLE.forEach(([dt,f,g])=>click(t+dt,f,g));else{click(t,900,.9);click(t+.05,1300,.5)}}catch(e){}
+}
+function buzz(p){if(S.haptic&&canVibrate)try{navigator.vibrate(p)}catch(e){}}
+
+/* Wake lock: only while full screen is open */
+let wake=null,wantWake=false;
+async function lock(){
+  wantWake=true;
+  try{if(!wake&&navigator.wakeLock){const w=await navigator.wakeLock.request("screen");
+    if(!wantWake){w.release().catch(()=>{});return}
+    wake=w;w.addEventListener("release",()=>{if(wake===w)wake=null})}}catch(e){}
+}
+function unlock(){wantWake=false;if(wake){const w=wake;wake=null;w.release().catch(()=>{})}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&wantWake)lock()});
+
+/* Full screen: fixed overlay that fills the viewport (iPhone has no Fullscreen API) + real full screen where available */
+function openFocus(){
+  $("focus").hidden=false;document.documentElement.classList.add("fopen");
+  try{document.activeElement&&document.activeElement.blur()}catch(e){}
+  $("fDice").innerHTML="";render();lock();
+  const el=document.documentElement;
+  try{const r=el.requestFullscreen?el.requestFullscreen():el.webkitRequestFullscreen&&el.webkitRequestFullscreen();if(r&&r.catch)r.catch(()=>{})}catch(e){}
+}
+function closeFocus(){
+  $("focus").hidden=true;document.documentElement.classList.remove("fopen");unlock();
+  try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});else if(document.webkitFullscreenElement)document.webkitExitFullscreen()}catch(e){}
+}
+const fsGone=()=>{if(!document.fullscreenElement&&!document.webkitFullscreenElement&&!$("focus").hidden)closeFocus()};
+document.addEventListener("fullscreenchange",fsGone);document.addEventListener("webkitfullscreenchange",fsGone);
+
+/* Tap rule: a click on (or inside) a button never rolls. Main view: die = hold/release, empty table = roll.
+   Full screen: anything but a button = roll (dice are not buttons there). */
+$("area").addEventListener("click",e=>{
+  const b=e.target.closest("button");
+  if(b){if(b.classList.contains("die"))toggleHold(+b.dataset.i);return}
+  roll();
+});
+$("focus").addEventListener("click",e=>{if(e.target.closest("button"))return;roll()});
+$("roll").onclick=()=>roll();
+$("fRoll").onclick=()=>roll();
+$("fClose").onclick=closeFocus;
+$("full").onclick=openFocus;
+$("release").onclick=()=>{if(rolling||!S.held.some(Boolean))return;S.held=Array(S.count).fill(false);save();render()};
+$("minus").onclick=()=>setCount(S.count-1);
+$("plus").onclick=()=>setCount(S.count+1);
+$("sound").onclick=()=>{S.sound=!S.sound;save();if(S.sound)actx();render()};
+$("haptic").onclick=()=>{S.haptic=!S.haptic;save();render();buzz(20)};
+$("clear").onclick=()=>{S.hist=[];save();render()};
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&!$("focus").hidden){e.preventDefault();closeFocus();return}
+  if(e.key!==" "&&e.key!=="Enter")return;
+  const t=e.target;if(t&&t.closest&&t.closest("button,a,input,select,textarea"))return;
+  e.preventDefault();if(!e.repeat)roll();
+});
+if(!canVibrate){$("haptic").hidden=true;$("ctrls").classList.add("nohaptic")}
+
+if(window.ResizeObserver){const ro=new ResizeObserver(fitAll);ro.observe($("area"));ro.observe($("fArea"))}
+window.addEventListener("resize",fitAll);
+
+/* Test/console hook */
+window.ChiefDice={roll,setCount,toggleHold,die,values:()=>S.values.slice(),held:()=>S.held.slice(),
+  hist:()=>S.hist.map(h=>h.v.slice()),rolls:()=>rollCount,isRolling:()=>rolling};
+
+load();render();fitAll();
+})();
+</script>
+</body>
+</html>

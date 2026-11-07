@@ -48,6 +48,7 @@ h1 span{color:var(--hit)}
 .meta b{color:var(--ink)}
 .bar{width:100%;height:6px;border-radius:999px;background:var(--hit-soft);overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--hit);border-radius:inherit}
+.barnote{width:100%;text-align:center;font-weight:800;font-size:.8rem;letter-spacing:.08em;color:var(--muted);margin-top:-8px}
 .recent{display:flex;gap:6px;min-height:34px;flex-wrap:wrap;justify-content:center}
 .recent span{min-width:34px;height:34px;padding:0 6px;border-radius:999px;border:2px solid var(--hit);color:var(--hit);
   display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-variant-numeric:tabular-nums;font-size:.9rem}
@@ -178,6 +179,7 @@ details.pl summary .rm.armed{border-color:#ff8a65;color:#ff8a65}
     <div id="ball" class="ball idle" aria-live="assertive"><span class="letter" id="letter"></span><span class="num" id="num">Ready</span></div>
     <div class="meta"><span id="count"><b>0</b> / 75 drawn</span><span>Game time <b id="clock">0:00</b></span></div>
     <div class="bar" id="bar" hidden><i id="barFill"></i></div>
+    <div class="barnote" id="barNote" hidden>waiting for announcement</div>
     <div class="recent" id="recent" aria-label="Previous balls"></div>
     <button class="draw" id="draw" type="button">Draw ball</button>
     <div class="auto">
@@ -244,7 +246,7 @@ const KEY="chief-bingo-v1";
 const STEPS=[3,5,8,10,15,20,30,45,60];
 let S={mode:75,order:[],idx:0,voice:false,interval:10,startedAt:null,endedAt:null,hist:10};
 const HIST=[10,5,0];
-let pendingMode=null, auto=false, wasAuto=false, due=0, timer=null, raf=0;
+let pendingMode=null, auto=false, wasAuto=false, due=0, timer=null, raf=0, annWait=false, annT=null;
 
 function rnd(n){const a=new Uint32Array(1);const lim=Math.floor(0x100000000/n)*n;let x;do{crypto.getRandomValues(a);x=a[0]}while(x>=lim);return x%n}
 function shuffle(n){const arr=Array.from({length:n},(_,i)=>i+1);for(let i=n-1;i>0;i--){const j=rnd(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
@@ -256,7 +258,7 @@ const $=id=>document.getElementById(id);
 const drawn=()=>S.order.slice(0,S.idx);
 const done=()=>S.idx>=S.mode;
 
-function newGame(mode){stopAuto();S.mode=mode;S.order=shuffle(mode);S.idx=0;S.startedAt=null;S.endedAt=null;save();buildGrid();render(false)}
+function newGame(mode){stopAuto();sqClear();S.mode=mode;S.order=shuffle(mode);S.idx=0;S.startedAt=null;S.endedAt=null;save();buildGrid();render(false)}
 
 function buildGrid(){
   const g=$("grid");g.innerHTML="";
@@ -301,41 +303,76 @@ function render(anim){
   $("auto").textContent=auto?"Pause auto":(S.idx&&!done()?"Resume auto":"Start auto");
   $("bar").hidden=!auto;$("fBar").hidden=!auto;
   $("fStatus").textContent=done()?"All balls drawn":(!auto&&wasAuto&&S.idx?"Paused · tap to resume":"");
+  showWait();
   renderPlayers();
   tickClock();
 }
 
-function speak(n){
-  if(!S.voice||!("speechSynthesis" in window))return;
-  try{
-    speechSynthesis.cancel();
-    const lang=navigator.language||"en";
-    const u=new SpeechSynthesisUtterance((letter(n)?letter(n)+" ":"")+n);
-    u.lang=lang;
-    const base=lang.slice(0,2).toLowerCase();
-    const vs=speechSynthesis.getVoices();
-    const v=vs.find(v=>v.lang===lang)||vs.find(v=>v.lang.slice(0,2).toLowerCase()===base);
-    if(v)u.voice=v;
-    u.rate=.95;speechSynthesis.speak(u);
-  }catch(e){}
+/* Speech queue: one utterance at a time, strictly in order (ball call, then that ball's win announcements).
+   speechSynthesis.cancel() only via sqClear(): New game, Undo, voice off, pagehide — never between draws.
+   Every utterance stays referenced in SQ.live until onend/onerror (iOS Safari drops onend of GC'd utterances).
+   Watchdog: no onend after max(4 s, 120 ms/char) → next item; paused → resume(). */
+const SQ={q:[],cur:null,live:new Set(),wd:0,rs:0};
+const hasTTS=()=>"speechSynthesis" in window;
+function enqueue(text,win,lang){
+  if(!S.voice||!hasTTS())return;
+  SQ.q.push({text,win,lang});
+  if(!SQ.cur)sqNext();
 }
+function sqNext(){
+  clearTimeout(SQ.wd);clearInterval(SQ.rs);SQ.cur=null;
+  const it=SQ.q.shift();
+  if(!it){sqIdle();return}
+  SQ.cur=it;
+  const next=()=>{if(SQ.cur===it)sqNext()};
+  SQ.wd=setTimeout(next,Math.max(4000,120*it.text.length));
+  try{
+    const u=new SpeechSynthesisUtterance(it.text);
+    u.lang=it.lang;u.rate=.95;
+    const base=it.lang.slice(0,2).toLowerCase(),vs=speechSynthesis.getVoices();
+    const v=vs.find(v=>v.lang===it.lang)||vs.find(v=>v.lang.slice(0,2).toLowerCase()===base);
+    if(v)u.voice=v;
+    const fin=()=>{SQ.live.delete(u);next()};
+    u.onend=fin;u.onerror=fin;
+    SQ.live.add(u);
+    speechSynthesis.speak(u);
+    SQ.rs=setInterval(()=>{try{if(speechSynthesis.paused)speechSynthesis.resume()}catch(e){}},500);
+  }catch(e){clearTimeout(SQ.wd);setTimeout(next,0)}
+}
+function sqClear(){
+  SQ.q=[];SQ.cur=null;clearTimeout(SQ.wd);clearInterval(SQ.rs);
+  if(hasTTS())try{speechSynthesis.cancel()}catch(e){}
+  SQ.live.clear();sqIdle();
+}
+const sqWinPending=()=>!!(SQ.cur&&SQ.cur.win)||SQ.q.some(x=>x.win);
+/* queue empty: an auto-draw that waited for a win announcement goes 1 s later */
+function sqIdle(){
+  if(!annWait||annT)return;
+  annT=setTimeout(()=>{annT=null;annWait=false;showWait();if(auto)drawOne()},1000);
+}
+function speak(n){enqueue((letter(n)?letter(n)+" ":"")+n,false,navigator.language||"en")}
 
 function drawOne(){
   if(done())return;
   if(!S.startedAt)S.startedAt=Date.now();
   S.idx++;
   if(done()){S.endedAt=Date.now();stopAuto()}
-  save();render(true);speak(S.order[S.idx-1]);keepAwake();
+  annWait=false;clearTimeout(annT);annT=null;
+  save();speak(S.order[S.idx-1]);render(true);keepAwake();
   if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}
   if(auto)schedule();
 }
 
-function schedule(){clearTimeout(timer);due=Date.now()+S.interval*1000;timer=setTimeout(drawOne,S.interval*1000);loop()}
+function schedule(){clearTimeout(timer);due=Date.now()+S.interval*1000;timer=setTimeout(autoTick,S.interval*1000);loop()}
+/* auto-draw never talks over a winner: wait until the speech queue is empty, then +1 s (sqIdle) */
+function autoTick(){if(!auto)return;if(sqWinPending()){annWait=true;showWait();return}drawOne()}
+function showWait(){const w=auto&&annWait;$("barNote").hidden=!w;
+  if(w)$("fStatus").textContent="Waiting for announcement";else if($("fStatus").textContent==="Waiting for announcement")$("fStatus").textContent=""}
 function loop(){cancelAnimationFrame(raf);const step=()=>{if(!auto)return;
   const p=Math.min(1,1-(due-Date.now())/(S.interval*1000));const w=(p*100).toFixed(1)+"%";
   $("barFill").style.width=w;$("fBarFill").style.width=w;raf=requestAnimationFrame(step)};step()}
 function startAuto(){if(done())return;auto=true;wasAuto=true;render(false);if(!S.idx)drawOne();else schedule();keepAwake()}
-function stopAuto(){auto=false;clearTimeout(timer);cancelAnimationFrame(raf);$("barFill").style.width="0";$("fBarFill").style.width="0";render(false)}
+function stopAuto(){auto=false;annWait=false;clearTimeout(annT);annT=null;clearTimeout(timer);cancelAnimationFrame(raf);$("barFill").style.width="0";$("fBarFill").style.width="0";render(false)}
 
 let wake=null;
 async function keepAwake(){try{if(!wake&&navigator.wakeLock){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>wake=null)}}catch(e){}}
@@ -369,8 +406,9 @@ $("draw").onclick=()=>{if(!auto)wasAuto=false;drawOne()};
 $("auto").onclick=()=>auto?stopAuto():startAuto();
 $("iMinus").onclick=()=>{const i=STEPS.indexOf(S.interval);if(i>0){S.interval=STEPS[i-1];save();render(false);if(auto)schedule()}};
 $("iPlus").onclick=()=>{const i=STEPS.indexOf(S.interval);if(i<STEPS.length-1){S.interval=STEPS[i+1];save();render(false);if(auto)schedule()}};
-$("undo").onclick=()=>{if(S.idx>0){stopAuto();S.idx--;S.endedAt=null;if(!S.idx)S.startedAt=null;save();render(false)}};
-$("voice").onclick=()=>{S.voice=!S.voice;save();render(false);if(S.voice&&S.idx)speak(S.order[S.idx-1])};
+$("undo").onclick=()=>{if(S.idx>0){stopAuto();sqClear();S.idx--;S.endedAt=null;if(!S.idx)S.startedAt=null;save();render(false)}};
+$("voice").onclick=()=>{S.voice=!S.voice;save();if(!S.voice)sqClear();render(false);if(S.voice&&S.idx)speak(S.order[S.idx-1])};
+window.addEventListener("pagehide",sqClear);
 $("full").onclick=openFocus;
 /* Copy calls: draw order, "B-12,I-23" (75) or "12,23" (90) */
 let copyT=null;
@@ -566,10 +604,7 @@ function toast(text){
   box.appendChild(t);while(box.children.length>4)box.removeChild(box.firstChild);
   setTimeout(()=>{if(t.parentNode)t.parentNode.removeChild(t)},4500);
 }
-function say(text){
-  if(!S.voice||!("speechSynthesis" in window))return;
-  try{const u=new SpeechSynthesisUtterance(text);u.lang="en";u.rate=.95;speechSynthesis.speak(u)}catch(e){}
-}
+function say(text){enqueue(text,true,"en")}
 function announce(p,a){
   const byPid=new Map();a.winners.forEach(w=>byPid.set(w.pid,(byPid.get(w.pid)||0)+1));
   byPid.forEach((n,pid)=>{

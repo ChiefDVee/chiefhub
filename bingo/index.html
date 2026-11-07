@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0a">
 <title>ChiefBingo</title>
-<meta name="description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer and a full-screen caller view.">
+<meta name="description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer, a full-screen caller view and live scoring for Chief Bingo cards.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;600;800&display=swap">
 <style>
@@ -114,6 +114,49 @@ footer{color:var(--muted);font-size:.8rem;text-align:center}
 .focus .fs{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:.85rem;color:var(--muted)}
 .focus .fb{position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--line)}
 .focus .fb i{display:block;height:100%;width:0;background:var(--hit)}
+/* Own cards: players panel, live scoring, toasts */
+.players{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.players h2,.players h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0}
+.players h3{margin-top:4px}
+.pnote{margin:0;color:var(--muted);font-size:.9rem}
+.pnote:empty,.perr:empty{display:none}
+.pform{display:grid;grid-template-columns:minmax(0,1fr) 8.5em;gap:8px}
+.pform label{display:flex;flex-direction:column;gap:4px;font:600 .72rem var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.pform .wide{grid-column:1/-1}
+.pform input{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:600 1rem var(--body);min-width:0;width:100%;text-transform:none;letter-spacing:0}
+.pform input:focus-visible{outline:3px solid var(--hit);outline-offset:1px}
+.pform button{grid-column:1/-1;border:0;border-radius:12px;background:var(--hit);color:var(--dauber-ink);font:800 1rem var(--body);padding:12px;cursor:pointer}
+.perr{margin:0;color:#ff8a65;font-weight:600;font-size:.9rem}
+.tw{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.88rem}
+table.t th{text-align:left;color:var(--muted);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;padding:6px 4px;border-bottom:1px solid var(--line)}
+table.t td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t .n{text-align:right;white-space:nowrap}
+table.t tr.lead td{color:var(--hit);font-weight:800}
+table.t .dim{color:var(--muted)}
+table.t small{color:var(--muted);font-weight:600}
+.bonus{color:var(--hit);font-weight:800}
+details.pl{border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+details.pl+details.pl{margin-top:8px}
+details.pl summary{list-style:none;display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer}
+details.pl summary::-webkit-details-marker{display:none}
+details.pl summary::before{content:"▸";color:var(--muted)}
+details.pl[open] summary::before{content:"▾"}
+details.pl summary .nm{font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+details.pl summary .pts{color:var(--hit);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+details.pl summary .rm{border:1px solid var(--line);background:none;color:var(--muted);border-radius:999px;padding:4px 10px;font:600 .8rem var(--body);cursor:pointer;white-space:nowrap}
+details.pl summary .rm.armed{border-color:#ff8a65;color:#ff8a65}
+.minis{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;padding:0 12px 12px}
+.mini{display:flex;flex-direction:column;gap:4px}
+.mini .mg{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
+.mini .mg span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;font:700 .72rem var(--body);background:var(--paper);color:var(--muted);font-variant-numeric:tabular-nums}
+.mini .mg .h{aspect-ratio:auto;background:none;color:var(--hit);font:400 .8rem var(--display)}
+.mini .mg .on{background:var(--hit);color:var(--dauber-ink)}
+.mini .cap{display:flex;justify-content:space-between;gap:6px;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.mini .cap b{color:var(--hit)}
+.toasts{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+.toast{background:var(--hit);color:var(--dauber-ink);font-weight:800;border-radius:999px;padding:10px 18px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:100%;text-align:center;animation:pop .35s ease-out}
+@media (prefers-reduced-motion:reduce){.toast{animation:none}}
 </style>
 </head>
 <body>
@@ -124,6 +167,10 @@ footer{color:var(--muted);font-size:.8rem;text-align:center}
     <div class="seg" role="group" aria-label="Game type">
       <button id="m75" type="button">75 balls</button>
       <button id="m90" type="button">90 balls</button>
+    </div>
+    <div class="seg" role="group" aria-label="Cards">
+      <button id="cBought" type="button">Bought cards</button>
+      <button id="cOwn" type="button">Own cards</button>
     </div>
   </header>
 
@@ -158,8 +205,29 @@ footer{color:var(--muted);font-size:.8rem;text-align:center}
     <h2>Check board</h2>
     <div class="grid" id="grid"></div>
   </section>
-  <footer>Balls are shuffled with crypto.getRandomValues when a game starts. Your game is saved on this device.</footer>
+
+  <section class="players" id="players" hidden>
+    <h2>Players</h2>
+    <p class="pnote" id="pNote"></p>
+    <form class="pform" id="pForm" autocomplete="off" novalidate>
+      <label>Name<input id="pName" maxlength="30" autocomplete="off"></label>
+      <label>Set<input id="pSet" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD"></label>
+      <label class="wide">Cards<input id="pCards" autocapitalize="characters" placeholder="9-12 · 9,10,11,12 · CB-20261107-0009..0012"></label>
+      <button type="submit" id="pAdd">Add player</button>
+    </form>
+    <p class="perr" id="pErr" role="alert"></p>
+    <div id="pBody" hidden>
+      <h3>Scoreboard</h3>
+      <div class="tw" id="pScore"></div>
+      <h3>Patterns</h3>
+      <div class="tw" id="pPat"></div>
+      <h3>Cards</h3>
+      <div id="pList"></div>
+    </div>
+  </section>
+  <footer>Balls are shuffled with crypto.getRandomValues when a game starts. Your game is saved on this device. Own-card players and card numbers stay on this device too.</footer>
 </div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
 
 <div class="focus" id="focus" hidden role="dialog" aria-label="Caller view">
   <button class="fx" id="fClose" type="button" aria-label="Close full screen">✕</button>
@@ -233,6 +301,7 @@ function render(anim){
   $("auto").textContent=auto?"Pause auto":(S.idx&&!done()?"Resume auto":"Start auto");
   $("bar").hidden=!auto;$("fBar").hidden=!auto;
   $("fStatus").textContent=done()?"All balls drawn":(!auto&&wasAuto&&S.idx?"Paused · tap to resume":"");
+  renderPlayers();
   tickClock();
 }
 
@@ -332,6 +401,241 @@ $("m75").onclick=()=>{if(S.mode!==75)ask(75,"Switch to 75 balls? The current gam
 $("m90").onclick=()=>{if(S.mode!==90)ask(90,"Switch to 90 balls? The current game ends.")};
 $("cNo").onclick=()=>{$("confirm").hidden=true;pendingMode=null};
 $("cYes").onclick=()=>{$("confirm").hidden=true;wasAuto=false;newGame(pendingMode);pendingMode=null};
+
+/* Own cards: Chief Bingo cards (CB-YYYYMMDD-NNNN) rebuilt in the browser + live scoring.
+   Card algorithm + salt + scoring = chief-bingo (toolbox engine); cross-language contract = the VECTORS below.
+   Scoring is always recomputed from S.order/S.idx, so undo, reload and new game stay correct. */
+const PKEY="chief-bingo-players-v1";
+const CB={salt:"chiefbingo-7f94793c3690cd51",bonus:67,mult:2,tie:"both",
+  patterns:[{"key":"row","label":"Horizontal line","points":20},{"key":"col","label":"Vertical line","points":20},{"key":"outer","label":"Outer lines B+O","points":40},{"key":"corners","label":"4 corners","points":40},{"key":"cross","label":"Cross (X)","points":60},{"key":"plus","label":"Plus (+)","points":60},{"key":"full","label":"Full card","points":100}]};
+const VECTORS=[
+["CB-20261107-0001", "8,23,39,48,75,15,30,33,60,64,4,25,0,56,71,3,28,42,50,70,10,22,31,53,65"],
+["CB-20261107-0002", "9,22,38,53,74,1,20,34,51,68,10,19,0,60,71,3,24,43,48,72,14,18,31,58,63"],
+["CB-20261107-0003", "13,27,39,47,72,14,24,42,54,66,15,29,0,53,70,12,20,35,49,74,6,16,41,48,62"],
+["CB-20261107-0004", "6,23,41,57,62,10,16,31,54,74,14,30,0,46,68,2,22,39,52,70,3,25,35,60,67"],
+["CB-20261107-0005", "12,22,34,48,64,5,21,37,60,75,10,18,0,59,73,4,20,32,49,65,8,23,33,50,74"],
+["CB-20261107-0006", "11,17,41,52,68,7,28,35,60,70,10,26,0,46,65,12,24,37,55,71,3,19,31,59,64"],
+["CB-20261107-0007", "9,21,35,59,65,13,30,31,57,75,3,17,0,54,61,12,23,36,60,73,10,26,44,51,71"],
+["CB-20261107-0008", "15,29,33,55,73,10,20,41,59,74,6,16,0,47,67,1,17,43,48,72,3,28,42,60,66"],
+["CB-20261107-0009", "15,21,43,50,71,7,20,41,47,72,13,16,0,56,65,14,28,45,52,70,8,22,38,48,69"],
+["CB-20261107-0010", "8,23,38,57,74,15,27,42,56,63,10,28,0,48,68,7,19,44,55,65,2,30,34,52,71"],
+["CB-20261107-0011", "2,21,42,50,67,8,29,40,49,73,12,25,0,54,66,15,26,39,55,62,10,23,31,57,75"],
+["CB-20261107-0012", "11,16,38,53,67,15,17,31,49,68,12,20,0,47,66,1,24,35,48,65,2,19,44,58,72"],
+["CB-20261107-0099", "14,28,43,56,64,2,29,40,53,61,5,23,0,48,67,11,17,31,59,71,3,20,37,52,70"],
+["CB-20261107-9999", "7,30,34,60,66,2,28,43,51,75,9,16,0,47,63,3,25,41,59,62,1,29,32,49,68"],
+["CB-20261101-0001", "6,22,32,49,74,12,28,35,59,62,10,26,0,46,63,14,20,45,53,61,3,29,31,56,65"],
+["CB-20261224-0001", "14,23,40,47,71,3,20,38,49,75,13,29,0,60,68,2,16,43,53,64,9,26,44,50,63"],
+["CB-20261224-0002", "10,25,41,52,69,13,17,36,58,65,14,30,0,55,61,11,27,32,48,68,2,23,44,60,75"],
+["CB-20261224-0003", "15,29,34,51,64,3,24,45,58,62,13,30,0,52,72,1,20,35,47,71,4,22,43,50,73"],
+["CB-20261224-0004", "10,17,37,57,64,7,20,43,58,71,1,18,0,59,63,12,30,35,54,66,3,23,45,55,61"],
+["CB-20270101-0042", "13,16,31,52,75,8,24,39,47,73,5,22,0,54,67,10,25,42,59,69,2,27,37,51,61"]];
+let P={own:false,set:"",players:[]};
+const grids=new Map();
+let selftest=null,building=false,scoredIdx=-1;
+
+function today(){const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function psave(){try{localStorage.setItem(PKEY,JSON.stringify(P))}catch(e){}}
+function pload(){
+  try{const p=JSON.parse(localStorage.getItem(PKEY));
+    if(p&&Array.isArray(p.players)){P.own=!!p.own;P.set=validSet(p.set)?p.set:"";
+      P.players=p.players.filter(x=>x&&typeof x.name==="string"&&Array.isArray(x.cards))
+        .map(x=>({id:String(x.id||uid()),name:x.name.slice(0,30),cards:x.cards.filter(c=>/^CB-\d{8}-\d{4}$/.test(c)),open:x.open!==false}))}
+  }catch(e){}
+  if(!P.set)P.set=today();
+}
+function validSet(s){
+  if(!/^\d{8}$/.test(s||""))return false;
+  const y=+s.slice(0,4),m=+s.slice(4,6),d=+s.slice(6),t=new Date(Date.UTC(y,m-1,d));
+  return t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d;
+}
+/* "9-12" · "9,10,11,12" · "CB-20261107-0009" · "CB-20261107-0009..0012" (short forms use the Set field) */
+function parseCards(text,set){
+  const out=[];
+  for(const tok of String(text).toUpperCase().split(/[\s,;]+/).filter(Boolean)){
+    let s,a,b,m=tok.match(/^CB-(\d{8})-(\d{4})(?:(?:\.\.|-)(?:CB-(\d{8})-)?(\d{4}))?$/);
+    if(m){s=m[1];a=+m[2];b=m[4]?+m[4]:a;if(m[3]&&m[3]!==s)throw`${tok}: start and end are in different sets`}
+    else{
+      m=tok.match(/^(\d{1,4})(?:(?:\.\.|-)(\d{1,4}))?$/);
+      if(!m)throw`Not a card number: ${tok}`;
+      if(!validSet(set))throw"Set must be a date YYYYMMDD";
+      s=set;a=+m[1];b=m[2]?+m[2]:a;
+    }
+    if(!validSet(s))throw`Invalid set in ${tok}`;
+    if(a<1||b<a)throw`Invalid range: ${tok}`;
+    if(out.length+b-a+1>100)throw"Max 100 cards per player";
+    for(let k=a;k<=b;k++)out.push(`CB-${s}-${String(k).padStart(4,"0")}`);
+  }
+  if(!out.length)throw"Enter at least one card";
+  const dup=out.find((c,i)=>out.indexOf(c)!==i);if(dup)throw`${dup} is listed twice`;
+  return out;
+}
+const te=new TextEncoder();
+async function hidx(id,c,i){
+  const h=new Uint8Array(await crypto.subtle.digest("SHA-256",te.encode(`${CB.salt}|${id}|${c}|${i}`)));
+  return (h[0]*16777216+h[1]*65536+h[2]*256+h[3])%(i+1);
+}
+async function buildCard(id){
+  const g=[0,1,2,3,4].map(()=>[0,0,0,0,0]);
+  for(let c=0;c<5;c++){
+    const nums=Array.from({length:15},(_,k)=>15*c+k+1),is=[];
+    for(let i=14;i>0;i--)is.push(i);
+    const js=await Promise.all(is.map(i=>hidx(id,c,i)));
+    is.forEach((i,k)=>{const j=js[k];[nums[i],nums[j]]=[nums[j],nums[i]]});
+    (c===2?[0,1,3,4]:[0,1,2,3,4]).forEach((r,k)=>{g[r][c]=nums[k]});
+  }
+  return g;
+}
+async function runSelftest(){
+  if(selftest!==null)return selftest;
+  try{selftest=!!(window.crypto&&crypto.subtle)&&(await Promise.all(VECTORS.map(async([id,flat])=>(await buildCard(id)).flat().join(",")===flat))).every(Boolean)}
+  catch(e){selftest=false}
+  return selftest;
+}
+async function ensureGrids(){
+  if(building)return;building=true;
+  try{
+    await runSelftest();
+    if(selftest){
+      const need=[...new Set(P.players.flatMap(p=>p.cards))].filter(id=>!grids.has(id));
+      const built=await Promise.all(need.map(buildCard));
+      need.forEach((id,k)=>grids.set(id,built[k]));
+    }
+  }catch(e){selftest=false}
+  building=false;renderPlayers();
+}
+const PAT={
+  row:m=>m.some(r=>r.every(Boolean)),
+  col:m=>[0,1,2,3,4].some(c=>m.every(r=>r[c])),
+  outer:m=>m.every(r=>r[0]&&r[4]),
+  corners:m=>m[0][0]&&m[0][4]&&m[4][0]&&m[4][4],
+  cross:m=>[0,1,2,3,4].every(i=>m[i][i]&&m[i][4-i]),
+  plus:m=>m[2].every(Boolean)&&m.every(r=>r[2]),
+  full:m=>m.every(r=>r.every(Boolean))
+};
+const marksOf=(g,set)=>g.map(r=>r.map(v=>v===0||set.has(v)));
+/* Each pattern once per game, to the first card(s) completing it; ties = everyone full points; completing ball 67 = ×2 */
+function score(calls){
+  const cards=[];P.players.forEach(p=>p.cards.forEach(id=>cards.push({id,pid:p.id,g:grids.get(id)})));
+  const awards={},set=new Set();let open=CB.patterns.slice();
+  calls.forEach((ball,ix)=>{
+    set.add(ball);if(!open.length)return;
+    const mk=cards.map(c=>marksOf(c.g,set));
+    open=open.filter(p=>{
+      const w=cards.filter((c,k)=>PAT[p.key](mk[k]));if(!w.length)return true;
+      const bonus=ball===CB.bonus,pts=p.points*(bonus?CB.mult:1);
+      awards[p.key]={winners:w.map(c=>({id:c.id,pid:c.pid})),call:ix+1,ball,bonus,points:pts,each:CB.tie==="split"?pts/w.length:pts};
+      return false;
+    });
+  });
+  const perCard={},perPlayer={};
+  cards.forEach(c=>{perCard[c.id]=0});P.players.forEach(p=>{perPlayer[p.id]=0});
+  Object.values(awards).forEach(a=>a.winners.forEach(w=>{perCard[w.id]+=a.each;perPlayer[w.pid]+=a.each}));
+  return{awards,perCard,perPlayer};
+}
+const fmtPts=v=>Number.isInteger(v)?String(v):v.toFixed(2).replace(/\.?0+$/,"");
+const ballLabel=n=>`${"BINGO"[Math.floor((n-1)/15)]}-${n}`;
+function el(tag,props,kids){
+  const e=document.createElement(tag);
+  if(props)for(const k in props){if(k==="text")e.textContent=props[k];else if(k==="cls")e.className=props[k];else if(k.startsWith("data-"))e.setAttribute(k,props[k]);else e[k]=props[k]}
+  (kids||[]).forEach(c=>c!=null&&e.appendChild(typeof c==="string"?document.createTextNode(c):c));
+  return e;
+}
+function toast(text){
+  const box=$("toasts"),t=el("div",{cls:"toast",text});
+  box.appendChild(t);while(box.children.length>4)box.removeChild(box.firstChild);
+  setTimeout(()=>{if(t.parentNode)t.parentNode.removeChild(t)},4500);
+}
+function say(text){
+  if(!S.voice||!("speechSynthesis" in window))return;
+  try{const u=new SpeechSynthesisUtterance(text);u.lang="en";u.rate=.95;speechSynthesis.speak(u)}catch(e){}
+}
+function announce(p,a){
+  const byPid=new Map();a.winners.forEach(w=>byPid.set(w.pid,(byPid.get(w.pid)||0)+1));
+  byPid.forEach((n,pid)=>{
+    const pl=P.players.find(x=>x.id===pid);if(!pl)return;
+    toast(`${pl.name} — ${p.label} +${fmtPts(a.each*n)}`+(a.bonus?` · ×${CB.mult} BONUS ${CB.bonus}`:""));
+    say(`${pl.name}, ${p.label}`+(a.bonus?", double points":""));
+  });
+}
+function renderPlayers(){
+  const can=S.mode===75,show=P.own&&can,panel=$("players");
+  $("cOwn").disabled=!can;$("cOwn").textContent=can?"Own cards":"Own cards (75 only)";
+  $("cOwn").setAttribute("aria-pressed",show);$("cBought").setAttribute("aria-pressed",!show);
+  panel.hidden=!show;
+  if(!show){scoredIdx=S.idx;return}
+  if(selftest===false){
+    panel.dataset.selftest="fail";$("pForm").hidden=true;$("pBody").hidden=true;
+    $("pNote").textContent="This browser could not rebuild Chief Bingo cards (self-test failed). Use Bought cards.";return;
+  }
+  const missing=P.players.some(p=>p.cards.some(id=>!grids.has(id)));
+  if(selftest===null||missing){panel.dataset.ready="0";$("pNote").textContent="Preparing cards…";ensureGrids();return}
+  panel.dataset.selftest="ok";panel.dataset.ready="1";
+  $("pNote").textContent=P.players.length?"":"Add each player with the card numbers printed at the bottom of their Chief Bingo cards.";
+  $("pBody").hidden=!P.players.length;
+  const calls=drawn(),called=new Set(calls),sc=score(calls);
+  if(scoredIdx>=0&&S.idx===scoredIdx+1)CB.patterns.forEach(p=>{const a=sc.awards[p.key];if(a&&a.call===S.idx)announce(p,a)});
+  scoredIdx=S.idx;
+  const nameOf=pid=>(P.players.find(x=>x.id===pid)||{}).name||"?";
+  /* scoreboard */
+  const ranked=P.players.map((p,i)=>({p,i,pts:sc.perPlayer[p.id]})).sort((x,y)=>y.pts-x.pts||x.i-y.i);
+  const top=ranked.length?ranked[0].pts:0;
+  $("pScore").replaceChildren(el("table",{cls:"t"},[
+    el("thead",null,[el("tr",null,[el("th",{text:"#"}),el("th",{text:"Player"}),el("th",{cls:"n",text:"Cards"}),el("th",{cls:"n",text:"Points"})])]),
+    el("tbody",null,ranked.map((r,k)=>el("tr",{cls:top>0&&r.pts===top?"lead":"","data-player":r.p.name,"data-points":fmtPts(r.pts)},[
+      el("td",{text:String(k+1)}),el("td",{text:r.p.name}),el("td",{cls:"n",text:String(r.p.cards.length)}),el("td",{cls:"n",text:fmtPts(r.pts)})])))
+  ]));
+  /* pattern table */
+  $("pPat").replaceChildren(el("table",{cls:"t"},[
+    el("thead",null,[el("tr",null,[el("th",{text:"Pattern"}),el("th",{text:"Winner(s)"}),el("th",{cls:"n",text:"Ball #"}),el("th",{text:"Ball"}),el("th",{cls:"n",text:"Points"})])]),
+    el("tbody",null,CB.patterns.map(p=>{
+      const a=sc.awards[p.key];
+      if(!a)return el("tr",{"data-key":p.key,"data-points":"0"},[el("td",{text:p.label}),el("td",{cls:"dim",text:"—"}),el("td",{cls:"n dim",text:"—"}),el("td",{cls:"dim",text:"—"}),el("td",{cls:"n dim",text:String(p.points)})]);
+      const who=a.winners.map(w=>el("div",null,[nameOf(w.pid)+" ",el("small",{text:w.id.slice(-4)})]));
+      return el("tr",{"data-key":p.key,"data-call":String(a.call),"data-ball":String(a.ball),"data-points":fmtPts(a.each),"data-winners":a.winners.map(w=>w.id).join(",")},[
+        el("td",{text:p.label}),el("td",null,who),el("td",{cls:"n",text:String(a.call)}),el("td",{text:ballLabel(a.ball)}),
+        el("td",{cls:"n"},[fmtPts(a.points),a.bonus?el("span",{cls:"bonus",text:` ×${CB.mult}`}):null])]);
+    }))
+  ]));
+  /* players + mini-cards */
+  $("pList").replaceChildren(...P.players.map(p=>{
+    const rm=el("button",{cls:"rm",type:"button",text:"Remove"});
+    rm.onclick=e=>{e.preventDefault();e.stopPropagation();
+      if(rm.classList.contains("armed")){P.players=P.players.filter(x=>x.id!==p.id);psave();renderPlayers();return}
+      rm.classList.add("armed");rm.textContent="Tap again";setTimeout(()=>{rm.classList.remove("armed");rm.textContent="Remove"},3000)};
+    const d=el("details",{cls:"pl","data-pid":p.id},[
+      el("summary",null,[el("span",{cls:"nm",text:p.name}),el("span",{cls:"pts",text:fmtPts(sc.perPlayer[p.id])+" pt"}),rm]),
+      el("div",{cls:"minis"},p.cards.map(id=>{
+        const g=grids.get(id),cells=[..."BINGO"].map(L=>el("span",{cls:"h",text:L}));
+        g.forEach(r=>r.forEach(v=>cells.push(el("span",{cls:v===0||called.has(v)?"on":"",text:v===0?"★":String(v)}))));
+        return el("div",{cls:"mini","data-card":id},[el("div",{cls:"mg"},cells),
+          el("div",{cls:"cap"},[el("span",{text:id}),el("b",{text:fmtPts(sc.perCard[id])})])]);
+      }))
+    ]);
+    d.open=p.open;
+    d.addEventListener("toggle",()=>{p.open=d.open;psave()});
+    return d;
+  }));
+}
+$("pForm").addEventListener("submit",e=>{
+  e.preventDefault();e.stopPropagation();
+  const name=$("pName").value.trim();
+  try{
+    if(!name)throw"Enter a name";
+    if(P.players.some(p=>p.name.toLowerCase()===name.toLowerCase()))throw`${name} is already a player`;
+    if(P.players.length>=30)throw"Max 30 players";
+    const cards=parseCards($("pCards").value,$("pSet").value.trim());
+    const owner=new Map();P.players.forEach(p=>p.cards.forEach(c=>owner.set(c,p.name)));
+    const clash=cards.find(c=>owner.has(c));if(clash)throw`${clash} already belongs to ${owner.get(clash)}`;
+    P.players.push({id:uid(),name,cards,open:true});
+    P.set=cards[cards.length-1].slice(3,11);psave();
+    $("pName").value="";$("pCards").value="";$("pSet").value=P.set;$("pErr").textContent="";
+    renderPlayers();$("pName").focus();
+  }catch(err){$("pErr").textContent=String(err)}
+});
+$("cOwn").onclick=()=>{if(S.mode!==75)return;P.own=true;psave();render(false)};
+$("cBought").onclick=()=>{P.own=false;psave();render(false)};
+pload();$("pSet").value=P.set;
 
 if("speechSynthesis" in window)try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(e){}
 load();

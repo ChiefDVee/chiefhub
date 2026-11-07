@@ -436,11 +436,31 @@ let selftest=null,building=false,scoredIdx=-1;
 function today(){const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
 function psave(){try{localStorage.setItem(PKEY,JSON.stringify(P))}catch(e){}}
+/* Printed with the card algorithm from before 2026-11-07: their grids differ from what this page builds,
+   so they are never scored here. Mirror of the toolbox legacy list (15_BINGO/output/*_LEGACY_ALGO_ids.txt) — keep in sync. */
+const LEGACY=[{set:"20261107",from:1,to:16}];
+function isLegacy(id){const m=/^CB-(\d{8})-(\d{4})$/.exec(id);return !!m&&LEGACY.some(r=>r.set===m[1]&&+m[2]>=r.from&&+m[2]<=r.to)}
+function legacyMsg(ids){
+  return ids.length===1?`${ids[0]} is a printed legacy card — play it in Bought cards mode`
+    :`${ids.slice(0,3).join(", ")}${ids.length>3?` (+${ids.length-3} more)`:""} are printed legacy cards — play them in Bought cards mode`;
+}
+let loadMsg="";
 function pload(){
   try{const p=JSON.parse(localStorage.getItem(PKEY));
     if(p&&Array.isArray(p.players)){P.own=!!p.own;P.set=validSet(p.set)?p.set:"";
       P.players=p.players.filter(x=>x&&typeof x.name==="string"&&Array.isArray(x.cards))
-        .map(x=>({id:String(x.id||uid()),name:x.name.slice(0,30),cards:x.cards.filter(c=>/^CB-\d{8}-\d{4}$/.test(c)),open:x.open!==false}))}
+        .map(x=>({id:String(x.id||uid()),name:x.name.slice(0,30),cards:x.cards.filter(c=>/^CB-\d{8}-\d{4}$/.test(c)),open:x.open!==false}));
+      /* drop legacy cards from older saves; a player left without cards is removed (message once, then saved clean) */
+      const dropped=[],gone=[];
+      P.players=P.players.filter(x=>{
+        const keep=x.cards.filter(c=>!isLegacy(c));
+        if(keep.length===x.cards.length)return true;
+        dropped.push(...x.cards.filter(isLegacy));x.cards=keep;
+        if(!keep.length){gone.push(x.name);return false}
+        return true;
+      });
+      if(dropped.length){loadMsg=legacyMsg(dropped)+(gone.length?` · removed: ${gone.join(", ")}`:"");psave()}
+    }
   }catch(e){}
   if(!P.set)P.set=today();
 }
@@ -624,18 +644,20 @@ $("pForm").addEventListener("submit",e=>{
     if(!name)throw"Enter a name";
     if(P.players.some(p=>p.name.toLowerCase()===name.toLowerCase()))throw`${name} is already a player`;
     if(P.players.length>=30)throw"Max 30 players";
-    const cards=parseCards($("pCards").value,$("pSet").value.trim());
+    const parsed=parseCards($("pCards").value,$("pSet").value.trim());
+    const legacy=parsed.filter(isLegacy),cards=parsed.filter(c=>!isLegacy(c));
+    if(!cards.length)throw legacyMsg(legacy);
     const owner=new Map();P.players.forEach(p=>p.cards.forEach(c=>owner.set(c,p.name)));
     const clash=cards.find(c=>owner.has(c));if(clash)throw`${clash} already belongs to ${owner.get(clash)}`;
     P.players.push({id:uid(),name,cards,open:true});
     P.set=cards[cards.length-1].slice(3,11);psave();
-    $("pName").value="";$("pCards").value="";$("pSet").value=P.set;$("pErr").textContent="";
+    $("pName").value="";$("pCards").value="";$("pSet").value=P.set;$("pErr").textContent=legacy.length?legacyMsg(legacy):"";
     renderPlayers();$("pName").focus();
   }catch(err){$("pErr").textContent=String(err)}
 });
 $("cOwn").onclick=()=>{if(S.mode!==75)return;P.own=true;psave();render(false)};
 $("cBought").onclick=()=>{P.own=false;psave();render(false)};
-pload();$("pSet").value=P.set;
+pload();$("pSet").value=P.set;if(loadMsg)$("pErr").textContent=loadMsg;
 
 if("speechSynthesis" in window)try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(e){}
 load();

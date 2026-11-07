@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0a">
 <title>ChiefBingo</title>
-<meta name="description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer, a full-screen caller view and live scoring for Chief Bingo cards.">
+<meta name="description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer, a full-screen caller view, live scoring for Chief Bingo cards and a winner overlay that pauses auto-draw.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;600;800&display=swap">
 <style>
@@ -155,6 +155,41 @@ details.pl summary .rm.armed{border-color:#ff8a65;color:#ff8a65}
 .mini .mg .on{background:var(--hit);color:var(--dauber-ink)}
 .mini .cap{display:flex;justify-content:space-between;gap:6px;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .mini .cap b{color:var(--hit)}
+.pw{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);
+  border-radius:12px;padding:10px 14px;font:600 .9rem var(--body);cursor:pointer;text-align:left}
+.pw b{border-radius:999px;padding:3px 12px;font-weight:800;background:var(--line);color:var(--muted)}
+.pw[aria-pressed="true"] b{background:var(--hit);color:var(--dauber-ink)}
+/* Winner overlay: above the caller view (iPad full screen is the main target), one panel per (player, card, pattern) */
+html.wopen,html.wopen body{overflow:hidden}
+.win{position:fixed;inset:0;z-index:70;background:#0a0a0a;color:var(--ink);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  cursor:pointer;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;align-items:center;gap:2.2vh;
+  padding:calc(18px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  --gw:min(86vw,44vh)}
+.win .wt{font-family:var(--display);color:var(--hit);font-size:min(9vmin,4.5rem);line-height:1;letter-spacing:.04em}
+.win .wps{display:flex;flex-direction:column;align-items:center;gap:4vh;width:100%;margin:auto 0}
+.win .wcnt{margin-top:-1vh;color:var(--ink);font:800 min(3.4vmin,1.4rem) var(--body);letter-spacing:.06em}
+.win .wcnt:empty{display:none}
+.win .whint{margin:0;color:var(--muted);font:800 .85rem var(--body);letter-spacing:.14em;text-transform:uppercase}
+.wp{width:var(--gw);max-width:100%;display:flex;flex-direction:column;align-items:center;gap:1.1vh;text-align:center;min-width:0}
+.wp .wn{font-family:var(--display);line-height:1.02;color:var(--ink);overflow-wrap:anywhere;max-width:100%;
+  font-size:clamp(calc(var(--gw) * .14),calc(var(--gw) * 1.1 / var(--nc,6)),11vmin)}
+.wp .wpat{font:800 calc(var(--gw) * .095) var(--body);color:var(--hit);line-height:1.1}
+.wp .wmeta{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.35em .7em;font:800 calc(var(--gw) * .066) var(--body);font-variant-numeric:tabular-nums}
+.wp .wbon{background:var(--hit);color:var(--dauber-ink);border-radius:999px;padding:.12em .6em}
+.wp .wball{color:var(--muted)}
+.wg{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:calc(var(--gw) * .014);width:100%}
+.wg span{aspect-ratio:1;border-radius:calc(var(--gw) * .02);display:flex;align-items:center;justify-content:center;border:2px solid var(--line);
+  background:var(--paper);color:var(--muted);font:400 calc(var(--gw) * .085) var(--display);font-variant-numeric:tabular-nums}
+.wg .h{aspect-ratio:auto;border:0;background:none;color:var(--hit);padding-bottom:.1em}
+.wg .on{background:var(--hit-soft);border-color:var(--hit);color:var(--hit)}
+.wg .wc{background:#f7931a;border-color:#f7931a;color:#0a0a0a}
+.wg .free{font:800 calc(var(--gw) * .045) var(--body);letter-spacing:.04em}
+.wp .wid{font:700 calc(var(--gw) * .05) var(--body);color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+@media (orientation:landscape){
+  .win{--gw:min(86vw,44vh)}
+  .win .wps{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:3vh 4vw}
+  .win.multi{--gw:min(42vw,40vh)}
+}
 .toasts{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
 .toast{background:var(--hit);color:var(--dauber-ink);font-weight:800;border-radius:999px;padding:10px 18px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:100%;text-align:center;animation:pop .35s ease-out}
 @media (prefers-reduced-motion:reduce){.toast{animation:none}}
@@ -190,6 +225,7 @@ details.pl summary .rm.armed{border-color:#ff8a65;color:#ff8a65}
         <button id="iPlus" type="button" aria-label="Longer">+</button>
       </div>
     </div>
+    <button class="pw" id="pauseWin" type="button" aria-pressed="true" hidden><span>Pause on win</span><b id="pwState">On</b></button>
     <div class="tools">
       <button id="undo" type="button">Undo</button>
       <button id="voice" type="button" aria-pressed="false">Voice</button>
@@ -230,6 +266,12 @@ details.pl summary .rm.armed{border-color:#ff8a65;color:#ff8a65}
   <footer>Balls are shuffled with crypto.getRandomValues when a game starts. Your game is saved on this device. Own-card players and card numbers stay on this device too.</footer>
 </div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="win" id="win" hidden role="dialog" aria-modal="true" aria-label="Winner">
+  <span class="wt">BINGO!</span>
+  <span class="wcnt" id="wCount"></span>
+  <div class="wps" id="wPanels"></div>
+  <p class="whint">Tap anywhere to close</p>
+</div>
 
 <div class="focus" id="focus" hidden role="dialog" aria-label="Caller view">
   <button class="fx" id="fClose" type="button" aria-label="Close full screen">✕</button>
@@ -244,21 +286,22 @@ details.pl summary .rm.armed{border-color:#ff8a65;color:#ff8a65}
 (()=>{
 const KEY="chief-bingo-v1";
 const STEPS=[3,5,8,10,15,20,30,45,60];
-let S={mode:75,order:[],idx:0,voice:false,interval:10,startedAt:null,endedAt:null,hist:10};
+let S={mode:75,order:[],idx:0,voice:false,interval:10,startedAt:null,endedAt:null,hist:10,pauseWin:true,winOpen:null};
 const HIST=[10,5,0];
-let pendingMode=null, auto=false, wasAuto=false, due=0, timer=null, raf=0, annWait=false, annT=null;
+let pendingMode=null, auto=false, wasAuto=false, due=0, timer=null, raf=0, annWait=false, annT=null, winPause=false;
 
 function rnd(n){const a=new Uint32Array(1);const lim=Math.floor(0x100000000/n)*n;let x;do{crypto.getRandomValues(a);x=a[0]}while(x>=lim);return x%n}
 function shuffle(n){const arr=Array.from({length:n},(_,i)=>i+1);for(let i=n-1;i>0;i--){const j=rnd(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
 function letter(n){return S.mode===75?"BINGO"[Math.floor((n-1)/15)]:""}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.order)&&s.order.length===s.mode)S=Object.assign(S,s)}catch(e){}
-  if(!STEPS.includes(S.interval))S.interval=10;if(!HIST.includes(S.hist))S.hist=10}
+  if(!STEPS.includes(S.interval))S.interval=10;if(!HIST.includes(S.hist))S.hist=10;
+  if(typeof S.pauseWin!=="boolean")S.pauseWin=true;if(!Number.isInteger(S.winOpen)||S.winOpen<1||S.winOpen>S.idx)S.winOpen=null}
 const $=id=>document.getElementById(id);
 const drawn=()=>S.order.slice(0,S.idx);
 const done=()=>S.idx>=S.mode;
 
-function newGame(mode){stopAuto();sqClear();S.mode=mode;S.order=shuffle(mode);S.idx=0;S.startedAt=null;S.endedAt=null;save();buildGrid();render(false)}
+function newGame(mode){stopAuto();sqClear();S.mode=mode;S.order=shuffle(mode);S.idx=0;S.winOpen=null;S.startedAt=null;S.endedAt=null;save();buildGrid();render(false)}
 
 function buildGrid(){
   const g=$("grid");g.innerHTML="";
@@ -357,10 +400,11 @@ function drawOne(){
   if(!S.startedAt)S.startedAt=Date.now();
   S.idx++;
   if(done()){S.endedAt=Date.now();stopAuto()}
-  annWait=false;clearTimeout(annT);annT=null;
+  annWait=false;clearTimeout(annT);annT=null;winPause=false;
   save();speak(S.order[S.idx-1]);render(true);keepAwake();
   if(navigator.vibrate)try{navigator.vibrate(30)}catch(e){}
-  if(auto)schedule();
+  if(auto){if(winPause)stopAuto();else schedule()}
+  winPause=false;
 }
 
 function schedule(){clearTimeout(timer);due=Date.now()+S.interval*1000;timer=setTimeout(autoTick,S.interval*1000);loop()}
@@ -397,6 +441,7 @@ $("focus").addEventListener("click",e=>{
 $("fClose").onclick=e=>{e.stopPropagation();closeFocus()};
 $("fHist").onclick=e=>{e.stopPropagation();S.hist=HIST[(HIST.indexOf(S.hist)+1)%HIST.length];save();render(false)};
 document.addEventListener("keydown",e=>{
+  if(!$("win").hidden){if(e.key==="Escape"||e.key===" "||e.key==="Enter"){e.preventDefault();closeWin()}return}
   if(e.key==="Escape"&&!$("focus").hidden){closeFocus();return}
   if((e.key===" "||e.key==="Enter")&&!$("focus").hidden&&!e.target.closest("#focus button")){e.preventDefault();$("focus").click()}
 });
@@ -406,7 +451,8 @@ $("draw").onclick=()=>{if(!auto)wasAuto=false;drawOne()};
 $("auto").onclick=()=>auto?stopAuto():startAuto();
 $("iMinus").onclick=()=>{const i=STEPS.indexOf(S.interval);if(i>0){S.interval=STEPS[i-1];save();render(false);if(auto)schedule()}};
 $("iPlus").onclick=()=>{const i=STEPS.indexOf(S.interval);if(i<STEPS.length-1){S.interval=STEPS[i+1];save();render(false);if(auto)schedule()}};
-$("undo").onclick=()=>{if(S.idx>0){stopAuto();sqClear();S.idx--;S.endedAt=null;if(!S.idx)S.startedAt=null;save();render(false)}};
+$("undo").onclick=()=>{if(S.idx>0){stopAuto();sqClear();S.idx--;S.endedAt=null;if(!S.idx)S.startedAt=null;if(S.winOpen&&S.winOpen>S.idx)S.winOpen=null;save();render(false)}};
+$("pauseWin").onclick=()=>{S.pauseWin=!S.pauseWin;save();render(false)};
 $("voice").onclick=()=>{S.voice=!S.voice;save();if(!S.voice)sqClear();render(false);if(S.voice&&S.idx)speak(S.order[S.idx-1])};
 window.addEventListener("pagehide",sqClear);
 $("full").onclick=openFocus;
@@ -613,13 +659,65 @@ function announce(p,a){
     say(`${pl.name}, ${p.label}`+(a.bonus?", double points":""));
   });
 }
+/* Winner overlay: one panel per (player, card, pattern) completed by ball #S.winOpen.
+   Open until dismissed (survives reload); undo of that ball, New game or Bought cards close it.
+   A tap on it only closes it — it never draws or resumes (it sits above the caller view, so #focus never sees the click). */
+const PATCELLS={
+  row:m=>m.map(r=>{const f=r.every(Boolean);return r.map(()=>f)}),
+  col:m=>{const cs=[0,1,2,3,4].map(c=>m.every(r=>r[c]));return m.map(r=>r.map((_,c)=>cs[c]))},
+  outer:m=>m.map(r=>r.map((_,c)=>c===0||c===4)),
+  corners:m=>m.map((r,i)=>r.map((_,c)=>(i===0||i===4)&&(c===0||c===4))),
+  cross:m=>m.map((r,i)=>r.map((_,c)=>c===i||c===4-i)),
+  plus:m=>m.map((r,i)=>r.map((_,c)=>i===2||c===2)),
+  full:m=>m.map(r=>r.map(()=>true))
+};
+function hideWin(){const o=$("win");o.hidden=true;o.dataset.key="";document.documentElement.classList.remove("wopen")}
+function closeWin(){S.winOpen=null;save();hideWin()}
+function renderWin(sc){
+  const at=S.winOpen,o=$("win");
+  const pats=at?CB.patterns.filter(p=>{const a=sc.awards[p.key];return a&&a.call===at}):[];
+  if(!pats.length){if(at){S.winOpen=null;save()}hideWin();return}
+  const key=at+"|"+pats.map(p=>p.key+":"+sc.awards[p.key].winners.map(w=>w.id).join(",")).join(";");
+  if(!o.hidden&&o.dataset.key===key)return;
+  const set=new Set(S.order.slice(0,at)),panels=[];
+  pats.forEach(p=>{const a=sc.awards[p.key];a.winners.forEach(w=>{
+    const pl=P.players.find(x=>x.id===w.pid),g=grids.get(w.id);if(!pl||!g)return;
+    const mk=marksOf(g,set),hl=PATCELLS[p.key](mk),cells=[..."BINGO"].map(L=>el("span",{cls:"h",text:L}));
+    g.forEach((r,i)=>r.forEach((v,c)=>cells.push(el("span",{cls:(v===0?"free ":"")+(hl[i][c]?"wc":mk[i][c]?"on":""),
+      text:v===0?"FREE":String(v),"data-r":String(i),"data-c":String(c)}))));
+    const meta=[el("span",{cls:"wpts",text:`+${fmtPts(a.each)} pt`}),a.bonus?el("span",{cls:"wbon",text:`×${CB.mult} BONUS ${CB.bonus}`}):null,
+      el("span",{cls:"wball",text:`Ball ${ballLabel(a.ball)} · #${a.call}`})];
+    const d=el("div",{cls:"wp","data-player":pl.name,"data-card":w.id,"data-pattern":p.key,"data-points":fmtPts(a.each),
+      "data-bonus":a.bonus?"1":"0","data-ball":String(a.ball)},[
+      el("div",{cls:"wn",text:pl.name}),el("div",{cls:"wpat",text:p.label}),el("div",{cls:"wmeta"},meta),
+      el("div",{cls:"wg"},cells),el("div",{cls:"wid",text:w.id})]);
+    panels.push(d);
+  })});
+  if(!panels.length){hideWin();return}
+  $("wPanels").replaceChildren(...panels);
+  o.classList.toggle("multi",panels.length>1);
+  /* one name size for all panels (longest name), so the grids line up side by side */
+  o.style.setProperty("--nc",String(Math.max(4,...panels.map(d=>d.dataset.player.length))));
+  o.dataset.key=key;o.hidden=false;o.scrollTop=0;document.documentElement.classList.add("wopen");
+  $("wCount").textContent=panels.length>1?`${panels.length} wins`+(o.scrollHeight>o.clientHeight+4?" · scroll for more":""):"";
+}
+/* scrolling inside the overlay is not a tap: ignore a click when the pointer or the scroll position moved */
+let wDown=null;
+$("win").addEventListener("pointerdown",e=>{wDown={x:e.clientX,y:e.clientY,s:$("win").scrollTop}});
+$("win").addEventListener("click",e=>{
+  e.preventDefault();e.stopPropagation();
+  const d=wDown;wDown=null;
+  if(d&&(Math.abs(e.clientX-d.x)>10||Math.abs(e.clientY-d.y)>10||Math.abs($("win").scrollTop-d.s)>10))return;
+  closeWin();
+});
 function renderPlayers(){
   const can=S.mode===75,show=P.own&&can,panel=$("players");
   $("cOwn").disabled=!can;$("cOwn").textContent=can?"Own cards":"Own cards (75 only)";
   $("cOwn").setAttribute("aria-pressed",show);$("cBought").setAttribute("aria-pressed",!show);
   panel.hidden=!show;
-  if(!show){scoredIdx=S.idx;return}
-  if(selftest===false){
+  $("pauseWin").hidden=!show;$("pauseWin").setAttribute("aria-pressed",S.pauseWin);$("pwState").textContent=S.pauseWin?"On":"Off";
+  if(!show){scoredIdx=S.idx;hideWin();return}
+  if(selftest===false){hideWin();
     panel.dataset.selftest="fail";$("pForm").hidden=true;$("pBody").hidden=true;
     $("pNote").textContent="This browser could not rebuild Chief Bingo cards (self-test failed). Use Bought cards.";return;
   }
@@ -629,8 +727,13 @@ function renderPlayers(){
   $("pNote").textContent=P.players.length?"":"Add each player with the card numbers printed at the bottom of their Chief Bingo cards.";
   $("pBody").hidden=!P.players.length;
   const calls=drawn(),called=new Set(calls),sc=score(calls);
-  if(scoredIdx>=0&&S.idx===scoredIdx+1)CB.patterns.forEach(p=>{const a=sc.awards[p.key];if(a&&a.call===S.idx)announce(p,a)});
+  if(scoredIdx>=0&&S.idx===scoredIdx+1){
+    const won=CB.patterns.filter(p=>{const a=sc.awards[p.key];return a&&a.call===S.idx});
+    won.forEach(p=>announce(p,sc.awards[p.key]));
+    if(won.length){S.winOpen=S.idx;save();winPause=S.pauseWin}
+  }
   scoredIdx=S.idx;
+  renderWin(sc);
   const nameOf=pid=>(P.players.find(x=>x.id===pid)||{}).name||"?";
   /* scoreboard */
   const ranked=P.players.map((p,i)=>({p,i,pts:sc.perPlayer[p.id]})).sort((x,y)=>y.pts-x.pts||x.i-y.i);
@@ -691,7 +794,7 @@ $("pForm").addEventListener("submit",e=>{
   }catch(err){$("pErr").textContent=String(err)}
 });
 $("cOwn").onclick=()=>{if(S.mode!==75)return;P.own=true;psave();render(false)};
-$("cBought").onclick=()=>{P.own=false;psave();render(false)};
+$("cBought").onclick=()=>{P.own=false;psave();if(S.winOpen){S.winOpen=null;save()}render(false)};
 pload();$("pSet").value=P.set;if(loadMsg)$("pErr").textContent=loadMsg;
 
 if("speechSynthesis" in window)try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(e){}

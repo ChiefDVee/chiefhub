@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0a">
 <title>ChiefBingo</title>
-<meta name="description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer, a full-screen caller view, live scoring for Chief Bingo cards and a winner overlay that pauses auto-draw.">
+<meta name="description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer, a full-screen caller view, live scoring for Chief Bingo cards, a winner overlay that pauses auto-draw and printable A4 cards.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bowlby+One&family=Figtree:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap">
 <style>
 /* Layout: one column, big ball on top as thumb zone, board below — chiefke.com palette: black + bitcoin orange, dark only */
 :root{
@@ -193,6 +193,79 @@ html.wopen,html.wopen body{overflow:hidden}
 .toasts{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
 .toast{background:var(--hit);color:var(--dauber-ink);font-weight:800;border-radius:999px;padding:10px 18px;box-shadow:0 6px 24px rgba(0,0,0,.5);max-width:100%;text-align:center;animation:pop .35s ease-out}
 @media (prefers-reduced-motion:reduce){.toast{animation:none}}
+/* Print cards: setup + A4 print view — 2×2 cards + points legend per sheet, sizes in mm, mirrors the toolbox PDF (chief-bingo generate) */
+.tools button.wide{grid-column:1/-1}
+html.prv,html.prv body{overflow:hidden}
+.prset{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.75);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.prbox{max-width:480px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.prbox h2{margin:0;font:400 1.25rem var(--display)}
+.prbox label{display:flex;flex-direction:column;gap:4px;font:600 .72rem var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.prbox label small{text-transform:none;letter-spacing:0;font-weight:400;font-size:.8rem}
+.prbox input,.prbox textarea{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:600 1rem var(--body);width:100%;min-width:0;resize:vertical}
+.prbox input:focus-visible,.prbox textarea:focus-visible{outline:3px solid var(--hit);outline-offset:1px}
+.prrow{display:grid;grid-template-columns:9em minmax(0,1fr);gap:8px}
+.prbox .seg{align-self:flex-start}
+.prbtn{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.prbtn button,.prbar button{border:1px solid var(--line);border-radius:12px;padding:11px 16px;font:800 .95rem var(--body);cursor:pointer;background:var(--bg);color:var(--ink)}
+.prbtn .yes,.prbar .yes{background:var(--hit);color:var(--dauber-ink);border-color:var(--hit)}
+.prbtn button:disabled{opacity:.5;cursor:default}
+.prview{position:fixed;inset:0;z-index:80;background:#262626;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.prbar{position:sticky;top:0;z-index:1;background:var(--bg);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
+.prbar .prinfo{flex:1 1 100%;margin:0;color:var(--muted);font-weight:600;font-size:.9rem}
+.prbar .prinfo b{color:var(--ink)}
+.prbar .confirm,.prbar .pnote{flex:1 1 100%}
+.sheets{display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px 16px calc(28px + env(safe-area-inset-bottom,0px))}
+.sheet{zoom:var(--z,1);flex:none;width:210mm;height:293mm;padding:8mm;box-sizing:border-box;background:#fff;color:var(--text);
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:115.5mm 115.5mm 38mm;gap:4mm;overflow:hidden;
+  font-family:"Archivo Black","Arial Black",Impact,sans-serif;font-weight:400;box-shadow:0 2px 14px rgba(0,0,0,.55);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.th-ink{--tbg:#fff;--tfg:#1a1a1a;--hbg:#fff;--hfg:#1a1a1a;--cell:#fff;--cfg:#1a1a1a;--grid:#8c8c8c;--b:#1a1a1a;--fbg:#fff;--ffg:#ff7a00;
+  --acc:#ff7a00;--mut:#d9d9d9;--text:#1a1a1a;--sub:#6b6b6b;--hl:.35mm solid #1a1a1a}
+.th-chief{--tbg:#1a1a1a;--tfg:#ff7a00;--hbg:#1a1a1a;--hfg:#fff;--cell:#fff;--cfg:#1a1a1a;--grid:#a6a6a6;--b:#1a1a1a;--fbg:#ff7a00;--ffg:#1a1a1a;
+  --acc:#ff7a00;--mut:#d9d9d9;--text:#1a1a1a;--sub:#6b6b6b;--hl:0 solid transparent}
+.th-chief .ph span:nth-child(2),.th-chief .ph span:nth-child(4){background:#4d4d4d}
+.th-chief .ph span:nth-child(3){background:#ff7a00;color:#1a1a1a}
+.pc{border:.6mm solid var(--b);border-radius:2.5mm;overflow:hidden;display:flex;flex-direction:column;background:var(--cell);min-width:0;min-height:0}
+.pc .pt{flex:none;height:9mm;background:var(--tbg);color:var(--tfg);border-bottom:var(--hl);display:flex;align-items:center;justify-content:center;
+  font-size:5mm;line-height:1;white-space:nowrap;overflow:hidden;padding:0 2.5mm;letter-spacing:.02em}
+.pc .ph{flex:none;height:10mm;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-bottom:var(--hl)}
+.pc .ph span{display:flex;align-items:center;justify-content:center;font-size:6.7mm;line-height:1;background:var(--hbg);color:var(--hfg)}
+.pc .pg{flex:1;min-height:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(5,minmax(0,1fr))}
+.pc .pg span{display:flex;align-items:center;justify-content:center;font-size:8.5mm;line-height:1;color:var(--cfg);font-variant-numeric:tabular-nums;
+  border-bottom:.3mm solid var(--grid);border-left:.3mm solid var(--grid)}
+.pc .pg span:nth-child(5n+1){border-left:0}
+.pc .pg span.fr{background:var(--fbg);color:var(--ffg)}
+.pc .pg span.fr svg{width:10mm;height:10mm;fill:currentColor}
+.pc .pf{flex:none;height:6.5mm;display:flex;align-items:center;justify-content:space-between;gap:2mm;padding:0 2.5mm;min-width:0}
+.pc .pid{font:500 2.3mm "JetBrains Mono",ui-monospace,Menlo,monospace;color:var(--sub);white-space:nowrap;flex:none}
+.pc .pnm{font-size:3.5mm;line-height:1.1;color:var(--text);white-space:nowrap;overflow:hidden;min-width:0}
+.pc .pnl{display:flex;align-items:flex-end;gap:1.5mm;font:700 2.6mm var(--body);color:var(--text)}
+.pc .pnl i{display:block;width:24mm;height:2.4mm;border-bottom:.25mm solid var(--grid)}
+.leg{grid-column:1/-1;border-top:.4mm solid var(--b);display:flex;flex-direction:column;padding-top:2mm;min-height:0;overflow:hidden}
+.leg h4{margin:0;font-size:3.5mm;line-height:1;font-weight:400;color:var(--text);letter-spacing:.06em}
+.lg{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1mm;margin-top:1.6mm}
+.lg>div{display:flex;flex-direction:column;align-items:center;gap:1mm;min-width:0}
+.lg .ic{display:grid;grid-template-columns:repeat(5,2.1mm);grid-auto-rows:2.1mm;gap:.4mm}
+.lg .ic i{background:var(--mut)}
+.lg .ic i.a{background:var(--acc)}
+.lg .ll{font:700 2.8mm/1.15 var(--body);text-align:center;color:var(--text)}
+.lg .lp{font-size:4.6mm;line-height:1;color:var(--acc)}
+.lb{margin-top:auto;display:flex;align-items:baseline;gap:2mm}
+.lb b{flex:1;font-weight:400;font-size:3.6mm;line-height:1;color:var(--text);text-align:center}
+.lb small{font:500 2.1mm "JetBrains Mono",ui-monospace,Menlo,monospace;color:var(--sub);white-space:nowrap}
+@page{size:A4 portrait;margin:8mm}
+@media print{
+  html.prv,html.prv body{overflow:visible!important;height:auto!important;background:#fff!important;color:#000!important;color-scheme:light}
+  html.prv body{padding:0!important;margin:0!important}
+  html.prv body>*:not(#prView){display:none!important}
+  html.prv #prView{position:static!important;inset:auto;overflow:visible!important;background:#fff!important}
+  html.prv .prbar{display:none!important}
+  html.prv .sheets{display:block!important;padding:0!important}
+  html.prv .sheet{zoom:1!important;width:194mm;height:277mm;padding:0;box-shadow:none!important;margin:0!important;break-after:page;page-break-after:always;break-inside:avoid}
+  html.prv .sheet:last-child{break-after:auto;page-break-after:auto}
+}
 </style>
 </head>
 <body>
@@ -232,6 +305,7 @@ html.wopen,html.wopen body{overflow:hidden}
       <button id="full" type="button">Full screen</button>
       <button id="reset" type="button">New game</button>
       <button class="copy" id="copy" type="button" title="Copy drawn balls in draw order">Copy calls</button>
+      <button class="wide" id="print" type="button" title="Make new Chief Bingo cards: A4, 4 per page">Print cards</button>
     </div>
     <div class="confirm" id="confirm" hidden>
       <p id="confirmText">Start a new game?</p>
@@ -249,10 +323,11 @@ html.wopen,html.wopen body{overflow:hidden}
     <p class="pnote" id="pNote"></p>
     <form class="pform" id="pForm" autocomplete="off" novalidate>
       <label>Name<input id="pName" maxlength="30" autocomplete="off"></label>
-      <label>Set<input id="pSet" inputmode="numeric" maxlength="8" placeholder="YYYYMMDD"></label>
+      <label>Set<input id="pSet" maxlength="8" autocapitalize="characters" spellcheck="false" placeholder="YYYYMMDD / W…"></label>
       <label class="wide">Cards<input id="pCards" autocapitalize="characters" placeholder="9-12 · 9,10,11,12 · CB-20261107-0009..0012"></label>
       <button type="submit" id="pAdd">Add player</button>
     </form>
+    <p class="pnote" id="pSetNote"></p>
     <p class="perr" id="pErr" role="alert"></p>
     <div id="pBody" hidden>
       <h3>Scoreboard</h3>
@@ -263,7 +338,7 @@ html.wopen,html.wopen body{overflow:hidden}
       <div id="pList"></div>
     </div>
   </section>
-  <footer>Balls are shuffled with crypto.getRandomValues when a game starts. Your game is saved on this device. Own-card players and card numbers stay on this device too.</footer>
+  <footer>Balls are shuffled with crypto.getRandomValues when a game starts. Your game is saved on this device. Own-card players, printed names and card numbers stay on this device too.</footer>
 </div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div class="win" id="win" hidden role="dialog" aria-modal="true" aria-label="Winner">
@@ -280,6 +355,38 @@ html.wopen,html.wopen body{overflow:hidden}
   <div class="hside" id="fSide"><span class="hlabel" id="fLabel">Previous</span><div class="hist" id="fList"></div></div>
   <span class="fs" id="fStatus"></span>
   <div class="fb" id="fBar" hidden><i id="fBarFill"></i></div>
+</div>
+
+<div class="prset" id="prSetup" hidden role="dialog" aria-modal="true" aria-labelledby="prH">
+  <form class="prbox" id="prForm" autocomplete="off" novalidate>
+    <h2 id="prH">Print cards</h2>
+    <p class="pnote">A4, 4 cards per page. Every print makes a new card set, so the cards can be scored in Own cards.</p>
+    <label>Names <small>one page per name · optional · one per line</small><textarea id="prNames" rows="4" maxlength="2000" spellcheck="false"></textarea></label>
+    <div class="prrow">
+      <label>Unnamed pages<input id="prAnon" type="number" inputmode="numeric" min="0" max="30" step="1" value="1"></label>
+      <label>Title<input id="prTitle" maxlength="40" value="CHIEF'S BINGO"></label>
+    </div>
+    <div class="seg" role="group" aria-label="Theme">
+      <button id="prInk" type="button" aria-pressed="true">Ink saver</button>
+      <button id="prChief" type="button" aria-pressed="false">Chief</button>
+    </div>
+    <p class="perr" id="prErr" role="alert"></p>
+    <div class="prbtn"><button type="button" id="prCancel">Cancel</button><button type="submit" class="yes" id="prMake">Create cards</button></div>
+  </form>
+</div>
+<div class="prview" id="prView" hidden role="dialog" aria-modal="true" aria-label="Print view">
+  <div class="prbar">
+    <p class="prinfo" id="prInfo"></p>
+    <button class="yes" id="prPrint" type="button">Print / Save PDF</button>
+    <button id="prAdd" type="button">Add to Own cards</button>
+    <button id="prClose" type="button">Close</button>
+    <div class="confirm" id="prAsk" hidden>
+      <p id="prAskText"></p>
+      <div><button class="no" id="prAskNo" type="button">Cancel</button><button class="yes" id="prAskYes" type="button">Skip them, add the rest</button></div>
+    </div>
+    <p class="pnote" id="prMsg" role="status"></p>
+  </div>
+  <div class="sheets" id="prSheets"></div>
 </div>
 
 <script>
@@ -441,6 +548,7 @@ $("focus").addEventListener("click",e=>{
 $("fClose").onclick=e=>{e.stopPropagation();closeFocus()};
 $("fHist").onclick=e=>{e.stopPropagation();S.hist=HIST[(HIST.indexOf(S.hist)+1)%HIST.length];save();render(false)};
 document.addEventListener("keydown",e=>{
+  if(!$("prSetup").hidden||!$("prView").hidden){if(e.key==="Escape"){e.preventDefault();prCloseAll()}return}
   if(!$("win").hidden){if(e.key==="Escape"||e.key===" "||e.key==="Enter"){e.preventDefault();closeWin()}return}
   if(e.key==="Escape"&&!$("focus").hidden){closeFocus();return}
   if((e.key===" "||e.key==="Enter")&&!$("focus").hidden&&!e.target.closest("#focus button")){e.preventDefault();$("focus").click()}
@@ -512,13 +620,20 @@ const VECTORS=[
 ["CB-20261224-0002", "10,25,41,52,69,13,17,36,58,65,14,30,0,55,61,11,27,32,48,68,2,23,44,60,75"],
 ["CB-20261224-0003", "15,29,34,51,64,3,24,45,58,62,13,30,0,52,72,1,20,35,47,71,4,22,43,50,73"],
 ["CB-20261224-0004", "10,17,37,57,64,7,20,43,58,71,1,18,0,59,63,12,30,35,54,66,3,23,45,55,61"],
-["CB-20270101-0042", "13,16,31,52,75,8,24,39,47,73,5,22,0,54,67,10,25,42,59,69,2,27,37,51,61"]];
+["CB-20270101-0042", "13,16,31,52,75,8,24,39,47,73,5,22,0,54,67,10,25,42,59,69,2,27,37,51,61"],
+["CB-W7K2Q9-0001", "14,16,37,55,69,7,18,41,56,66,5,23,0,50,63,8,21,38,57,65,15,22,32,49,72"],
+["CB-W7K2Q9-0004", "8,27,45,54,61,2,18,35,46,70,10,22,0,56,63,15,28,44,58,64,5,16,34,50,66"],
+["CB-WZ0X9M-0100", "2,16,41,57,65,6,23,40,55,72,5,22,0,58,73,11,24,36,59,68,15,18,33,46,75"]];
 let P={own:false,set:"",players:[]};
+/* Set codes: YYYYMMDD = toolbox (chief-bingo generate), W + 5 Crockford base32 chars (no I/L/O/U) = printed on this page.
+   Same portable card algorithm for both, so the toolbox check/show rebuilds W cards too. */
+const WSET=/^W[0-9A-HJKMNP-TV-Z]{5}$/,CARD_RE=/^CB-(\d{8}|W[0-9A-HJKMNP-TV-Z]{5})-(\d{4})$/;
+const isWSet=s=>WSET.test(s||"");
 const grids=new Map();
 let selftest=null,building=false,scoredIdx=-1;
 
 function today(){const d=new Date();return d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0")}
-function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}
+function uid(){const b=new Uint8Array(4);crypto.getRandomValues(b);return Date.now().toString(36)+Array.from(b,x=>x.toString(36).padStart(2,"0")).join("")}
 function psave(){try{localStorage.setItem(PKEY,JSON.stringify(P))}catch(e){}}
 /* Printed with the card algorithm from before 2026-11-07: their grids differ from what this page builds,
    so they are never scored here. Mirror of the toolbox legacy list (15_BINGO/output/*_LEGACY_ALGO_ids.txt) — keep in sync. */
@@ -533,7 +648,7 @@ function pload(){
   try{const p=JSON.parse(localStorage.getItem(PKEY));
     if(p&&Array.isArray(p.players)){P.own=!!p.own;P.set=validSet(p.set)?p.set:"";
       P.players=p.players.filter(x=>x&&typeof x.name==="string"&&Array.isArray(x.cards))
-        .map(x=>({id:String(x.id||uid()),name:x.name.slice(0,30),cards:x.cards.filter(c=>/^CB-\d{8}-\d{4}$/.test(c)),open:x.open!==false}));
+        .map(x=>({id:String(x.id||uid()),name:x.name.slice(0,30),cards:x.cards.filter(c=>CARD_RE.test(c)),open:x.open!==false}));
       /* drop legacy cards from older saves; a player left without cards is removed (message once, then saved clean) */
       const dropped=[],gone=[];
       P.players=P.players.filter(x=>{
@@ -546,23 +661,24 @@ function pload(){
       if(dropped.length){loadMsg=legacyMsg(dropped)+(gone.length?` · removed: ${gone.join(", ")}`:"");psave()}
     }
   }catch(e){}
-  if(!P.set)P.set=today();
+  if(!P.set)P.set=PR.lastW||today();
 }
 function validSet(s){
+  if(isWSet(s))return true;
   if(!/^\d{8}$/.test(s||""))return false;
   const y=+s.slice(0,4),m=+s.slice(4,6),d=+s.slice(6),t=new Date(Date.UTC(y,m-1,d));
   return t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d;
 }
-/* "9-12" · "9,10,11,12" · "CB-20261107-0009" · "CB-20261107-0009..0012" (short forms use the Set field) */
+/* "9-12" · "9,10,11,12" · "CB-20261107-0009" · "CB-20261107-0009..0012" · "CB-W7K2Q9-0001..0004" (short forms use the Set field) */
 function parseCards(text,set){
   const out=[];
   for(const tok of String(text).toUpperCase().split(/[\s,;]+/).filter(Boolean)){
-    let s,a,b,m=tok.match(/^CB-(\d{8})-(\d{4})(?:(?:\.\.|-)(?:CB-(\d{8})-)?(\d{4}))?$/);
+    let s,a,b,m=tok.match(/^CB-(\d{8}|W[0-9A-HJKMNP-TV-Z]{5})-(\d{4})(?:(?:\.\.|-)(?:CB-(\d{8}|W[0-9A-HJKMNP-TV-Z]{5})-)?(\d{4}))?$/);
     if(m){s=m[1];a=+m[2];b=m[4]?+m[4]:a;if(m[3]&&m[3]!==s)throw`${tok}: start and end are in different sets`}
     else{
       m=tok.match(/^(\d{1,4})(?:(?:\.\.|-)(\d{1,4}))?$/);
       if(!m)throw`Not a card number: ${tok}`;
-      if(!validSet(set))throw"Set must be a date YYYYMMDD";
+      if(!validSet(set))throw"Set must be a date YYYYMMDD or a printed W set";
       s=set;a=+m[1];b=m[2]?+m[2]:a;
     }
     if(!validSet(s))throw`Invalid set in ${tok}`;
@@ -782,20 +898,167 @@ $("pForm").addEventListener("submit",e=>{
     if(!name)throw"Enter a name";
     if(P.players.some(p=>p.name.toLowerCase()===name.toLowerCase()))throw`${name} is already a player`;
     if(P.players.length>=30)throw"Max 30 players";
-    const parsed=parseCards($("pCards").value,$("pSet").value.trim());
+    const parsed=parseCards($("pCards").value,$("pSet").value.trim().toUpperCase());
     const legacy=parsed.filter(isLegacy),cards=parsed.filter(c=>!isLegacy(c));
     if(!cards.length)throw legacyMsg(legacy);
     const owner=new Map();P.players.forEach(p=>p.cards.forEach(c=>owner.set(c,p.name)));
     const clash=cards.find(c=>owner.has(c));if(clash)throw`${clash} already belongs to ${owner.get(clash)}`;
     P.players.push({id:uid(),name,cards,open:true});
-    P.set=cards[cards.length-1].slice(3,11);psave();
-    $("pName").value="";$("pCards").value="";$("pSet").value=P.set;$("pErr").textContent=legacy.length?legacyMsg(legacy):"";
+    P.set=cards[cards.length-1].split("-")[1];psave();
+    $("pName").value="";$("pCards").value="";$("pSet").value=P.set;setNote();$("pErr").textContent=legacy.length?legacyMsg(legacy):"";
     renderPlayers();$("pName").focus();
   }catch(err){$("pErr").textContent=String(err)}
 });
+
+/* Print cards: a new W set per print batch (crypto.getRandomValues, never Math.random), cards 0001… of that set,
+   grids from the same portable algorithm as the toolbox (buildCard). Layout mirrors the toolbox PDF.
+   Names and settings stay in localStorage (PRKEY); the last printed W set resolves short serials in Own cards. */
+const PRKEY="chief-bingo-print-v1",CROCK="0123456789ABCDEFGHJKMNPQRSTVWXYZ",PR_MAX=30;
+let PR={names:"",title:"CHIEF'S BINGO",theme:"ink",lastW:"",sets:[]},batch=null,anonTouched=false,prDocTitle="";
+function prload(){
+  try{const p=JSON.parse(localStorage.getItem(PRKEY));if(p&&typeof p==="object"){
+    if(typeof p.names==="string")PR.names=p.names.slice(0,2000);
+    if(typeof p.title==="string"&&p.title.trim())PR.title=p.title.trim().slice(0,40);
+    if(p.theme==="ink"||p.theme==="chief")PR.theme=p.theme;
+    if(isWSet(p.lastW))PR.lastW=p.lastW;
+    if(Array.isArray(p.sets))PR.sets=p.sets.filter(isWSet).slice(-500);
+  }}catch(e){}
+}
+function prsave(){try{localStorage.setItem(PRKEY,JSON.stringify(PR))}catch(e){}}
+/* 32 symbols = 2^5, so (byte & 31) is uniform */
+function wCode(){const b=new Uint8Array(5);crypto.getRandomValues(b);return "W"+Array.from(b,x=>CROCK[x&31]).join("")}
+/* never reuse a set this device already printed or has players for (cross-device: 32^5 ≈ 33.5 M codes) */
+function newWSet(used){for(let k=0;k<64;k++){const c=wCode();if(!used.has(c))return c}throw"Could not make a new card set"}
+window.ChiefBingoPrint=Object.freeze({wCode,newWSet});
+function setNote(){
+  const v=$("pSet").value.trim().toUpperCase(),w=PR.lastW;let t="";
+  if(validSet(v))t=`Short numbers (like 1-4) use set ${v}`+(v===w?" — the last set printed on this device":"");
+  if(w&&v!==w)t+=(t?" · ":"")+`Last set printed on this device: ${w}`;
+  $("pSetNote").textContent=t;
+}
+$("pSet").addEventListener("input",setNote);
+const STAR=Array.from({length:10},(_,i)=>{const r=i%2?.4:1,a=Math.PI/180*(90+36*i);return (r*Math.cos(a)).toFixed(3)+","+(-r*Math.sin(a)).toFixed(3)}).join(" ");
+function starEl(){
+  const ns="http://www.w3.org/2000/svg",s=document.createElementNS(ns,"svg"),p=document.createElementNS(ns,"polygon");
+  s.setAttribute("viewBox","-1.05 -1.05 2.1 2.1");s.setAttribute("aria-label","Free");p.setAttribute("points",STAR);s.appendChild(p);return s;
+}
+/* legend icons = toolbox pattern_icon() */
+const ICON={row:(r,c)=>r===1,col:(r,c)=>c===1,outer:(r,c)=>c===0||c===4,corners:(r,c)=>(r===0||r===4)&&(c===0||c===4),
+  cross:(r,c)=>r===c||r+c===4,plus:(r,c)=>r===2||c===2,full:()=>true};
+function sheetEl(b,pg,no){
+  const cards=pg.cards.map(c=>{
+    const cells=[];c.g.forEach(row=>row.forEach(v=>cells.push(v===0?el("span",{cls:"fr"},[starEl()]):el("span",{text:String(v)}))));
+    return el("div",{cls:"pc","data-card":c.id},[el("div",{cls:"pt",text:b.title}),el("div",{cls:"ph"},[..."BINGO"].map(L=>el("span",{text:L}))),
+      el("div",{cls:"pg"},cells),
+      el("div",{cls:"pf"},[el("span",{cls:"pid",text:c.id}),pg.name?el("span",{cls:"pnm",text:pg.name}):el("span",{cls:"pnl"},["Name:",el("i")])])]);
+  });
+  const leg=el("div",{cls:"leg"},[el("h4",{text:"POINTS"}),
+    el("div",{cls:"lg"},CB.patterns.map(p=>el("div",{"data-key":p.key},[
+      el("span",{cls:"ic"},Array.from({length:25},(_,i)=>el("i",{cls:ICON[p.key](Math.floor(i/5),i%5)?"a":""}))),
+      el("span",{cls:"ll",text:p.label}),el("span",{cls:"lp",text:fmtPts(p.points)+" pt"})]))),
+    el("div",{cls:"lb"},[el("b",{text:`×${fmtPts(CB.mult)} if the winning ball is ${CB.bonus}`}),el("small",{text:`set ${b.set} · page ${no}/${b.pages.length}`})])]);
+  return el("section",{cls:"sheet th-"+b.theme,"data-page":String(no),"data-name":pg.name},[...cards,leg]);
+}
+/* shrink the title / name until it fits its box (same idea as _fit_size in the toolbox) */
+function fitText(root){
+  root.querySelectorAll(".pt,.pnm").forEach(e=>{
+    let mm=e.classList.contains("pt")?5:3.5,n=0;e.style.fontSize=mm+"mm";
+    while(e.scrollWidth>e.clientWidth+.5&&mm>1.8&&n++<60){mm-=.2;e.style.fontSize=mm.toFixed(2)+"mm"}
+  });
+}
+function prZoom(){const w=$("prSheets").clientWidth-32;$("prSheets").style.setProperty("--z",String(Math.min(1,Math.max(.2,w/(210*96/25.4)))))}
+window.addEventListener("resize",()=>{if(!$("prView").hidden)prZoom()});
+function prNames(){return $("prNames").value.split(/[\n,;]+/).map(x=>x.trim().replace(/\s+/g," ")).filter(Boolean)}
+function prAnonAuto(){if(!anonTouched)$("prAnon").value=prNames().length?"0":"1"}
+function prTheme(t){PR.theme=t;$("prInk").setAttribute("aria-pressed",t==="ink");$("prChief").setAttribute("aria-pressed",t==="chief")}
+function prOpen(){
+  stopAuto();
+  $("prNames").value=PR.names;$("prTitle").value=PR.title;prTheme(PR.theme);anonTouched=false;prAnonAuto();
+  $("prErr").textContent="";$("prMake").disabled=false;$("prSetup").hidden=false;document.documentElement.classList.add("prv");
+}
+function prCloseAll(){
+  $("prSetup").hidden=true;$("prView").hidden=true;$("prAsk").hidden=true;document.documentElement.classList.remove("prv");
+  if(prDocTitle){document.title=prDocTitle;prDocTitle=""}
+}
+async function makeBatch(names,anon,title,theme){
+  const used=new Set(PR.sets);P.players.forEach(p=>p.cards.forEach(c=>used.add(c.split("-")[1])));
+  const set=newWSet(used),pages=[...names.map(n=>({name:n})),...Array.from({length:anon},()=>({name:""}))],seen=new Set();
+  let serial=1;
+  for(const pg of pages){
+    pg.cards=[];
+    while(pg.cards.length<4){
+      const id=`CB-${set}-${String(serial++).padStart(4,"0")}`,g=await buildCard(id),k=g.flat().join(",");
+      if(seen.has(k))continue;   /* identical grid (as in the toolbox): skip the serial, the ID stays rebuildable */
+      seen.add(k);pg.cards.push({id,g});
+    }
+  }
+  return {set,title,theme,pages};
+}
+$("print").onclick=prOpen;
+$("prNames").addEventListener("input",prAnonAuto);
+$("prAnon").addEventListener("input",()=>{anonTouched=true});
+$("prInk").onclick=()=>prTheme("ink");
+$("prChief").onclick=()=>prTheme("chief");
+$("prCancel").onclick=prCloseAll;
+$("prClose").onclick=prCloseAll;
+$("prForm").addEventListener("submit",async e=>{
+  e.preventDefault();e.stopPropagation();
+  if($("prMake").disabled)return;
+  try{
+    const names=prNames(),raw=$("prAnon").value.trim(),anon=raw===""?0:Number(raw);
+    const title=$("prTitle").value.trim().replace(/\s+/g," ").slice(0,40)||"CHIEF'S BINGO";
+    const long=names.find(n=>n.length>30);if(long)throw`Max 30 characters per name: ${long.slice(0,30)}…`;
+    const low=names.map(n=>n.toLowerCase()),dup=names.find((n,i)=>low.indexOf(n.toLowerCase())!==i);if(dup)throw`${dup} is listed twice`;
+    if(!Number.isInteger(anon)||anon<0)throw"Unnamed pages: a whole number, 0 or more";
+    if(names.length+anon<1)throw"Add a name or at least one unnamed page";
+    if(names.length+anon>PR_MAX)throw`Max ${PR_MAX} pages per print`;
+    $("prMake").disabled=true;$("prErr").textContent="";
+    if(!(await runSelftest()))throw"This browser could not build Chief Bingo cards (self-test failed)";
+    PR.names=$("prNames").value.slice(0,2000);PR.title=title;
+    batch=await makeBatch(names,anon,title,PR.theme);
+    PR.lastW=batch.set;PR.sets=[...PR.sets.filter(x=>x!==batch.set),batch.set].slice(-500);prsave();
+    P.set=batch.set;psave();$("pSet").value=P.set;setNote();
+    const n=batch.pages.length;
+    $("prInfo").replaceChildren("Set ",el("b",{text:batch.set})," · ",`${n} page${n>1?"s":""} · ${n*4} cards · A4`);
+    $("prMsg").textContent="";$("prAsk").hidden=true;$("prAdd").disabled=false;
+    $("prSheets").replaceChildren(...batch.pages.map((pg,i)=>sheetEl(batch,pg,i+1)));
+    $("prSetup").hidden=true;$("prView").hidden=false;$("prView").scrollTop=0;$("prView").dataset.ready="0";prZoom();
+    if(!prDocTitle)prDocTitle=document.title;document.title=`ChiefBingo cards ${batch.set}`;   /* = PDF file name */
+    try{if(document.fonts&&document.fonts.ready)await document.fonts.ready}catch(err){}
+    fitText($("prSheets"));$("prView").dataset.ready="1";
+  }catch(err){$("prErr").textContent=String(err)}
+  finally{$("prMake").disabled=false}
+});
+$("prPrint").onclick=()=>{fitText($("prSheets"));window.print()};
+/* Add to Own cards: one player per page (named pages by name, unnamed pages as "Page N"); names already present are skipped after asking */
+function prAddRun(skipOk){
+  if(!batch)return;
+  const items=batch.pages.map((pg,i)=>({name:pg.name||`Page ${i+1}`,cards:pg.cards.map(c=>c.id)}));
+  const have=new Set(P.players.map(p=>p.name.toLowerCase())),owned=new Set(P.players.flatMap(p=>p.cards));
+  const skip=items.filter(x=>have.has(x.name.toLowerCase())||x.cards.some(c=>owned.has(c)));
+  if(skip.length&&!skipOk){
+    const nm=skip.map(x=>x.name);
+    $("prAskText").textContent=`${nm.slice(0,4).join(", ")}${nm.length>4?` (+${nm.length-4} more)`:""} ${nm.length>1?"are":"is"} already in Own cards.`;
+    $("prAsk").hidden=false;$("prMsg").textContent="";return;
+  }
+  $("prAsk").hidden=true;
+  const add=items.filter(x=>!skip.includes(x));
+  if(P.players.length+add.length>30){$("prMsg").textContent=`Max 30 players — ${30-P.players.length} left`;return}
+  add.forEach(x=>P.players.push({id:uid(),name:x.name,cards:x.cards,open:true}));
+  batch.pages.forEach(pg=>pg.cards.forEach(c=>grids.set(c.id,c.g)));
+  if(add.length&&S.mode===75)P.own=true;
+  P.set=batch.set;psave();$("pSet").value=P.set;setNote();
+  const k=add.reduce((t,x)=>t+x.cards.length,0);
+  $("prMsg").textContent=(add.length?`Added ${add.length} player${add.length>1?"s":""} (${k} cards) to Own cards`:"Nothing added")
+    +(skip.length?` · skipped: ${skip.map(x=>x.name).join(", ")}`:"")+(add.length&&S.mode!==75?" · switch to 75 balls to score them":"");
+  render(false);
+}
+$("prAdd").onclick=()=>prAddRun(false);
+$("prAskYes").onclick=()=>prAddRun(true);
+$("prAskNo").onclick=()=>{$("prAsk").hidden=true};
 $("cOwn").onclick=()=>{if(S.mode!==75)return;P.own=true;psave();render(false)};
 $("cBought").onclick=()=>{P.own=false;psave();if(S.winOpen){S.winOpen=null;save()}render(false)};
-pload();$("pSet").value=P.set;if(loadMsg)$("pErr").textContent=loadMsg;
+prload();pload();$("pSet").value=P.set;setNote();if(loadMsg)$("pErr").textContent=loadMsg;
 
 if("speechSynthesis" in window)try{speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>{}}catch(e){}
 load();

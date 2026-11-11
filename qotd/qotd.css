@@ -3,14 +3,16 @@
    Didot (the font of the real images) is an Apple system font and may not be embedded on the web. */
 
 :root {
-  --bg: #0a0a0a;
-  --surface: #141414;
-  --surface-2: #1c1c1c;
-  --border: #2a2a2a;
-  --text: #ededed;
-  --muted: #9a9a9a;
-  --accent: #f7931a;
-  --radius: 14px;
+  /* aliassen naar de huisstijl-tokens (../assets/brand/chief-tokens.css, via chief-brand-sync — niet met de hand bewerken) */
+  --bg: var(--chief-bg);
+  --surface: var(--chief-surface);
+  --surface-2: var(--chief-surface-2);
+  --border: var(--chief-border);
+  --text: var(--chief-text);
+  --muted: var(--chief-muted);
+  --accent: var(--chief-accent);
+  --radius: var(--chief-radius);
+  /* QOTD-merk, bewust niet in chief-tokens — moet 1:1 met 13_QOTD-engine blijven */
   /* QOTD template (13_QOTD engine) */
   --q-base: #0a0a0a;   /* + grain-laag (gemiddeld ±5) ≈ de #0f van het echte beeld */
   --q-border: #3a3a3a;
@@ -24,7 +26,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font: 16px/1.5 var(--chief-font-body);
   overflow-x: hidden;
 }
 a { color: inherit; }
@@ -62,7 +64,7 @@ h1 span { display: block; font-weight: 400; color: var(--q-sig); font-size: .42e
   background: var(--surface); color: var(--text); border: 1px solid var(--border);
   font: inherit; font-weight: 600; font-size: .95rem;
 }
-.btn:hover { border-color: #444; background: var(--surface-2); }
+.btn:hover { border-color: var(--chief-border-strong); background: var(--surface-2); }
 
 .socials { display: flex; flex-wrap: wrap; gap: 8px 14px; list-style: none; margin: 16px 0 0; padding: 0; }
 .socials a { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); text-decoration: none; font-size: .92rem; padding: 4px 0; }
@@ -119,7 +121,7 @@ dialog#lb::backdrop { background: rgba(0,0,0,.7); }
   width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
   background: var(--surface); color: var(--text); border: 1px solid var(--border);
 }
-.lb-nav:hover, .lb-close:hover { background: var(--surface-2); border-color: #444; }
+.lb-nav:hover, .lb-close:hover { background: var(--surface-2); border-color: var(--chief-border-strong); }
 .lb-nav:disabled { opacity: .3; cursor: default; }
 .lb-close { position: fixed; top: 12px; right: 12px; z-index: 2; }
 .lb-date { margin: 4px 0 0; color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }

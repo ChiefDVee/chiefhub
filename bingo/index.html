@@ -153,6 +153,20 @@ details.pl summary .rm.armed{border-color:#ff8a65;color:#ff8a65}
 .mini .mg span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;font:700 .72rem var(--body);background:var(--paper);color:var(--muted);font-variant-numeric:tabular-nums}
 .mini .mg .h{aspect-ratio:auto;background:none;color:var(--hit);font:400 .8rem var(--display)}
 .mini .mg .on{background:var(--hit);color:var(--dauber-ink)}
+/* Bonus marker (CB.bonus): small "×N" top-right (≈22 % of the cell) + double inner border, no fill.
+   Same design on print sheets, mini cards and the winner overlay; the drawn/winning styles stay visible underneath. */
+.bx{position:relative}
+.bx::before{content:"";position:absolute;inset:var(--bxi,3px);border:var(--bxw,4px) double var(--bxc,#f7931a);border-radius:inherit;pointer-events:none}
+.bx::after{content:"×" attr(data-x);position:absolute;top:var(--bxt,4px);right:var(--bxr,5px);font:400 var(--bxf,.6rem)/1 var(--display);
+  color:var(--bxc,#f7931a);letter-spacing:0;pointer-events:none}
+.mini .mg .bx{--bxi:1px;--bxw:3px;--bxt:4px;--bxr:4px;--bxf:6px;padding-top:7px;font-size:.62rem}
+.mini .mg .bx.on{--bxc:#0a0a0a}
+.wg .bx{--bxi:calc(var(--gw) * .008);--bxw:max(3px,calc(var(--gw) * .011));--bxt:calc(var(--gw) * .026);--bxr:calc(var(--gw) * .03);
+  --bxf:calc(var(--gw) * .04);padding-top:calc(var(--gw) * .05)}
+.wg .bx.wc{--bxc:#0a0a0a}
+.pc .pg span.bx{--bxi:.8mm;--bxw:.95mm;--bxt:2.3mm;--bxr:2.4mm;--bxf:3.8mm;--bxc:var(--bxk);padding-top:3mm}
+.th-ink{--bxk:#1a1a1a}
+.th-chief{--bxk:#f7931a}
 .mini .cap{display:flex;justify-content:space-between;gap:6px;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .mini .cap b{color:var(--hit)}
 .pw{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);
@@ -252,9 +266,9 @@ html.prv,html.prv body{overflow:hidden}
 .lg .ic i.a{background:var(--acc)}
 .lg .ll{font:700 2.8mm/1.15 var(--body);text-align:center;color:var(--text)}
 .lg .lp{font-size:4.6mm;line-height:1;color:var(--acc)}
-.lb{margin-top:auto;display:flex;align-items:baseline;gap:2mm}
-.lb b{flex:1;font-weight:400;font-size:3.6mm;line-height:1;color:var(--text);text-align:center}
-.lb small{font:500 2.1mm "JetBrains Mono",ui-monospace,Menlo,monospace;color:var(--sub);white-space:nowrap}
+.lb{margin-top:auto;display:flex;flex-direction:column;align-items:stretch;gap:.8mm}
+.lb b{font-weight:400;font-size:3.6mm;line-height:1;color:var(--text);text-align:center;white-space:nowrap;overflow:hidden}
+.lb small{align-self:flex-end;font:500 2.1mm "JetBrains Mono",ui-monospace,Menlo,monospace;color:var(--sub);white-space:nowrap}
 @page{size:A4 portrait;margin:8mm}
 @media print{
   html.prv,html.prv body{overflow:visible!important;height:auto!important;background:#fff!important;color:#000!important;color-scheme:light}
@@ -615,7 +629,9 @@ const CB=Object.freeze({salt:"chiefbingo-7f94793c3690cd51",mult:2,tie:"both",bon
 /* BINGO_CONFIG_END */
 const isBonus=b=>CB.bonus.includes(b);
 /* bonus rule for the print legend, built from CB.bonus + CB.mult (= toolbox bonus_line) */
-function bonusLine(){const b=CB.bonus.map(ballLabel);return `×${fmtPts(CB.mult)} if the winning ball is ${b.length>1?b.slice(0,-1).join(", ")+" or "+b[b.length-1]:b[0]}`}
+function bonusLine(){return `×${fmtPts(CB.mult)} marked numbers: pattern scores double if one of them is the winning ball (${CB.bonus.map(ballLabel).join(", ")})`}
+/* class + data for the ×N marker on a card cell holding a bonus number */
+const bxProps=v=>v&&isBonus(v)?{"data-x":fmtPts(CB.mult),"data-bonus":"1"}:{};
 const VECTORS=[
 ["CB-20261107-0001", "8,23,39,48,75,15,30,33,60,64,4,25,0,56,71,3,28,42,50,70,10,22,31,53,65"],
 ["CB-20261107-0002", "9,22,38,53,74,1,20,34,51,68,10,19,0,60,71,3,24,43,48,72,14,18,31,58,63"],
@@ -818,7 +834,7 @@ function renderWin(sc){
   pats.forEach(p=>{const a=sc.awards[p.key];a.winners.forEach(w=>{
     const pl=P.players.find(x=>x.id===w.pid),g=grids.get(w.id);if(!pl||!g)return;
     const mk=marksOf(g,set),hl=PATCELLS[p.key](mk),cells=[..."BINGO"].map(L=>el("span",{cls:"h",text:L}));
-    g.forEach((r,i)=>r.forEach((v,c)=>cells.push(el("span",{cls:(v===0?"free ":"")+(hl[i][c]?"wc":mk[i][c]?"on":""),
+    g.forEach((r,i)=>r.forEach((v,c)=>cells.push(el("span",{...bxProps(v),cls:(v===0?"free ":"")+(hl[i][c]?"wc":mk[i][c]?"on":"")+(v&&isBonus(v)?" bx":""),
       text:v===0?"FREE":String(v),"data-r":String(i),"data-c":String(c)}))));
     const meta=[el("span",{cls:"wpts",text:`+${fmtPts(a.each)} pt`}),a.bonus?el("span",{cls:"wbon",text:`×${fmtPts(CB.mult)} BONUS ${ballLabel(a.ball)}`}):null,
       el("span",{cls:"wball",text:`Ball ${ballLabel(a.ball)} · #${a.call}`})];
@@ -900,7 +916,7 @@ function renderPlayers(){
       el("summary",null,[el("span",{cls:"nm",text:p.name}),el("span",{cls:"pts",text:fmtPts(sc.perPlayer[p.id])+" pt"}),rm]),
       el("div",{cls:"minis"},p.cards.map(id=>{
         const g=grids.get(id),cells=[..."BINGO"].map(L=>el("span",{cls:"h",text:L}));
-        g.forEach(r=>r.forEach(v=>cells.push(el("span",{cls:v===0||called.has(v)?"on":"",text:v===0?"★":String(v)}))));
+        g.forEach(r=>r.forEach(v=>cells.push(el("span",{...bxProps(v),cls:(v===0||called.has(v)?"on":"")+(v&&isBonus(v)?" bx":""),text:v===0?"★":String(v)}))));
         return el("div",{cls:"mini","data-card":id},[el("div",{cls:"mg"},cells),
           el("div",{cls:"cap"},[el("span",{text:id}),el("b",{text:fmtPts(sc.perCard[id])})])]);
       }))
@@ -966,7 +982,7 @@ const ICON={row:(r,c)=>r===1,col:(r,c)=>c===1,outer:(r,c)=>c===0||c===4,topbotto
   cross:(r,c)=>r===c||r+c===4,plus:(r,c)=>r===2||c===2,full:()=>true};
 function sheetEl(b,pg,no){
   const cards=pg.cards.map(c=>{
-    const cells=[];c.g.forEach(row=>row.forEach(v=>cells.push(v===0?el("span",{cls:"fr"},[starEl()]):el("span",{text:String(v)}))));
+    const cells=[];c.g.forEach(row=>row.forEach(v=>cells.push(v===0?el("span",{cls:"fr"},[starEl()]):el("span",{...bxProps(v),cls:isBonus(v)?"bx":"",text:String(v)}))));
     return el("div",{cls:"pc","data-card":c.id},[el("div",{cls:"pt",text:b.title}),el("div",{cls:"ph"},[..."BINGO"].map(L=>el("span",{text:L}))),
       el("div",{cls:"pg"},cells),
       el("div",{cls:"pf"},[el("span",{cls:"pid",text:c.id}),pg.name?el("span",{cls:"pnm",text:pg.name}):el("span",{cls:"pnl"},["Name:",el("i")])])]);
@@ -980,8 +996,8 @@ function sheetEl(b,pg,no){
 }
 /* shrink the title / name until it fits its box (same idea as _fit_size in the toolbox) */
 function fitText(root){
-  root.querySelectorAll(".pt,.pnm").forEach(e=>{
-    let mm=e.classList.contains("pt")?5:3.5,n=0;e.style.fontSize=mm+"mm";
+  root.querySelectorAll(".pt,.pnm,.lb b").forEach(e=>{
+    let mm=e.classList.contains("pt")?5:e.tagName==="B"?3.6:3.5,n=0;e.style.fontSize=mm+"mm";
     while(e.scrollWidth>e.clientWidth+.5&&mm>1.8&&n++<60){mm-=.2;e.style.fontSize=mm.toFixed(2)+"mm"}
   });
 }

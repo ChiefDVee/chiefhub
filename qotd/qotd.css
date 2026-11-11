@@ -1,21 +1,6 @@
 /* CHIEF'S QOTD archive — chiefke.com/qotd. No build step, no trackers.
-   Quote font: Bodoni Moda (SIL OFL 1.1), self-hosted in ChiefDVee/chief-assets, served via jsDelivr pinned to
-   commit 8458c1a (immutable; @main is cached by jsDelivr for up to 12 h).
+   Quote font: Bodoni Moda (SIL OFL 1.1) as "QOTD Bodoni", self-hosted in ../assets/fonts/fonts.css (loaded in index.html).
    Didot (the font of the real images) is an Apple system font and may not be embedded on the web. */
-@font-face {
-  font-family: "QOTD Bodoni";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("https://cdn.jsdelivr.net/gh/ChiefDVee/chief-assets@8458c1a/fonts/bodoni-moda/bodoni-moda-latin-700-normal.woff2") format("woff2");
-}
-@font-face {
-  font-family: "QOTD Bodoni";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("https://cdn.jsdelivr.net/gh/ChiefDVee/chief-assets@8458c1a/fonts/bodoni-moda/bodoni-moda-latin-400-normal.woff2") format("woff2");
-}
 
 :root {
   --bg: #0a0a0a;

@@ -6,7 +6,7 @@
     "tag": "Privacy",
     "category": "SecurityApplication",
     "desc": "Password-based AES-256 encryption for text and files. Not a coin mixer — it's for messages, not money.",
-    "points": ["Encrypt text or files with a password", "Runs in your browser — server sees nothing", "No account, no uploads, no cloud"]
+    "points": ["Encrypt text or files with a password", "Runs in your browser — server never sees your text or key", "No account, no uploads, no cloud"]
   },
   {
     "name": "ChiefDCA",
@@ -36,7 +36,7 @@
     "points": ["Current sat/vB per priority", "Next block, hashrate, difficulty", "Fee calculator for your transaction"]
   },
   {
-    "name": "QOTD Archive",
+    "name": "ChiefQOTD",
     "short": "daily dark quotes",
     "url": "https://chiefke.com/qotd/",
     "tag": "Quotes",
@@ -50,8 +50,8 @@
     "url": "https://chiefke.com/bingo/",
     "tag": "Game",
     "category": "GameApplication",
-    "desc": "Bingo ball caller for 75 or 90 balls. Draw by hand or on a timer, show the number full screen, call it out loud.",
-    "points": ["75-ball (B-I-N-G-O) or 90-ball games", "Auto-draw every 3–60 s, plus a game clock", "Full-screen caller view, read aloud in your device language"]
+    "desc": "Bingo caller for 75 or 90 balls. Play bought cards, or generate your own with live scoring.",
+    "points": ["75-ball (B-I-N-G-O) or 90-ball games", "Own cards (75-ball): live scoring, auto-pause on a win", "Full-screen caller view, read aloud in your device language"]
   },
   {
     "name": "ChiefDice",

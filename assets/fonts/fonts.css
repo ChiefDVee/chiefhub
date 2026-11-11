@@ -1,0 +1,50 @@
+/* chiefke.com — self-hosted web fonts, shared by bingo/, dice/ and qotd/. No external font requests.
+   All fonts: SIL Open Font License 1.1 (OFL-*.txt in this folder). Latin subset, woff2.
+   Archivo Black, Bowlby One, Figtree, JetBrains Mono: Google Fonts latin subsets (2026-11-11).
+   Bodoni Moda: Fontsource 5.1.0 via ChiefDVee/chief-assets (fonts/bodoni-moda/).
+   Browsers only download a face when the page actually uses it. */
+
+@font-face {
+  font-family: "Archivo Black";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("archivo-black-latin-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Bowlby One";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("bowlby-one-latin-400.woff2") format("woff2");
+}
+/* Figtree: one variable file (Google serves the same file for 400/600/700/800) */
+@font-face {
+  font-family: "Figtree";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("figtree-latin-var.woff2") format("woff2");
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("jetbrains-mono-latin-500.woff2") format("woff2");
+}
+/* qotd/: open-licensed stand-in for Didot (Apple system font, may not be embedded on the web) */
+@font-face {
+  font-family: "QOTD Bodoni";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("bodoni-moda-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "QOTD Bodoni";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("bodoni-moda-latin-700-normal.woff2") format("woff2");
+}

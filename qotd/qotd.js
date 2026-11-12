@@ -308,15 +308,14 @@
     youtube: '<rect x="2" y="5" width="20" height="14" rx="4"/><path d="M10 9l5 3-5 3z"/>',
     x: '<path d="M5 5l14 14M19 5L5 19"/>',
     tiktok: '<path d="M9 18a3 3 0 1 1 0-6M9 18a3 3 0 0 0 3-3V4c1 2.5 3 4 6 4"/>',
-    instagram: '<rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17" cy="7" r=".6"/>',
-    kofi: '<path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 4v2M12 4v2"/>'
+    instagram: '<rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17" cy="7" r=".6"/>'
   };
-  var LABELS = { youtube: "YouTube", x: "X", tiktok: "TikTok", instagram: "Instagram", kofi: "Ko-fi" };
+  var LABELS = { youtube: "YouTube", x: "X", tiktok: "TikTok", instagram: "Instagram" };
   function socials(cfg) {
     var yt = cfg.youtube && cfg.youtube !== "TODO" ? cfg.youtube : YT;
     Array.prototype.forEach.call(document.querySelectorAll('[data-social="youtube"]'), function (a) { a.href = yt; });
     var ul = $("socials");
-    ["youtube", "x", "tiktok", "instagram", "kofi"].forEach(function (k) {
+    ["youtube", "x", "tiktok", "instagram"].forEach(function (k) {
       var url = cfg[k];
       if (!url || url === "TODO" || !/^https:\/\//.test(url)) return;
       var li = document.createElement("li"), a = document.createElement("a");

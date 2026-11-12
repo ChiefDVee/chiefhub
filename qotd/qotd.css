@@ -134,11 +134,6 @@ dialog#lb::backdrop { background: rgba(0,0,0,.7); }
   .lb-card { width: 100%; }
 }
 
-footer { border-top: 1px solid var(--border); padding: 24px 16px 32px; color: var(--muted); font-size: .9rem; text-align: center; }
-footer p { margin: 0 0 8px; }
-footer a { color: var(--text); }
-.small { font-size: .8rem; }
-
 /* sticky YouTube bar: mobile only */
 .sticky-yt { display: none; }
 @media (max-width: 639px) {

@@ -6,13 +6,26 @@
 <meta name="theme-color" content="#0a0a0a">
 <title>ChiefDice</title>
 <meta name="description" content="ChiefDice: roll 1 to 10 six-sided dice. Hold dice between rolls, see the last 10 rolls, and switch to a full-screen table view. Fair rolls with crypto.getRandomValues.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://chiefke.com/dice/">
+<meta property="og:title" content="ChiefDice">
+<meta property="og:description" content="ChiefDice: roll 1 to 10 six-sided dice. Hold dice between rolls, see the last 10 rolls, and switch to a full-screen table view. Fair rolls with crypto.getRandomValues.">
+<meta property="og:site_name" content="chiefke">
+<meta property="og:image" content="https://chiefke.com/assets/og/dice.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://chiefke.com/assets/og/dice.png">
+<meta name="twitter:site" content="@ChiefXBelgium">
+<link rel="stylesheet" href="../assets/brand/chief-tokens.css">
 <link rel="stylesheet" href="../assets/fonts/fonts.css">
 <style>
 /* Layout: the page is exactly one screen tall; the dice area takes what is left and JS sizes the dice to fit it.
-   Portrait = one column, landscape (≥700 px wide) = dice left, controls right. chiefke.com palette, dark only. */
+   Portrait = one column, landscape (≥700 px wide) = dice left, controls right. Chief huisstijl (../assets/brand/chief-tokens.css), dark only.
+   Site variables = aliases of --chief-*; --die (cream die face) has no token. Fonts = site choice. */
 :root{
-  --bg:#0a0a0a; --paper:#141414; --ink:#ededed; --muted:#9a9a9a; --line:#2a2a2a;
-  --hit:#f7931a; --hit-ink:#0a0a0a; --die:#f4f1ea; --pip:#0a0a0a;
+  --bg:var(--chief-bg); --paper:var(--chief-surface); --ink:var(--chief-text); --muted:var(--chief-muted); --line:var(--chief-border);
+  --hit:var(--chief-accent); --hit-ink:var(--chief-accent-ink); --die:#f4f1ea; --pip:var(--chief-bg);
   --display:"Bowlby One","Arial Black",Impact,sans-serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   color-scheme:dark;

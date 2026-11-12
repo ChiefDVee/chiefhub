@@ -6,12 +6,25 @@
 <meta name="theme-color" content="#0a0a0a">
 <title>ChiefBingo</title>
 <meta name="description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer, a full-screen caller view, live scoring for Chief Bingo cards, a winner overlay that pauses auto-draw and printable A4 cards.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://chiefke.com/bingo/">
+<meta property="og:title" content="ChiefBingo">
+<meta property="og:description" content="ChiefBingo: a bingo ball caller for 75 or 90 balls with auto-draw, game timer, a full-screen caller view, live scoring for Chief Bingo cards, a winner overlay that pauses auto-draw and printable A4 cards.">
+<meta property="og:site_name" content="chiefke">
+<meta property="og:image" content="https://chiefke.com/assets/og/bingo.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://chiefke.com/assets/og/bingo.png">
+<meta name="twitter:site" content="@ChiefXBelgium">
+<link rel="stylesheet" href="../assets/brand/chief-tokens.css">
 <link rel="stylesheet" href="../assets/fonts/fonts.css">
 <style>
-/* Layout: one column, big ball on top as thumb zone, board below — chiefke.com palette: black + bitcoin orange, dark only */
+/* Layout: one column, big ball on top as thumb zone, board below — Chief huisstijl (../assets/brand/chief-tokens.css), dark only.
+   Site variables = aliases of --chief-*; --hit-soft has no token (accent tint on black, ≠ --chief-accent-dim). Fonts = site choice. */
 :root{
-  --bg:#0a0a0a; --paper:#141414; --ink:#ededed; --muted:#9a9a9a;
-  --dauber:#f7931a; --dauber-ink:#0a0a0a; --line:#2a2a2a; --hit:#f7931a; --hit-soft:#2a1c08;
+  --bg:var(--chief-bg); --paper:var(--chief-surface); --ink:var(--chief-text); --muted:var(--chief-muted);
+  --dauber:var(--chief-accent); --dauber-ink:var(--chief-accent-ink); --line:var(--chief-border); --hit:var(--chief-accent); --hit-soft:#2a1c08;
   --display:"Bowlby One","Arial Black",Impact,sans-serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   color-scheme:dark;
@@ -155,17 +168,17 @@ details.pl summary .rm.armed{border-color:#ff8a65;color:#ff8a65}
 /* Bonus marker (CB.bonus): small "×N" top-right (≈22 % of the cell) + double inner border, no fill.
    Same design on print sheets, mini cards and the winner overlay; the drawn/winning styles stay visible underneath. */
 .bx{position:relative}
-.bx::before{content:"";position:absolute;inset:var(--bxi,3px);border:var(--bxw,4px) double var(--bxc,#f7931a);border-radius:inherit;pointer-events:none}
+.bx::before{content:"";position:absolute;inset:var(--bxi,3px);border:var(--bxw,4px) double var(--bxc,var(--chief-accent));border-radius:inherit;pointer-events:none}
 .bx::after{content:"×" attr(data-x);position:absolute;top:var(--bxt,4px);right:var(--bxr,5px);font:400 var(--bxf,.6rem)/1 var(--display);
-  color:var(--bxc,#f7931a);letter-spacing:0;pointer-events:none}
+  color:var(--bxc,var(--chief-accent));letter-spacing:0;pointer-events:none}
 .mini .mg .bx{--bxi:1px;--bxw:3px;--bxt:4px;--bxr:4px;--bxf:6px;padding-top:7px;font-size:.62rem}
-.mini .mg .bx.on{--bxc:#0a0a0a}
+.mini .mg .bx.on{--bxc:var(--chief-accent-ink)}
 .wg .bx{--bxi:calc(var(--gw) * .008);--bxw:max(3px,calc(var(--gw) * .011));--bxt:calc(var(--gw) * .026);--bxr:calc(var(--gw) * .03);
   --bxf:calc(var(--gw) * .04);padding-top:calc(var(--gw) * .05)}
-.wg .bx.wc{--bxc:#0a0a0a}
+.wg .bx.wc{--bxc:var(--chief-accent-ink)}
 .pc .pg span.bx{--bxi:.8mm;--bxw:.95mm;--bxt:2.3mm;--bxr:2.4mm;--bxf:3.8mm;--bxc:var(--bxk);padding-top:3mm}
 .th-ink{--bxk:#1a1a1a}
-.th-chief{--bxk:#f7931a}
+.th-chief{--bxk:var(--chief-accent)}
 .mini .cap{display:flex;justify-content:space-between;gap:6px;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .mini .cap b{color:var(--hit)}
 .pw{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);
@@ -174,7 +187,7 @@ details.pl summary .rm.armed{border-color:#ff8a65;color:#ff8a65}
 .pw[aria-pressed="true"] b{background:var(--hit);color:var(--dauber-ink)}
 /* Winner overlay: above the caller view (iPad full screen is the main target), one panel per (player, card, pattern) */
 html.wopen,html.wopen body{overflow:hidden}
-.win{position:fixed;inset:0;z-index:70;background:#0a0a0a;color:var(--ink);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+.win{position:fixed;inset:0;z-index:70;background:var(--chief-bg);color:var(--ink);overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   cursor:pointer;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;align-items:center;gap:2.2vh;
   padding:calc(18px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
   --gw:min(86vw,44vh)}
@@ -195,7 +208,7 @@ html.wopen,html.wopen body{overflow:hidden}
   background:var(--paper);color:var(--muted);font:400 calc(var(--gw) * .085) var(--display);font-variant-numeric:tabular-nums}
 .wg .h{aspect-ratio:auto;border:0;background:none;color:var(--hit);padding-bottom:.1em}
 .wg .on{background:var(--hit-soft);border-color:var(--hit);color:var(--hit)}
-.wg .wc{background:#f7931a;border-color:#f7931a;color:#0a0a0a}
+.wg .wc{background:var(--chief-accent);border-color:var(--chief-accent);color:var(--chief-accent-ink)}
 .wg .free{font:800 calc(var(--gw) * .045) var(--body);letter-spacing:.04em}
 .wp .wid{font:700 calc(var(--gw) * .05) var(--body);color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.04em}
 @media (orientation:landscape){
@@ -234,12 +247,12 @@ html.prv,html.prv body{overflow:hidden}
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:115.5mm 115.5mm 38mm;gap:4mm;overflow:hidden;
   font-family:"Archivo Black","Arial Black",Impact,sans-serif;font-weight:400;box-shadow:0 2px 14px rgba(0,0,0,.55);
   -webkit-print-color-adjust:exact;print-color-adjust:exact}
-.th-ink{--tbg:#fff;--tfg:#1a1a1a;--hbg:#fff;--hfg:#1a1a1a;--cell:#fff;--cfg:#1a1a1a;--grid:#8c8c8c;--b:#1a1a1a;--fbg:#fff;--ffg:#ff7a00;
-  --acc:#ff7a00;--mut:#d9d9d9;--text:#1a1a1a;--sub:#6b6b6b;--hl:.35mm solid #1a1a1a}
-.th-chief{--tbg:#1a1a1a;--tfg:#ff7a00;--hbg:#1a1a1a;--hfg:#fff;--cell:#fff;--cfg:#1a1a1a;--grid:#a6a6a6;--b:#1a1a1a;--fbg:#ff7a00;--ffg:#1a1a1a;
-  --acc:#ff7a00;--mut:#d9d9d9;--text:#1a1a1a;--sub:#6b6b6b;--hl:0 solid transparent}
+.th-ink{--tbg:#fff;--tfg:#1a1a1a;--hbg:#fff;--hfg:#1a1a1a;--cell:#fff;--cfg:#1a1a1a;--grid:#8c8c8c;--b:#1a1a1a;--fbg:#fff;--ffg:var(--chief-accent);
+  --acc:var(--chief-accent);--mut:#d9d9d9;--text:#1a1a1a;--sub:#6b6b6b;--hl:.35mm solid #1a1a1a}
+.th-chief{--tbg:#1a1a1a;--tfg:var(--chief-accent);--hbg:#1a1a1a;--hfg:#fff;--cell:#fff;--cfg:#1a1a1a;--grid:#a6a6a6;--b:#1a1a1a;--fbg:var(--chief-accent);--ffg:#1a1a1a;
+  --acc:var(--chief-accent);--mut:#d9d9d9;--text:#1a1a1a;--sub:#6b6b6b;--hl:0 solid transparent}
 .th-chief .ph span:nth-child(2),.th-chief .ph span:nth-child(4){background:#4d4d4d}
-.th-chief .ph span:nth-child(3){background:#ff7a00;color:#1a1a1a}
+.th-chief .ph span:nth-child(3){background:var(--chief-accent);color:#1a1a1a}
 .pc{border:.6mm solid var(--b);border-radius:2.5mm;overflow:hidden;display:flex;flex-direction:column;background:var(--cell);min-width:0;min-height:0}
 .pc .pt{flex:none;height:9mm;background:var(--tbg);color:var(--tfg);border-bottom:var(--hl);display:flex;align-items:center;justify-content:center;
   font-size:5mm;line-height:1;white-space:nowrap;overflow:hidden;padding:0 2.5mm;letter-spacing:.02em}

@@ -61,5 +61,14 @@
     "category": "GameApplication",
     "desc": "Roll 1 to 10 dice for any board game. Hold the ones you like, re-roll the rest.",
     "points": ["Tap a die to hold it, tap the table to roll", "Last 10 rolls with their totals", "Full-screen table view, fair crypto-random rolls"]
+  },
+  {
+    "name": "ChiefJINX",
+    "short": "family card game",
+    "url": "https://www.chiefjinx.com",
+    "tag": "Game",
+    "category": "GameApplication",
+    "desc": "Fast family card game. Match color or number, stack the penalties, and shout JINX! on your last card.",
+    "points": ["Play against 1–3 bots: Easy, Normal or Sharp", "Stack +2 on +4 and pass the pain along", "Forget to call JINX! and get caught: draw five cards"]
   }
 ]

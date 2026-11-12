@@ -55,7 +55,7 @@ def load_apps():
 
 
 def host(url):
-    return re.sub(r"/$", "", re.sub(r"^https?://", "", url))
+    return re.sub(r"/$", "", re.sub(r"^https?://(www\.)?", "", url))
 
 
 def render_meta(apps, nl, indent):

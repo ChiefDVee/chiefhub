@@ -27,6 +27,7 @@ APPS_JSON = os.path.join(HERE, "apps.json")
 INDEX = os.path.join(HERE, "index.html")
 REQUIRED = ("name", "short", "url", "tag", "category", "desc", "points")
 META_PREFIX = "Free, no-signup tools by @ChiefXBelgium: "
+NAME_PREFIX = "Chief"  # kaarttitel: NAME_PREFIX + <span class="name-accent">rest</span>
 
 
 def fail(msg):
@@ -66,6 +67,19 @@ def render_meta(apps, nl, indent):
     ])
 
 
+def render_name(name):
+    """Kaarttitel: "Chief" in --chief-text, rest in --chief-accent (zoals het wordmark).
+    Enkel voor de zichtbare h2; JSON-LD, meta en title blijven de platte naam."""
+    e = lambda s: html.escape(s, quote=False)
+    if name.startswith(NAME_PREFIX) and len(name) > len(NAME_PREFIX):
+        return e(NAME_PREFIX) + '<span class="name-accent">%s</span>' % e(name[len(NAME_PREFIX):])
+    return e(name)
+
+
+def unprefixed(apps):
+    return [a["name"] for a in apps if not (a["name"].startswith(NAME_PREFIX) and len(a["name"]) > len(NAME_PREFIX))]
+
+
 def render_cards(apps, nl, indent):
     e = lambda s: html.escape(s, quote=False)  # text nodes
     a = html.escape                             # attributes
@@ -75,7 +89,7 @@ def render_cards(apps, nl, indent):
         out += [
             indent + "<li>",
             indent + '  <a class="card" href="%s" rel="noopener">' % a(app["url"]),
-            indent + '    <div class="card-top"><h2>%s</h2><span class="tag">%s</span></div>' % (e(app["name"]), e(app["tag"])),
+            indent + '    <div class="card-top"><h2>%s</h2><span class="tag">%s</span></div>' % (render_name(app["name"]), e(app["tag"])),
             indent + "    <p>%s</p>" % e(app["desc"]),
             indent + '    <ul class="points">%s</ul>' % pts,
             indent + '    <span class="host">%s</span>' % e(host(app["url"])),
@@ -131,6 +145,9 @@ def main():
     out = replace_block(src, "APPS", lambda n, i: render_cards(apps, n, i), nl)
     out = replace_block(out, "JSONLD", lambda n, i: render_jsonld(apps, n, i), nl)
     out = replace_block(out, "META", lambda n, i: render_meta(apps, n, i), nl)
+    plain = unprefixed(apps)
+    if plain:
+        print("NOTE: no '%s' prefix, title rendered plain: %s" % (NAME_PREFIX, ", ".join(plain)))
     if out == src:
         print("index.html up-to-date (%d apps)" % len(apps))
         return 0

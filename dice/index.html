@@ -28,10 +28,10 @@
 <style>
 /* Layout: the page is exactly one screen tall; the dice area takes what is left and JS sizes the dice to fit it.
    Portrait = one column, landscape (≥700 px wide) = dice left, controls right. Chief huisstijl (../assets/brand/chief-tokens.css), dark only.
-   Site variables = aliases of --chief-*; --die (cream die face) has no token. Fonts = site choice. */
+   Site variables = aliases of --chief-* (--die = --chief-die, cream die face). Fonts = site choice. */
 :root{
   --bg:var(--chief-bg); --paper:var(--chief-surface); --ink:var(--chief-text); --muted:var(--chief-muted); --line:var(--chief-border);
-  --hit:var(--chief-accent); --hit-ink:var(--chief-accent-ink); --die:#f4f1ea; --pip:var(--chief-bg);
+  --hit:var(--chief-accent); --hit-ink:var(--chief-accent-ink); --die:var(--chief-die); --pip:var(--chief-bg);
   --display:"Bowlby One","Arial Black",Impact,sans-serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   color-scheme:dark;

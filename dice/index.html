@@ -49,6 +49,12 @@ html.fopen .chief-footer{display:none} /* Chief-footer (chief-brand-sync) onder 
 .home:hover,.home:focus-visible{color:var(--ink)}
 h1{font-family:var(--display);font-size:1.35rem;margin:0;letter-spacing:.01em;line-height:1.1}
 h1 span{color:var(--hit)}
+/* Link naar het volledige spel ChiefYatzy (2026-11-13): pill in de kop; de dobbelsteen-tool zelf is ongewijzigd */
+.play{flex:none;display:inline-flex;align-items:center;min-height:32px;padding:4px 12px;border:1px solid var(--hit);border-radius:999px;
+  color:var(--hit);font:700 .78rem var(--body);text-decoration:none;white-space:nowrap}
+.play:hover,.play:focus-visible{background:var(--hit);color:var(--hit-ink)}
+.top .play{margin-left:auto}
+@media (max-width:400px){.play{padding:4px 9px;font-size:.72rem}.home{font-size:.78rem}h1{font-size:1.2rem}}
 .main{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:10px}
 .area{flex:1 1 0;min-height:0;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:12px;
   display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;
@@ -138,6 +144,7 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 <div class="app">
   <header class="top">
     <a class="home" href="/">← chiefke.com</a>
+    <a class="play" href="https://www.chiefyatzy.com" rel="noopener">Play ChiefYatzy →</a>
     <h1>Chief<span>Dice</span></h1>
   </header>
   <div class="main">

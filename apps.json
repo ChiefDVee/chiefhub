@@ -70,5 +70,14 @@
     "category": "GameApplication",
     "desc": "Fast family card game. Play the bots or invite friends with a private link — and shout JINX! on your last card.",
     "points": ["Play the bots (Easy, Normal, Sharp) or invite up to 3 friends", "Stack +2 on +4 and pass the pain along", "Forget to call JINX! and get caught: draw five cards"]
+  },
+  {
+    "name": "ChiefYatzy",
+    "short": "family dice game",
+    "url": "https://www.chiefyatzy.com",
+    "tag": "Game",
+    "category": "GameApplication",
+    "desc": "Five dice, three rolls, one box. The family dice game: play the bots, pass the phone around or invite the family with a private link.",
+    "points": ["Classic, Triple (×1 ×2 ×3) and Maxi with six dice", "Bots from Easy to Hard, or up to 6 players", "Family code, profiles and a stats page with head-to-head"]
   }
 ]

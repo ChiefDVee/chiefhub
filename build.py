@@ -6,8 +6,8 @@
 #
 # Genereert de app-kaarten en de JSON-LD in index.html uit apps.json,
 # tussen <!-- APPS:START -->/<!-- APPS:END --> en
-# <!-- JSONLD:START -->/<!-- JSONLD:END -->, en meta description +
-# og:description tussen <!-- META:START -->/<!-- META:END -->. Statische HTML zodat
+# <!-- JSONLD:START -->/<!-- JSONLD:END -->, en meta description (vast, max 155) +
+# og:description (app-lijst) tussen <!-- META:START -->/<!-- META:END -->. Statische HTML zodat
 # crawlers en AI-fetchers (geen JS) de beschrijvingen zien.
 # Idempotent: zelfde apps.json → identieke index.html.
 #
@@ -26,7 +26,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 APPS_JSON = os.path.join(HERE, "apps.json")
 INDEX = os.path.join(HERE, "index.html")
 REQUIRED = ("name", "short", "url", "tag", "category", "desc", "points")
-META_PREFIX = "Free, no-signup tools by @ChiefXBelgium: "
+META_PREFIX = "Free, no-signup tools by @ChiefXBelgium: "  # og:description = prefix + volledige app-lijst
+# [2026-11-14] <meta name="description"> = vaste tekst, max META_MAX tekens (zoekmachines kappen ±155 af);
+# og:description blijft de gegenereerde lijst. Nieuwe app hoeft hier niet bij, zolang de kern klopt.
+META_DESCRIPTION = ("Chief's Tools: free, no-signup Bitcoin tools (DCA backtester, live fees), text encryption, "
+                    "a blackjack trainer and family card, dice and bingo games.")
+META_MAX = 155
 NAME_PREFIX = "Chief"  # kaarttitel: NAME_PREFIX + <span class="name-accent">rest</span>
 
 
@@ -59,11 +64,12 @@ def host(url):
 
 
 def render_meta(apps, nl, indent):
-    desc = META_PREFIX + ", ".join("%s (%s)" % (a["name"], a["short"]) for a in apps) + "."
-    attr = html.escape(desc)
+    if len(META_DESCRIPTION) > META_MAX:
+        fail("META_DESCRIPTION is %d chars (max %d)" % (len(META_DESCRIPTION), META_MAX))
+    og = META_PREFIX + ", ".join("%s (%s)" % (a["name"], a["short"]) for a in apps) + "."
     return nl.join([
-        indent + '<meta name="description" content="%s">' % attr,
-        indent + '<meta property="og:description" content="%s">' % attr,
+        indent + '<meta name="description" content="%s">' % html.escape(META_DESCRIPTION, quote=False).replace('"', "&quot;"),
+        indent + '<meta property="og:description" content="%s">' % html.escape(og),
     ])
 
 

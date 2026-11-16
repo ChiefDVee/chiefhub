@@ -79,5 +79,14 @@
     "category": "GameApplication",
     "desc": "Five dice, three rolls, one box. Play vs bots — family code for online & stats.",
     "points": ["Play right away: 1–5 bots or pass the phone, no signup", "Classic, Triple (×1 ×2 ×3) and Maxi with six dice", "Family code: profiles, online invite links, stats and head-to-head"]
+  },
+  {
+    "name": "ChiefPairs",
+    "short": "card-matching game",
+    "url": "https://www.chiefshuffle.com/pairs/",
+    "tag": "Card game",
+    "category": "GameApplication",
+    "desc": "Flip two cards, find the identical pairs. Solo on the clock, against bots, or online with family.",
+    "points": ["6 to 52 pairs from a real deck, fairly shuffled", "Solo timer and move count, or 1–3 bots (Easy, Medium, Hard)", "More card games coming at chiefshuffle.com"]
   }
 ]

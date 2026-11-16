@@ -87,6 +87,15 @@
     "tag": "Card game",
     "category": "GameApplication",
     "desc": "Flip two cards, find the identical pairs. Solo on the clock, against bots, or online with family.",
-    "points": ["6 to 52 pairs from a real deck, fairly shuffled", "Solo timer and move count, or 1–3 bots (Easy, Medium, Hard)", "More card games coming at chiefshuffle.com"]
+    "points": ["6 to 52 pairs from a real deck, fairly shuffled", "Solo timer and move count, or 1–3 bots (Easy, Medium, Hard)", "More card games at chiefshuffle.com"]
+  },
+  {
+    "name": "ChiefRami",
+    "short": "rummy card game",
+    "url": "https://www.chiefshuffle.com/rami/",
+    "tag": "Card game",
+    "category": "GameApplication",
+    "desc": "Rummy with two decks and four jokers: build runs and sets, open with 50, go out first. Against bots, pass-and-play or online with family.",
+    "points": ["2 to 6 players, bots from Easy to Hard", "Drag or tap cards onto the table, live check of every group", "Play to 500 or keep a family room running for days"]
   }
 ]

@@ -95,7 +95,7 @@
     "url": "https://www.chiefshuffle.com/rami/",
     "tag": "Card game",
     "category": "GameApplication",
-    "desc": "Rummy with two decks and four jokers: build runs and sets, open with 50, go out first. Against bots, pass-and-play or online with family.",
-    "points": ["2 to 6 players, bots from Easy to Hard", "Drag or tap cards onto the table, live check of every group", "Play to 500 or keep a family room running for days"]
+    "desc": "Rummy with two decks and four jokers: build runs and sets, open with 50, go out first. Lowest score wins. Against bots, pass-and-play or online with family.",
+    "points": ["2 to 6 players, bots from Easy to Hard", "Drag or tap cards onto the table, groups sort themselves", "Endless play: keep a family room running for days"]
   }
 ]

@@ -1,110 +1,198 @@
-[
-  {
-    "name": "ChiefMix",
-    "short": "text/file encryption",
-    "url": "https://chiefmix.com",
-    "tag": "Privacy",
-    "category": "SecurityApplication",
-    "desc": "Password-based AES-256 encryption for text and files. Not a coin mixer — it's for messages, not money.",
-    "points": ["Encrypt text or files with a password", "Runs in your browser — server never sees your text or key", "No account, no uploads, no cloud"]
-  },
-  {
-    "name": "ChiefDCA",
-    "short": "Bitcoin DCA backtester",
-    "url": "https://chiefdca.com",
-    "tag": "Bitcoin",
-    "category": "FinanceApplication",
-    "desc": "Backtest a Bitcoin DCA strategy against real price history.",
-    "points": ["Pick amount, interval and start date", "See what stacking sats would've done", "Real price history, no hindsight fairy tales"]
-  },
-  {
-    "name": "ChiefCount",
-    "short": "blackjack strategy trainer",
-    "url": "https://chiefcount.com",
-    "tag": "Trainer",
-    "category": "GameApplication",
-    "desc": "Blackjack basic strategy trainer. The house still wins, just slower.",
-    "points": ["Drill basic strategy hand by hand", "Instant feedback on every decision", "Practice without losing actual money"]
-  },
-  {
-    "name": "ChiefFees",
-    "short": "live Bitcoin fees",
-    "url": "https://fees.chiefke.com",
-    "tag": "Bitcoin",
-    "category": "FinanceApplication",
-    "desc": "Live Bitcoin fees and mempool. Know before you overpay.",
-    "points": ["Current sat/vB per priority", "Next block, hashrate, difficulty", "Fee calculator for your transaction"]
-  },
-  {
-    "name": "ChiefQOTD",
-    "short": "daily dark quotes",
-    "url": "https://chiefke.com/qotd/",
-    "tag": "Quotes",
-    "category": "EntertainmentApplication",
-    "desc": "Every CHIEF'S QOTD quote in one searchable archive. One dry, dark quote a day.",
-    "points": ["Search every quote, or pull a random one", "Share a link or save it as an image", "New one daily — Shorts on YouTube"]
-  },
-  {
-    "name": "ChiefBingo",
-    "short": "bingo number caller",
-    "url": "https://chiefke.com/bingo/",
-    "tag": "Game",
-    "category": "GameApplication",
-    "desc": "Bingo caller for 75 or 90 balls. Play bought cards, or generate your own with live scoring.",
-    "points": ["75-ball (B-I-N-G-O) or 90-ball games", "Own cards (75-ball): live scoring, auto-pause on a win", "Full-screen caller view, read aloud in your device language"]
-  },
-  {
-    "name": "ChiefDice",
-    "short": "dice roller",
-    "url": "https://chiefke.com/dice/",
-    "tag": "Game",
-    "category": "GameApplication",
-    "desc": "Roll 1 to 10 dice for any board game. Hold the ones you like, re-roll the rest.",
-    "points": ["Tap a die to hold it, tap the table to roll", "Last 10 rolls with their totals", "Full-screen table view, fair crypto-random rolls"]
-  },
-  {
-    "name": "ChiefJINX",
-    "short": "family card game",
-    "url": "https://www.chiefjinx.com",
-    "tag": "Game",
-    "category": "GameApplication",
-    "desc": "Fast family card game. Play the bots or invite friends with a private link — and shout JINX! on your last card.",
-    "points": ["Play the bots (Easy, Normal, Sharp) or invite up to 3 friends", "Stack +2 on +4 and pass the pain along", "Forget to call JINX! and get caught: draw five cards"]
-  },
-  {
-    "name": "ChiefYatzy",
-    "short": "family dice game",
-    "url": "https://www.chiefyatzy.com",
-    "tag": "Game",
-    "category": "GameApplication",
-    "desc": "Five dice, three rolls, one box. Play vs bots — family code for online & stats.",
-    "points": ["Play right away: 1–5 bots or pass the phone, no signup", "Classic, Triple (×1 ×2 ×3) and Maxi with six dice", "Family code: profiles, online invite links, stats and head-to-head"]
-  },
-  {
-    "name": "ChiefPairs",
-    "short": "card-matching game",
-    "url": "https://www.chiefshuffle.com/pairs/",
-    "tag": "Card game",
-    "category": "GameApplication",
-    "desc": "Flip two cards, find the identical pairs. Solo on the clock, against bots, or online with family.",
-    "points": ["6 to 52 pairs from a real deck, fairly shuffled", "Solo timer and move count, or 1–3 bots (Easy, Medium, Hard)", "More card games at chiefshuffle.com"]
-  },
-  {
-    "name": "ChiefRami",
-    "short": "rummy card game",
-    "url": "https://www.chiefshuffle.com/rami/",
-    "tag": "Card game",
-    "category": "GameApplication",
-    "desc": "Rummy with two decks and four jokers: build runs and sets, open with 50, go out first. Lowest score wins. Against bots, pass-and-play or online with family.",
-    "points": ["2 to 6 players, bots from Easy to Hard", "Drag or tap cards onto the table, groups sort themselves", "Endless play: keep a family room running for days"]
-  },
-  {
-    "name": "ChiefWords",
-    "short": "letter tile word game",
-    "url": "https://www.chiefletters.com/words/",
-    "tag": "Word game",
-    "category": "GameApplication",
-    "desc": "Play a word game with letter tiles on a board, in English or Dutch. Against bots, pass-and-play or online with family.",
-    "points": ["Bots from Beginner to Hard, or pass-and-play on one device", "Online rooms with family, live score while you lay tiles", "English and Dutch, large and small board"]
-  }
-]
+{
+  "sections": [
+    {
+      "id": "cards",
+      "title": "Card games"
+    },
+    {
+      "id": "words",
+      "title": "Word games"
+    },
+    {
+      "id": "dice",
+      "title": "Dice & bingo"
+    },
+    {
+      "id": "bitcoin",
+      "title": "Bitcoin"
+    },
+    {
+      "id": "quotes",
+      "title": "Quotes"
+    },
+    {
+      "id": "tools",
+      "title": "Tools"
+    }
+  ],
+  "apps": [
+    {
+      "name": "ChiefPairs",
+      "section": "cards",
+      "short": "card-matching game",
+      "url": "https://www.chiefshuffle.com/pairs/",
+      "tag": "Card game",
+      "category": "GameApplication",
+      "desc": "Flip two cards, find the identical pairs. Solo on the clock, against bots, or online with family.",
+      "points": [
+        "6 to 52 pairs from a real deck, fairly shuffled",
+        "Solo timer and move count, or 1–3 bots (Easy, Medium, Hard)",
+        "More card games at chiefshuffle.com"
+      ]
+    },
+    {
+      "name": "ChiefRami",
+      "section": "cards",
+      "short": "rummy card game",
+      "url": "https://www.chiefshuffle.com/rami/",
+      "tag": "Card game",
+      "category": "GameApplication",
+      "desc": "Rummy with two decks and four jokers: build runs and sets, open with 50, go out first. Lowest score wins. Against bots, pass-and-play or online with family.",
+      "points": [
+        "2 to 6 players, bots from Easy to Hard",
+        "Drag or tap cards onto the table, groups sort themselves",
+        "Endless play: keep a family room running for days"
+      ]
+    },
+    {
+      "name": "ChiefJINX",
+      "section": "cards",
+      "short": "family card game",
+      "url": "https://www.chiefjinx.com",
+      "tag": "Game",
+      "category": "GameApplication",
+      "desc": "Fast family card game. Play the bots or invite friends with a private link — and shout JINX! on your last card.",
+      "points": [
+        "Play the bots (Easy, Normal, Sharp) or invite up to 3 friends",
+        "Stack +2 on +4 and pass the pain along",
+        "Forget to call JINX! and get caught: draw five cards"
+      ]
+    },
+    {
+      "name": "ChiefCount",
+      "section": "cards",
+      "short": "blackjack strategy trainer",
+      "url": "https://chiefcount.com",
+      "tag": "Trainer",
+      "category": "GameApplication",
+      "desc": "Blackjack basic strategy trainer. The house still wins, just slower.",
+      "points": [
+        "Drill basic strategy hand by hand",
+        "Instant feedback on every decision",
+        "Practice without losing actual money"
+      ]
+    },
+    {
+      "name": "ChiefWords",
+      "section": "words",
+      "short": "letter tile word game",
+      "url": "https://www.chiefletters.com/words/",
+      "tag": "Word game",
+      "category": "GameApplication",
+      "desc": "Play a word game with letter tiles on a board, in English or Dutch. Against bots, pass-and-play or online with family.",
+      "points": [
+        "Bots from Beginner to Hard, or pass-and-play on one device",
+        "Online rooms with family, live score while you lay tiles",
+        "English and Dutch, large and small board"
+      ]
+    },
+    {
+      "name": "ChiefYatzy",
+      "section": "dice",
+      "short": "family dice game",
+      "url": "https://www.chiefyatzy.com",
+      "tag": "Game",
+      "category": "GameApplication",
+      "desc": "Five dice, three rolls, one box. Play vs bots — family code for online & stats.",
+      "points": [
+        "Play right away: 1–5 bots or pass the phone, no signup",
+        "Classic, Triple (×1 ×2 ×3) and Maxi with six dice",
+        "Family code: profiles, online invite links, stats and head-to-head"
+      ]
+    },
+    {
+      "name": "ChiefDice",
+      "section": "dice",
+      "short": "dice roller",
+      "url": "https://chiefke.com/dice/",
+      "tag": "Game",
+      "category": "GameApplication",
+      "desc": "Roll 1 to 10 dice for any board game. Hold the ones you like, re-roll the rest.",
+      "points": [
+        "Tap a die to hold it, tap the table to roll",
+        "Last 10 rolls with their totals",
+        "Full-screen table view, fair crypto-random rolls"
+      ]
+    },
+    {
+      "name": "ChiefBingo",
+      "section": "dice",
+      "short": "bingo number caller",
+      "url": "https://chiefke.com/bingo/",
+      "tag": "Game",
+      "category": "GameApplication",
+      "desc": "Bingo caller for 75 or 90 balls. Play bought cards, or generate your own with live scoring.",
+      "points": [
+        "75-ball (B-I-N-G-O) or 90-ball games",
+        "Own cards (75-ball): live scoring, auto-pause on a win",
+        "Full-screen caller view, read aloud in your device language"
+      ]
+    },
+    {
+      "name": "ChiefDCA",
+      "section": "bitcoin",
+      "short": "Bitcoin DCA backtester",
+      "url": "https://chiefdca.com",
+      "tag": "Bitcoin",
+      "category": "FinanceApplication",
+      "desc": "Backtest a Bitcoin DCA strategy against real price history.",
+      "points": [
+        "Pick amount, interval and start date",
+        "See what stacking sats would've done",
+        "Real price history, no hindsight fairy tales"
+      ]
+    },
+    {
+      "name": "ChiefFees",
+      "section": "bitcoin",
+      "short": "live Bitcoin fees",
+      "url": "https://fees.chiefke.com",
+      "tag": "Bitcoin",
+      "category": "FinanceApplication",
+      "desc": "Live Bitcoin fees and mempool. Know before you overpay.",
+      "points": [
+        "Current sat/vB per priority",
+        "Next block, hashrate, difficulty",
+        "Fee calculator for your transaction"
+      ]
+    },
+    {
+      "name": "ChiefQOTD",
+      "section": "quotes",
+      "short": "daily dark quotes",
+      "url": "https://chiefke.com/qotd/",
+      "tag": "Quotes",
+      "category": "EntertainmentApplication",
+      "desc": "Every CHIEF'S QOTD quote in one searchable archive. One dry, dark quote a day.",
+      "points": [
+        "Search every quote, or pull a random one",
+        "Share a link or save it as an image",
+        "New one daily — Shorts on YouTube"
+      ]
+    },
+    {
+      "name": "ChiefMix",
+      "section": "tools",
+      "short": "text/file encryption",
+      "url": "https://chiefmix.com",
+      "tag": "Privacy",
+      "category": "SecurityApplication",
+      "desc": "Password-based AES-256 encryption for text and files. Not a coin mixer — it's for messages, not money.",
+      "points": [
+        "Encrypt text or files with a password",
+        "Runs in your browser — server never sees your text or key",
+        "No account, no uploads, no cloud"
+      ]
+    }
+  ]
+}

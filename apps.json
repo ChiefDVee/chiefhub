@@ -99,12 +99,12 @@
     "points": ["2 to 6 players, bots from Easy to Hard", "Drag or tap cards onto the table, groups sort themselves", "Endless play: keep a family room running for days"]
   },
   {
-    "name": "ChiefLetters",
-    "short": "word and letter games",
-    "url": "https://www.chiefletters.com/",
+    "name": "ChiefWords",
+    "short": "letter tile word game",
+    "url": "https://www.chiefletters.com/words/",
     "tag": "Word game",
     "category": "GameApplication",
-    "desc": "Word and letter games in your browser. First up: ChiefWords, letter tiles on a board. Coming soon.",
-    "points": ["Self-drawn letter tiles, two boards", "English and Dutch, against bots or with family", "Coming soon: take a peek at the tiles"]
+    "desc": "Build words with letter tiles on a board, in English or Dutch. Against bots or with family. Coming soon.",
+    "points": ["Self-drawn letter tiles, large and small board", "English and Dutch, against bots or with family", "Coming soon: take a peek at the tiles"]
   }
 ]

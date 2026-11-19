@@ -104,7 +104,7 @@
     "url": "https://www.chiefletters.com/words/",
     "tag": "Word game",
     "category": "GameApplication",
-    "desc": "Build words with letter tiles on a board, in English or Dutch. Against bots or with family. Coming soon.",
-    "points": ["Self-drawn letter tiles, large and small board", "English and Dutch, against bots or with family", "Coming soon: take a peek at the tiles"]
+    "desc": "Play a word game with letter tiles on a board, in English or Dutch. Against bots, pass-and-play or online with family.",
+    "points": ["Bots from Beginner to Hard, or pass-and-play on one device", "Online rooms with family, live score while you lay tiles", "English and Dutch, large and small board"]
   }
 ]

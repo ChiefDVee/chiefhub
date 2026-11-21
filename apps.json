@@ -97,6 +97,20 @@
       ]
     },
     {
+      "name": "ChiefDaily",
+      "section": "words",
+      "short": "daily word puzzles",
+      "url": "https://www.chiefletters.com/daily/",
+      "tag": "Word game",
+      "category": "GameApplication",
+      "desc": "Four small word puzzles every day: guess the word, climb a ladder, fill the ring, crack the cipher. Same puzzles for everyone, in English or Dutch.",
+      "points": [
+        "Four new puzzles daily, in English and Dutch",
+        "Share your result, keep a streak going",
+        "Family code: compare scores with the family"
+      ]
+    },
+    {
       "name": "ChiefYatzy",
       "section": "dice",
       "short": "family dice game",

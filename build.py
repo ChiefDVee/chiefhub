@@ -6,13 +6,13 @@
 #
 # Genereert de app-kaarten (per sectie: <section> + <h2> + grid) en de JSON-LD in index.html uit apps.json,
 # tussen <!-- APPS:START -->/<!-- APPS:END --> en
-# <!-- JSONLD:START -->/<!-- JSONLD:END -->, en meta description (vast, max 155) +
-# og:description (app-lijst) tussen <!-- META:START -->/<!-- META:END -->. Statische HTML zodat
+# <!-- JSONLD:START -->/<!-- JSONLD:END -->, en meta/og/twitter-description (één vaste tekst, max 155,
+# niet uit apps.json) tussen <!-- META:START -->/<!-- META:END -->. Statische HTML zodat
 # crawlers en AI-fetchers (geen JS) de beschrijvingen zien.
 # Idempotent: zelfde apps.json → identieke index.html.
 # [2026-11-20] apps.json = {"sections": [{id, title}], "apps": [...]}; elke app heeft een verplicht `section`
 # (bekende sectie-id). Volgorde = sectievolgorde, daarbinnen apps.json-volgorde; lege sectie = niet gerenderd.
-# JSON-LD en og:description volgen dezelfde (getoonde) volgorde.
+# JSON-LD volgt dezelfde (getoonde) volgorde.
 #
 # Gebruik : /usr/bin/python3 build.py [--check]
 #           --check = enkel controleren of index.html up-to-date is
@@ -30,11 +30,10 @@ APPS_JSON = os.path.join(HERE, "apps.json")
 INDEX = os.path.join(HERE, "index.html")
 REQUIRED = ("name", "section", "short", "url", "tag", "category", "desc", "points")
 SECTION_ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
-META_PREFIX = "Free, no-signup tools by @ChiefXBelgium: "  # og:description = prefix + volledige app-lijst
-# [2026-11-14] <meta name="description"> = vaste tekst, max META_MAX tekens (zoekmachines kappen ±155 af);
-# og:description blijft de gegenereerde lijst. Nieuwe app hoeft hier niet bij, zolang de kern klopt.
-META_DESCRIPTION = ("Chief's Tools: free, no-signup Bitcoin tools (DCA backtester, live fees), text encryption, "
-                    "a blackjack trainer and family card, dice and bingo games.")
+# [2026-11-21] Eén vaste beschrijving voor <meta name="description">, og:description én twitter:description,
+# max META_MAX tekens (Google/WhatsApp kappen ±155 af). Bewust NIET uit apps.json: groeit niet mee met nieuwe apps.
+META_DESCRIPTION = ("Small tools, no accounts, no strings: free card games, dice games, word puzzles "
+                    "and Bitcoin tools by @ChiefXBelgium.")
 META_MAX = 155
 NAME_PREFIX = "Chief"  # kaarttitel: NAME_PREFIX + <span class="name-accent">rest</span>
 
@@ -91,13 +90,14 @@ def host(url):
     return re.sub(r"/$", "", re.sub(r"^https?://(www\.)?", "", url))
 
 
-def render_meta(apps, nl, indent):
+def render_meta(nl, indent):
     if len(META_DESCRIPTION) > META_MAX:
         fail("META_DESCRIPTION is %d chars (max %d)" % (len(META_DESCRIPTION), META_MAX))
-    og = META_PREFIX + ", ".join("%s (%s)" % (a["name"], a["short"]) for a in apps) + "."
+    d = html.escape(META_DESCRIPTION, quote=False).replace('"', "&quot;")  # apostrof letterlijk
     return nl.join([
-        indent + '<meta name="description" content="%s">' % html.escape(META_DESCRIPTION, quote=False).replace('"', "&quot;"),
-        indent + '<meta property="og:description" content="%s">' % html.escape(og),
+        indent + '<meta name="description" content="%s">' % d,
+        indent + '<meta property="og:description" content="%s">' % d,
+        indent + '<meta name="twitter:description" content="%s">' % d,
     ])
 
 
@@ -188,7 +188,7 @@ def main():
     nl = "\r\n" if "\r\n" in src else "\n"
     out = replace_block(src, "APPS", lambda n, i: render_cards(groups, n, i), nl)
     out = replace_block(out, "JSONLD", lambda n, i: render_jsonld(apps, n, i), nl)
-    out = replace_block(out, "META", lambda n, i: render_meta(apps, n, i), nl)
+    out = replace_block(out, "META", render_meta, nl)
     plain = unprefixed(apps)
     if plain:
         print("NOTE: no '%s' prefix, title rendered plain: %s" % (NAME_PREFIX, ", ".join(plain)))

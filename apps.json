@@ -55,6 +55,20 @@
       ]
     },
     {
+      "name": "ChiefMahjong",
+      "section": "cards",
+      "short": "tile-matching solitaire",
+      "url": "https://www.chiefshuffle.com/mahjong/",
+      "tag": "Tile game",
+      "category": "GameApplication",
+      "desc": "Tile-matching solitaire: pick two identical free tiles until the board is clear. Every board can be cleared. Solo against the clock, or race a bot or family on the same board.",
+      "points": [
+        "Three boards: Pocket 36, Terrace 72, Summit 144 tiles",
+        "Hint, undo and up to 2 shuffles, each with a small penalty",
+        "Race a bot (Easy, Medium, Hard) or family online"
+      ]
+    },
+    {
       "name": "ChiefJINX",
       "section": "cards",
       "short": "family card game",

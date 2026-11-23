@@ -3,7 +3,7 @@
    per format: Post = the 4:5 image (1080x1350, FMT_45), Story = the 9:16 image (1080x1920, FMT_916).
    One layout() feeds both the on-screen SVG cards and the PNG canvas, so screen and download never drift apart.
    Data: data/qotd.json = [{date, quote}], newest first. Favorites: localStorage "chief_qotd_favs" (array of dates).
-   No socials, no trackers, no external requests. */
+   No trackers, no external requests: the Share menu targets are plain links, only opened on click. */
 (function () {
   "use strict";
 
@@ -288,13 +288,50 @@
     download: '<path d="M12 4v11M7 10l5 5 5-5M5 19h14"/>',
     share: '<path d="M12 15V4M8 8l4-4 4 4M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/>',
     link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
-    fav: '<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20z"/>'
+    fav: '<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20z"/>',
+    // share targets: monochrome line icons (currentColor), no brand colours
+    whatsapp: '<path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.4-4A8 8 0 1 1 20 11.5z"/><path d="M9.2 8.8c0 3 2.9 5.9 5.9 5.9l.9-1.6-1.9-.9-.8.8a4.4 4.4 0 0 1-2.4-2.4l.8-.8-.9-1.9z"/>',
+    x: '<path d="M5 4h3.6L19 20h-3.6zM18.6 4l-5.8 6.6M11.2 13.4L5.4 20"/>',
+    facebook: '<path d="M14 21v-8h2.8l.5-3.3H14V7.9c0-1 .4-1.7 1.8-1.7h1.6V3.3A20 20 0 0 0 15 3.1c-2.5 0-4.2 1.5-4.2 4.3v2.3H8V13h2.8v8"/>',
+    telegram: '<path d="M21 4L3 11.2l6.2 2.3M21 4l-3 16-6.6-5.1M21 4L9.2 13.5V19l2.2-4.6"/>',
+    bluesky: '<path d="M12 10.8C10.2 7.3 6.9 4.8 5 4.8c-1.4 0-1.7 1.3-1.4 3.1.4 2.2 2 3.4 4.9 3.2-2.9.6-3.6 2.5-2.1 4.2 2.6 2.8 4.2-.3 5.6-3.4 1.4 3.1 3 6.2 5.6 3.4 1.5-1.7.8-3.6-2.1-4.2 2.9.2 4.5-1 4.9-3.2.3-1.8 0-3.1-1.4-3.1-1.9 0-5.2 2.5-7 6z"/>',
+    reddit: '<ellipse cx="12" cy="14.5" rx="8" ry="5.5"/><path d="M12 9l1.4-5 4.6 1.3"/><circle cx="19.2" cy="5.6" r="1.4"/><path d="M9 16.6c1.8 1.1 4.2 1.1 6 0M9 13h.01M15 13h.01"/>',
+    mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.6 6.6L12 13l8.4-6.4"/>',
+    more: '<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>'
   };
+  function svgIcon(kind) { return '<svg aria-hidden="true" viewBox="0 0 24 24">' + ICON[kind] + "</svg>"; }
+  // direct share targets (order = menu order); text = “quote” — Chief's QOTD, url = ?d= permalink
+  function shareTargets(e) {
+    var t = copyText(e), u = permalink(e), enc = encodeURIComponent;
+    return [
+      { key: "whatsapp", label: "WhatsApp", url: "https://wa.me/?text=" + enc(t + " " + u) },
+      { key: "x",        label: "X",        url: "https://x.com/intent/post?text=" + enc(t) + "&url=" + enc(u) + "&via=ChiefXBelgium" },
+      { key: "facebook", label: "Facebook", url: "https://www.facebook.com/sharer/sharer.php?u=" + enc(u) },
+      { key: "telegram", label: "Telegram", url: "https://t.me/share/url?url=" + enc(u) + "&text=" + enc(t) },
+      { key: "bluesky",  label: "Bluesky",  url: "https://bsky.app/intent/compose?text=" + enc(t + " " + u) },
+      { key: "reddit",   label: "Reddit",   url: "https://www.reddit.com/submit?url=" + enc(u) + "&title=" + enc(t) },
+      { key: "mail",     label: "Email",    url: "mailto:?subject=" + enc("Chief's QOTD") + "&body=" + enc(t + "\n\n" + u), same: true }
+    ];
+  }
+  // phone with file sharing → "Share image…" goes first (route to Instagram/TikTok/WhatsApp with the picture)
+  var fileShare = null;
+  function canShareFiles() {
+    if (fileShare !== null) return fileShare;
+    fileShare = false;
+    try {
+      fileShare = !!(navigator.share && navigator.canShare &&
+        navigator.canShare({ files: [new File([""], "chiefs-qotd.png", { type: "image/png" })] }));
+    } catch (_) { fileShare = false; }
+    return fileShare;
+  }
+  function imageFirst() {
+    return canShareFiles() && !!(window.matchMedia && window.matchMedia("(pointer: coarse)").matches);
+  }
   function mkBtn(kind, label, aria, withLabel) {
     var b = document.createElement("button");
     b.type = "button"; b.className = "qa-btn qa-" + kind;
     b.setAttribute("aria-label", aria); b.title = label;
-    b.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24">' + ICON[kind] + "</svg>" + (withLabel ? "<span>" + label + "</span>" : "");
+    b.innerHTML = svgIcon(kind) + (withLabel ? "<span>" + label + "</span>" : "");
     return b;
   }
   var openMenu = null;
@@ -303,6 +340,57 @@
     var m = openMenu; openMenu = null;
     m.menu.hidden = true; m.btn.setAttribute("aria-expanded", "false");
     if (focusBack) m.btn.focus();
+  }
+  function toggleMenu(menu, btn, ev) {   // one menu open at a time; focus into the menu on open
+    ev.stopPropagation();
+    if (openMenu && openMenu.menu === menu) { closeMenu(false); return; }
+    closeMenu(false);
+    menu.hidden = false; btn.setAttribute("aria-expanded", "true");
+    openMenu = { menu: menu, btn: btn };
+    var first = menu.querySelector("button, a");
+    if (first) first.focus({ preventScroll: true });
+    // whole menu into view (a card low on the screen would otherwise hide the last targets below the fold)
+    if (menu.scrollIntoView) menu.scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+  }
+  function shareMenu(e, bShare) {
+    var menu = document.createElement("div");
+    menu.className = "qa-menu qa-sharemenu"; menu.hidden = true;
+    menu.setAttribute("aria-label", "Share quote of " + e.date);
+    var list = document.createElement("div");
+    list.className = "qa-targets";
+    shareTargets(e).forEach(function (t) {
+      var a = document.createElement("a");
+      a.className = "qa-size qa-target qa-t-" + t.key; a.href = t.url;
+      a.setAttribute("aria-label", t.same ? "Email quote of " + e.date : "Share quote of " + e.date + " on " + t.label);
+      if (!t.same) { a.target = "_blank"; a.rel = "noopener noreferrer"; }
+      a.innerHTML = svgIcon(t.key) + "<span>" + t.label + "</span>";
+      a.addEventListener("click", function (ev) {
+        if (!t.same) { ev.preventDefault(); window.open(t.url, "_blank", "noopener,noreferrer"); }
+        closeMenu(true);   // mailto: default navigation in the same tab
+      });
+      list.appendChild(a);
+    });
+    var bCopyLink = document.createElement("button");
+    bCopyLink.type = "button"; bCopyLink.className = "qa-size qa-target qa-t-link";
+    bCopyLink.setAttribute("aria-label", "Copy link to quote of " + e.date);
+    bCopyLink.innerHTML = svgIcon("link") + "<span>Copy link</span>";
+    bCopyLink.addEventListener("click", function () { closeMenu(true); copyLink(e, bShare); });
+    list.appendChild(bCopyLink);
+    if (navigator.share) {
+      var first = imageFirst();
+      var bMore = document.createElement("button");
+      bMore.type = "button"; bMore.className = "qa-size qa-target qa-t-more";
+      bMore.setAttribute("aria-label", (first ? "Share image of quote of " : "More share options for quote of ") + e.date);
+      bMore.innerHTML = svgIcon(first ? "share" : "more") + "<span>" + (first ? "Share image…" : "More…") + "</span>";
+      bMore.addEventListener("click", function () { closeMenu(true); share(e, bShare); });
+      if (first) list.insertBefore(bMore, list.firstChild); else list.appendChild(bMore);
+    }
+    menu.appendChild(list);
+    var hint = document.createElement("p");
+    hint.className = "qa-hint";
+    hint.textContent = "Instagram/TikTok: download the image and post it from the app.";
+    menu.appendChild(hint);
+    return menu;
   }
   function actions(e, withLabels) {
     var row = document.createElement("div");
@@ -328,20 +416,15 @@
       });
       menu.appendChild(it);
     });
-    bDl.addEventListener("click", function (ev) {
-      ev.stopPropagation();
-      if (openMenu && openMenu.menu === menu) { closeMenu(false); return; }
-      closeMenu(false);
-      menu.hidden = false; bDl.setAttribute("aria-expanded", "true");
-      openMenu = { menu: menu, btn: bDl };
-      menu.firstChild.focus();
-    });
+    bDl.addEventListener("click", function (ev) { toggleMenu(menu, bDl, ev); });
 
     var bShare = mkBtn("share", "Share", "Share quote of " + d, withLabels);
-    function warm() { if (navigator.share) renderPNG(e, FMT.post).catch(function () {}); }
+    bShare.setAttribute("aria-haspopup", "true"); bShare.setAttribute("aria-expanded", "false");
+    var sMenu = shareMenu(e, bShare);
+    function warm() { if (navigator.share) renderPNG(e, FMT.post).catch(function () {}); }   // PNG ready before More…
     bShare.addEventListener("pointerdown", warm);
     bShare.addEventListener("focus", warm);
-    bShare.addEventListener("click", function () { share(e, bShare); });
+    bShare.addEventListener("click", function (ev) { toggleMenu(sMenu, bShare, ev); });
 
     var bLink = mkBtn("link", "Link", "Copy link to quote of " + d, withLabels);
     bLink.addEventListener("click", function () { copyLink(e, bLink); });
@@ -353,6 +436,7 @@
 
     [bCopy, bDl, bShare, bLink, bFav].forEach(function (b) { row.appendChild(b); });
     row.appendChild(menu);
+    row.appendChild(sMenu);
     return row;
   }
   function copyLink(e, btn) {

@@ -25,16 +25,16 @@
 <meta name="twitter:site" content="@ChiefXBelgium">
 <link rel="stylesheet" href="../assets/brand/chief-tokens.css">
 <link rel="stylesheet" href="../assets/brand/chief-footer.css">
-<link rel="stylesheet" href="../assets/fonts/fonts.css">
 <style>
 /* Layout: the page is exactly one screen tall; the dice area takes what is left and JS sizes the dice to fit it.
    Portrait = one column, landscape (≥700 px wide) = dice left, controls right. Chief huisstijl (../assets/brand/chief-tokens.css), dark only.
-   Site variables = aliases of --chief-* (--die = --chief-die, cream die face). Fonts = site choice. */
+   Site variables = aliases of --chief-* (--die = --chief-die, cream die face). Fonts = system font via the tokens (no webfonts),
+   former display text heavy via --chief-fw-heavy. Controls tap ≥ --chief-tap (44 px); dice are game pieces (exempt). */
 :root{
   --bg:var(--chief-bg); --paper:var(--chief-surface); --ink:var(--chief-text); --muted:var(--chief-muted); --line:var(--chief-border);
   --hit:var(--chief-accent); --hit-ink:var(--chief-accent-ink); --die:var(--chief-die); --pip:var(--chief-bg);
-  --display:"Bowlby One","Arial Black",Impact,sans-serif;
-  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:var(--chief-font-display);
+  --body:var(--chief-font-body);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -46,12 +46,12 @@ html.fopen .chief-footer{display:none} /* Chief-footer (chief-brand-sync) onder 
 .app{height:100vh;height:100dvh;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:10px;
   padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.home{color:var(--muted);font-size:.85rem;font-weight:600;text-decoration:none}
+.home{display:inline-flex;align-items:center;min-height:var(--chief-tap);color:var(--muted);font-size:.85rem;font-weight:600;text-decoration:none}
 .home:hover,.home:focus-visible{color:var(--ink)}
-h1{font-family:var(--display);font-size:1.35rem;margin:0;letter-spacing:.01em;line-height:1.1}
+h1{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:var(--chief-fs-wordmark);margin:0;letter-spacing:.01em;line-height:1.1}
 h1 span{color:var(--hit)}
 /* Link naar het volledige spel ChiefYatzy (2026-11-13): pill in de kop; de dobbelsteen-tool zelf is ongewijzigd */
-.play{flex:none;display:inline-flex;align-items:center;min-height:32px;padding:4px 12px;border:1px solid var(--hit);border-radius:999px;
+.play{flex:none;display:inline-flex;align-items:center;min-height:var(--chief-tap);padding:4px 12px;border:1px solid var(--hit);border-radius:999px;
   color:var(--hit);font:700 .78rem var(--body);text-decoration:none;white-space:nowrap}
 .play:hover,.play:focus-visible{background:var(--hit);color:var(--hit-ink)}
 .top .play{margin-left:auto}
@@ -83,14 +83,14 @@ h1 span{color:var(--hit)}
 .side{display:flex;flex-direction:column;gap:10px;min-width:0}
 .total{display:flex;align-items:baseline;justify-content:center;gap:12px;min-height:3.2rem}
 .total .tl{color:var(--muted);font:800 .75rem var(--body);letter-spacing:.14em;text-transform:uppercase}
-.total b{font:400 clamp(2.4rem,6.5vh,4.4rem)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums}
+.total b{font:var(--chief-fw-heavy) clamp(2.4rem,6.5vh,4.4rem)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums}
 .total b.idle{font:800 1.15rem/1.6 var(--body);color:var(--muted)}
 .total b.busy{opacity:.45}
 .total b.allheld{color:var(--hit);font-size:1rem;text-align:center}
 .actions{display:grid;grid-template-columns:1fr auto;gap:8px}
-.roll{border:0;border-radius:16px;background:var(--hit);color:var(--hit-ink);font:400 1.6rem var(--display);padding:14px;cursor:pointer;letter-spacing:.02em;touch-action:manipulation}
+.roll{border:0;border-radius:16px;background:var(--hit);color:var(--hit-ink);font:var(--chief-fw-heavy) 1.6rem var(--display);padding:14px;cursor:pointer;letter-spacing:.02em;touch-action:manipulation}
 .roll:active{transform:translateY(1px)}
-.ghost{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:8px 12px;font:600 .85rem var(--body);cursor:pointer;touch-action:manipulation}
+.ghost{min-height:var(--chief-tap);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:8px 12px;font:600 .85rem var(--body);cursor:pointer;touch-action:manipulation}
 .ghost[aria-pressed="true"]{border-color:var(--hit);color:var(--hit)}
 .ghost:disabled,.step button:disabled{opacity:.4;cursor:default}
 button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
@@ -129,12 +129,12 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 /* bar: total (fixed box, so the hint never shifts the dice) · Roll · Release all */
 .focus .fbar{display:flex;align-items:center;justify-content:center;gap:min(4vw,32px)}
 .focus .ftot{flex:0 0 min(32vw,240px);min-height:min(15vmin,8rem);display:flex;align-items:center;justify-content:center;text-align:center;
-  font:400 min(15vmin,8rem)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums}
+  font:var(--chief-fw-heavy) min(15vmin,8rem)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums}
 .focus .ftot.idle{font:800 min(4.2vmin,1.3rem)/1.25 var(--body);color:var(--muted)}
 .focus .ftot.allheld{color:var(--hit)}
 .focus .ftot.busy{opacity:.45}
 .focus .roll{flex:0 1 420px;min-width:0;font-size:min(7vmin,2.2rem);padding:min(3vmin,20px)}
-.focus .frel{flex:none;min-height:min(13vmin,64px);padding:0 min(3vw,18px);font-size:min(3.8vmin,1rem)}
+.focus .frel{flex:none;min-height:max(var(--chief-tap),min(13vmin,64px));padding:0 min(3vw,18px);font-size:min(3.8vmin,1rem)}
 .focus .fx{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));
   width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:800 1.2rem var(--body);cursor:pointer}
 .focus .die{cursor:pointer}

@@ -23,6 +23,7 @@
 <meta name="twitter:image" content="https://chiefke.com/assets/og/bingo.png">
 <meta name="twitter:site" content="@ChiefXBelgium">
 <link rel="stylesheet" href="../assets/brand/chief-tokens.css">
+<link rel="stylesheet" href="../assets/brand/chief-gamebar.css">
 <link rel="stylesheet" href="../assets/brand/chief-footer.css">
 <link rel="stylesheet" href="../assets/fonts/fonts.css">
 <style>
@@ -30,7 +31,11 @@
    Site variables = aliases of --chief-*; --hit-soft = --chief-accent-dim (2026-11-24). Screen colours only via --chief-* (shadows via
    color-mix with --chief-bg); the A4 print sheets (.sheet, .th-*, @media print) keep their literal print colours (print exception, CLAUDE.md).
    Fonts = system font via the tokens, former display text heavy via --chief-fw-heavy; Archivo Black + JetBrains Mono only on the print sheets.
-   Controls tap ≥ --chief-tap (44 px); balls and board cells are game pieces (exempt). */
+   Controls tap ≥ --chief-tap (44 px); balls and board cells are game pieces (exempt).
+   Games UI ronde 3: header = .chief-gamebar (../assets/brand/chief-gamebar.css) with [?] [⌂], no language toggle (no i18n).
+   Font sizes only via var(--chief-fs-*); exceptions = print (A4 sheets, mm) and game pieces that scale with the piece:
+   the ball (cqi of .ball), the caller-view ball (vw/vh/vmin, the drawn ball shown full screen), the caller-view history balls
+   (cqi of .hist), the winning card in the winner overlay (calc(var(--gw) …)) and the ×N bonus marker on a card cell. */
 :root{
   --bg:var(--chief-bg); --paper:var(--chief-surface); --ink:var(--chief-text); --muted:var(--chief-muted);
   --dauber:var(--chief-accent); --dauber-ink:var(--chief-accent-ink); --line:var(--chief-border); --hit:var(--chief-accent); --hit-soft:var(--chief-accent-dim);
@@ -42,26 +47,31 @@
 html{color-scheme:dark}
 body{margin:0}
 [hidden]{display:none!important}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(32px + env(safe-area-inset-bottom,0px))}
-.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
-.home{align-self:flex-start;display:inline-flex;align-items:center;min-height:var(--chief-tap);color:var(--muted);font-size:.85rem;font-weight:600;text-decoration:none}
-.home:hover,.home:focus-visible{color:var(--ink)}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-h1{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:var(--chief-fs-wordmark);margin:0;letter-spacing:.01em}
-h1 span{color:var(--hit)}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--chief-fs-body)}
+/* .wrap carries the page padding (was on body), so the gamebar runs full width; content stays 560 px wide */
+.wrap{box-sizing:content-box;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px;
+  padding:16px max(16px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+/* game chrome (Games UI ronde 3): local additions on top of the shared chief-gamebar.css */
+.chief-wordmark{line-height:var(--chief-tap)}                     /* tap area ≥ 44 px */
+.chief-gamebar__actions>*{flex-shrink:0}
+.chief-sheet{top:var(--hdr,0px)}                                   /* below the header: ? and ⌂ stay tappable */
+.howto{margin:0;padding-left:1.2em}
+.howto li+li{margin-top:var(--chief-space-2)}
+.chief-sheet h3{margin:var(--chief-space-4) 0 var(--chief-space-2);font-size:var(--chief-fs-sm);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.chief-sheet .howto-bonus{margin:var(--chief-space-3) 0 0;color:var(--muted)}
+/* settings row (was in the old header): game type + card mode */
+.opts{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
 .seg{display:inline-flex;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px}
-.seg button{min-height:var(--chief-tap);border:0;background:none;color:var(--muted);font:600 .9rem var(--body);padding:6px 14px;border-radius:999px;cursor:pointer}
+.seg button{min-height:var(--chief-tap);border:0;background:none;color:var(--muted);font:600 var(--chief-fs-sm) var(--body);padding:6px 14px;border-radius:999px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--hit);color:var(--dauber-ink)}
 .stage{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
-.ball{width:min(62vw,240px);aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--dauber);color:var(--dauber-ink);
+.ball{width:min(62vw,240px);aspect-ratio:1;max-width:100%;border-radius:50%;container-type:inline-size;background:var(--dauber);color:var(--dauber-ink);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   box-shadow:inset -14px -18px 0 color-mix(in srgb,var(--chief-bg) 12%,transparent)}
-.ball .letter{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:1.6rem;line-height:1;opacity:.85;min-height:1.6rem}
-.ball .num{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:clamp(4rem,20vw,6.5rem);line-height:1;font-variant-numeric:tabular-nums}
+.ball .letter{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:var(--chief-fs-xl);font-size:11cqi;line-height:1;opacity:.85;min-height:1.6rem}
+.ball .num{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:var(--chief-fs-title);font-size:40cqi;line-height:1;font-variant-numeric:tabular-nums}
 .ball.idle{background:var(--hit-soft);color:var(--muted);box-shadow:none}
-.ball.idle .num{font-size:1.4rem;font-family:var(--body);font-weight:800}
+.ball.idle .num{font-size:var(--chief-fs-xl);font-family:var(--body);font-weight:800}
 .pop{animation:pop .35s ease-out}
 @keyframes pop{0%{transform:scale(.7)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){.pop{animation:none}}
@@ -69,22 +79,22 @@ h1 span{color:var(--hit)}
 .meta b{color:var(--ink)}
 .bar{width:100%;height:6px;border-radius:999px;background:var(--hit-soft);overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--hit);border-radius:inherit}
-.barnote{width:100%;text-align:center;font-weight:800;font-size:.8rem;letter-spacing:.08em;color:var(--muted);margin-top:-8px}
+.barnote{width:100%;text-align:center;font-weight:800;font-size:var(--chief-fs-xs);letter-spacing:.08em;color:var(--muted);margin-top:-8px}
 .recent{display:flex;gap:6px;min-height:34px;flex-wrap:wrap;justify-content:center}
 .recent span{min-width:34px;height:34px;padding:0 6px;border-radius:999px;border:2px solid var(--hit);color:var(--hit);
-  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-variant-numeric:tabular-nums;font-size:.9rem}
-.draw{width:100%;border:0;border-radius:16px;background:var(--hit);color:var(--dauber-ink);font:var(--chief-fw-heavy) 1.5rem var(--display);padding:18px;cursor:pointer;letter-spacing:.02em}
+  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-variant-numeric:tabular-nums;font-size:var(--chief-fs-sm)}
+.draw{width:100%;border:0;border-radius:16px;background:var(--hit);color:var(--dauber-ink);font:var(--chief-fw-heavy) var(--chief-fs-xl) var(--display);padding:18px;cursor:pointer;letter-spacing:.02em}
 .draw:active{transform:translateY(1px)}
 .draw:disabled{opacity:.4;cursor:default}
 .auto{width:100%;display:flex;gap:8px;align-items:stretch}
-.auto .go{flex:1;min-height:var(--chief-tap);border:2px solid var(--hit);background:none;color:var(--hit);border-radius:12px;font:800 1rem var(--body);padding:10px;cursor:pointer}
+.auto .go{flex:1;min-height:var(--chief-tap);border:2px solid var(--hit);background:none;color:var(--hit);border-radius:12px;font:800 var(--chief-fs-md) var(--body);padding:10px;cursor:pointer}
 .auto .go[aria-pressed="true"]{background:var(--hit);color:var(--dauber-ink)}
 .auto .go:disabled{opacity:.4;cursor:default}
 .step{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
-.step button{border:0;background:none;color:var(--ink);font:800 1.2rem var(--body);width:42px;height:100%;min-height:44px;cursor:pointer}
+.step button{border:0;background:none;color:var(--ink);font:800 var(--chief-fs-lg) var(--body);width:var(--chief-tap);height:100%;min-height:var(--chief-tap);cursor:pointer}
 .step output{min-width:56px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
 .tools{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%}
-.tools button{min-height:var(--chief-tap);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 4px;font:600 .85rem var(--body);cursor:pointer}
+.tools button{min-height:var(--chief-tap);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 4px;font:600 var(--chief-fs-sm) var(--body);cursor:pointer}
 .tools button[aria-pressed="true"]{border-color:var(--hit);color:var(--hit)}
 .tools button:disabled{opacity:.4;cursor:default}
 .tools button.copy{grid-column:1/-1}
@@ -93,17 +103,17 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 .confirm{width:100%;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--hit-soft);border-radius:12px;padding:10px 12px}
 .confirm p{margin:0;font-weight:600}
 .confirm div{display:flex;gap:8px}
-.confirm button{min-height:var(--chief-tap);border:0;border-radius:10px;padding:8px 14px;font:700 .9rem var(--body);cursor:pointer}
+.confirm button{min-height:var(--chief-tap);border:0;border-radius:10px;padding:8px 14px;font:700 var(--chief-fs-sm) var(--body);cursor:pointer}
 .confirm .yes{background:var(--hit);color:var(--dauber-ink)}
 .confirm .no{background:var(--paper);color:var(--ink)}
 .board{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:14px}
-.board h2{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px}
+.board h2{font-size:var(--chief-fs-xs);text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px}
 .grid{display:grid;gap:4px}
 .cell{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;
-  font-size:clamp(.65rem,2.6vw,.85rem);color:var(--muted);font-variant-numeric:tabular-nums;border:1px solid var(--line)}
+  font-size:var(--chief-fs-sm);color:var(--muted);font-variant-numeric:tabular-nums;border:1px solid var(--line)}
 .cell.on{background:var(--hit);border-color:var(--hit);color:var(--dauber-ink);font-weight:800}
 .cell.last{outline:3px solid var(--ink);outline-offset:1px}
-.colhead{font-family:var(--display);font-weight:var(--chief-fw-heavy);text-align:center;color:var(--hit);font-size:1rem}
+.colhead{font-family:var(--display);font-weight:var(--chief-fw-heavy);text-align:center;color:var(--hit);font-size:var(--chief-fs-md)}
 /* Chief-footer (chief-brand-sync) verborgen zolang de caller-view open is */
 body:has(#focus:not([hidden])) .chief-footer{display:none}
 
@@ -115,44 +125,43 @@ body:has(#focus:not([hidden])) .chief-footer{display:none}
 .focus .fl{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:min(12vmin,8rem);line-height:1;opacity:.75;min-height:1em}
 .focus .fn{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:min(60vw,46vh);line-height:.9;font-variant-numeric:tabular-nums}
 .focus.nohist .fn{font-size:min(66vw,62vh)}
-.focus .fn.small{font-family:var(--body);font-weight:800;font-size:min(8vmin,3rem);color:var(--ink)}
-.focus .hist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:min(2vw,12px);width:min(100%,720px)}
+.focus .fn.small{font-family:var(--body);font-weight:800;font-size:var(--chief-fs-title);color:var(--ink)}
+.focus .hist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:min(2vw,12px);width:min(100%,720px);container-type:inline-size}
 .focus .hist span{aspect-ratio:1;border-radius:50%;border:3px solid var(--line);color:var(--ink);background:var(--paper);
   display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1;
-  font:var(--chief-fw-heavy) min(7vw,5vh,3rem) var(--display);font-variant-numeric:tabular-nums}
+  font:var(--chief-fw-heavy) var(--chief-fs-title) var(--display);font-size:7.5cqi;font-variant-numeric:tabular-nums}
 .focus .hist span small{font-size:.45em;color:var(--hit);margin-bottom:.15em}
 .focus .hist span:first-child{border-color:var(--hit)}
-.focus .hlabel{color:var(--muted);font:800 .8rem var(--body);letter-spacing:.14em;text-transform:uppercase}
+.focus .hlabel{color:var(--muted);font:800 var(--chief-fs-xs) var(--body);letter-spacing:.14em;text-transform:uppercase}
 .focus .hside{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
 @media (orientation:landscape){
   .focus{flex-direction:row;gap:4vw}
   .focus .fn{font-size:min(40vw,62vh)}
   .focus .hside{width:min(42vw,560px)}
-  .focus .hist span{font-size:min(4vw,9vh,3rem)}
 }
-.focus .fx,.focus .fh{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));height:44px;border-radius:999px;border:1px solid var(--line);
-  background:var(--paper);color:var(--ink);font:800 .95rem var(--body);cursor:pointer}
-.focus .fx{right:calc(12px + env(safe-area-inset-right,0px));width:44px;font-size:1.2rem}
+.focus .fx,.focus .fh{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));height:var(--chief-tap);border-radius:999px;border:1px solid var(--line);
+  background:var(--paper);color:var(--ink);font:800 var(--chief-fs-md) var(--body);cursor:pointer}
+.focus .fx{right:calc(12px + env(safe-area-inset-right,0px));width:var(--chief-tap);font-size:var(--chief-fs-lg)}
 .focus .fh{left:calc(12px + env(safe-area-inset-left,0px));padding:0 16px}
-.focus .fs{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:.85rem;color:var(--muted)}
+.focus .fs{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:0;right:0;text-align:center;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:var(--chief-fs-sm);color:var(--muted)}
 .focus .fb{position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--line)}
 .focus .fb i{display:block;height:100%;width:0;background:var(--hit)}
 /* Own cards: players panel, live scoring, toasts */
 .players{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:12px}
-.players h2,.players h3{font-size:.75rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0}
+.players h2,.players h3{font-size:var(--chief-fs-xs);text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0}
 .players h3{margin-top:4px}
-.pnote{margin:0;color:var(--muted);font-size:.9rem}
+.pnote{margin:0;color:var(--muted);font-size:var(--chief-fs-sm)}
 .pnote:empty,.perr:empty{display:none}
 .pform{display:grid;grid-template-columns:minmax(0,1fr) 8.5em;gap:8px}
-.pform label{display:flex;flex-direction:column;gap:4px;font:600 .72rem var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.pform label{display:flex;flex-direction:column;gap:4px;font:600 var(--chief-fs-xs) var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .pform .wide{grid-column:1/-1}
-.pform input{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:600 1rem var(--body);min-width:0;width:100%;text-transform:none;letter-spacing:0}
+.pform input{min-height:var(--chief-tap);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:600 var(--chief-fs-md) var(--body);min-width:0;width:100%;text-transform:none;letter-spacing:0}
 .pform input:focus-visible{outline:3px solid var(--hit);outline-offset:1px}
-.pform button{grid-column:1/-1;min-height:var(--chief-tap);border:0;border-radius:12px;background:var(--hit);color:var(--dauber-ink);font:800 1rem var(--body);padding:12px;cursor:pointer}
-.perr{margin:0;color:var(--chief-err);font-weight:600;font-size:.9rem}
+.pform button{grid-column:1/-1;min-height:var(--chief-tap);border:0;border-radius:12px;background:var(--hit);color:var(--dauber-ink);font:800 var(--chief-fs-md) var(--body);padding:12px;cursor:pointer}
+.perr{margin:0;color:var(--chief-err);font-weight:600;font-size:var(--chief-fs-sm)}
 .tw{overflow-x:auto}
-table.t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:.88rem}
-table.t th{text-align:left;color:var(--muted);font-weight:600;font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;padding:6px 4px;border-bottom:1px solid var(--line)}
+table.t{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:var(--chief-fs-sm)}
+table.t th{text-align:left;color:var(--muted);font-weight:600;font-size:var(--chief-fs-xs);text-transform:uppercase;letter-spacing:.06em;padding:6px 4px;border-bottom:1px solid var(--line)}
 table.t td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}
 table.t .n{text-align:right;white-space:nowrap}
 table.t tr.lead td{color:var(--hit);font-weight:800}
@@ -168,15 +177,15 @@ details.pl[open] summary::before{content:"▾"}
 details.pl summary .nm{font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 details.pl summary .pts{color:var(--hit);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 /* Remove: small destructive button — looks 24 px (pill on ::before), taps ≥ --chief-tap; the negative margin keeps the row height */
-details.pl summary .rm{position:relative;min-height:var(--chief-tap);margin:-10px 0;border:0;background:none;color:var(--muted);border-radius:999px;padding:0 10px;font:600 .8rem var(--body);cursor:pointer;white-space:nowrap}
+details.pl summary .rm{position:relative;min-height:var(--chief-tap);margin:-10px 0;border:0;background:none;color:var(--muted);border-radius:999px;padding:0 10px;font:600 var(--chief-fs-sm) var(--body);cursor:pointer;white-space:nowrap}
 details.pl summary .rm::before{content:"";position:absolute;left:0;right:0;top:50%;height:24px;transform:translateY(-50%);border:1px solid var(--line);border-radius:999px;pointer-events:none;box-sizing:border-box}
 details.pl summary .rm.armed{color:var(--chief-err)}
 details.pl summary .rm.armed::before{border-color:var(--chief-err)}
 .minis{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;padding:0 12px 12px}
 .mini{display:flex;flex-direction:column;gap:4px}
 .mini .mg{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
-.mini .mg span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;font:700 .72rem var(--body);background:var(--paper);color:var(--muted);font-variant-numeric:tabular-nums}
-.mini .mg .h{aspect-ratio:auto;background:none;color:var(--hit);font:var(--chief-fw-heavy) .8rem var(--display)}
+.mini .mg span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:4px;font:700 var(--chief-fs-xs) var(--body);background:var(--paper);color:var(--muted);font-variant-numeric:tabular-nums}
+.mini .mg .h{aspect-ratio:auto;background:none;color:var(--hit);font:var(--chief-fw-heavy) var(--chief-fs-xs) var(--display)}
 .mini .mg .on{background:var(--hit);color:var(--dauber-ink)}
 /* Bonus marker (CB.bonus): small "×N" top-right (≈22 % of the cell) + double inner border, no fill.
    Same design on print sheets, mini cards and the winner overlay; the drawn/winning styles stay visible underneath. */
@@ -184,7 +193,7 @@ details.pl summary .rm.armed::before{border-color:var(--chief-err)}
 .bx::before{content:"";position:absolute;inset:var(--bxi,3px);border:var(--bxw,4px) double var(--bxc,var(--chief-accent));border-radius:inherit;pointer-events:none}
 .bx::after{content:"×" attr(data-x);position:absolute;top:var(--bxt,4px);right:var(--bxr,5px);font:var(--chief-fw-heavy) var(--bxf,.6rem)/1 var(--display);
   color:var(--bxc,var(--chief-accent));letter-spacing:0;pointer-events:none}
-.mini .mg .bx{--bxi:1px;--bxw:3px;--bxt:4px;--bxr:4px;--bxf:6px;padding-top:7px;font-size:.62rem}
+.mini .mg .bx{--bxi:1px;--bxw:3px;--bxt:4px;--bxr:4px;--bxf:6px;padding-top:7px;font-size:var(--chief-fs-xs)}
 .mini .mg .bx.on{--bxc:var(--chief-accent-ink)}
 .wg .bx{--bxi:calc(var(--gw) * .008);--bxw:max(3px,calc(var(--gw) * .011));--bxt:calc(var(--gw) * .026);--bxr:calc(var(--gw) * .03);
   --bxf:calc(var(--gw) * .04);padding-top:calc(var(--gw) * .05)}
@@ -192,10 +201,10 @@ details.pl summary .rm.armed::before{border-color:var(--chief-err)}
 .pc .pg span.bx{--bxi:.8mm;--bxw:.95mm;--bxt:2.3mm;--bxr:2.4mm;--bxf:3.8mm;--bxc:var(--bxk);padding-top:3mm}
 .th-ink{--bxk:#1a1a1a}
 .th-chief{--bxk:var(--chief-accent)}
-.mini .cap{display:flex;justify-content:space-between;gap:6px;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.mini .cap{display:flex;justify-content:space-between;gap:6px;font-size:var(--chief-fs-xs);color:var(--muted);font-variant-numeric:tabular-nums}
 .mini .cap b{color:var(--hit)}
 .pw{width:100%;min-height:var(--chief-tap);display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);
-  border-radius:12px;padding:10px 14px;font:600 .9rem var(--body);cursor:pointer;text-align:left}
+  border-radius:12px;padding:10px 14px;font:600 var(--chief-fs-sm) var(--body);cursor:pointer;text-align:left}
 .pw b{border-radius:999px;padding:3px 12px;font-weight:800;background:var(--line);color:var(--muted)}
 .pw[aria-pressed="true"] b{background:var(--hit);color:var(--dauber-ink)}
 /* Winner overlay: above the caller view (iPad full screen is the main target), one panel per (player, card, pattern) */
@@ -204,14 +213,14 @@ html.wopen,html.wopen body{overflow:hidden}
   cursor:pointer;user-select:none;-webkit-user-select:none;display:flex;flex-direction:column;align-items:center;gap:2.2vh;
   padding:calc(18px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
   --gw:min(86vw,44vh)}
-.win .wt{font-family:var(--display);font-weight:var(--chief-fw-heavy);color:var(--hit);font-size:min(9vmin,4.5rem);line-height:1;letter-spacing:.04em}
+.win .wt{font-family:var(--display);font-weight:var(--chief-fw-heavy);color:var(--hit);font-size:calc(var(--gw) * .14);line-height:1;letter-spacing:.04em}
 .win .wps{display:flex;flex-direction:column;align-items:center;gap:4vh;width:100%;margin:auto 0}
-.win .wcnt{margin-top:-1vh;color:var(--ink);font:800 min(3.4vmin,1.4rem) var(--body);letter-spacing:.06em}
+.win .wcnt{margin-top:-1vh;color:var(--ink);font:800 var(--chief-fs-lg) var(--body);letter-spacing:.06em}
 .win .wcnt:empty{display:none}
-.win .whint{margin:0;color:var(--muted);font:800 .85rem var(--body);letter-spacing:.14em;text-transform:uppercase}
+.win .whint{margin:0;color:var(--muted);font:800 var(--chief-fs-sm) var(--body);letter-spacing:.14em;text-transform:uppercase}
 .wp{width:var(--gw);max-width:100%;display:flex;flex-direction:column;align-items:center;gap:1.1vh;text-align:center;min-width:0}
 .wp .wn{font-family:var(--display);font-weight:var(--chief-fw-heavy);line-height:1.02;color:var(--ink);overflow-wrap:anywhere;max-width:100%;
-  font-size:clamp(calc(var(--gw) * .14),calc(var(--gw) * 1.1 / var(--nc,6)),11vmin)}
+  font-size:clamp(calc(var(--gw) * .14),calc(var(--gw) * 1.1 / var(--nc,6)),calc(var(--gw) * .18))}
 .wp .wpat{font:800 calc(var(--gw) * .095) var(--body);color:var(--hit);line-height:1.1}
 .wp .wmeta{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.35em .7em;font:800 calc(var(--gw) * .066) var(--body);font-variant-numeric:tabular-nums}
 .wp .wbon{background:var(--hit);color:var(--dauber-ink);border-radius:999px;padding:.12em .6em}
@@ -238,21 +247,21 @@ html.prv,html.prv body{overflow:hidden}
 .prset{position:fixed;inset:0;z-index:80;background:var(--chief-backdrop);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
   padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .prbox{max-width:480px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px}
-.prbox h2{margin:0;font:var(--chief-fw-heavy) 1.25rem var(--display)}
-.prbox label{display:flex;flex-direction:column;gap:4px;font:600 .72rem var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
-.prbox label small{text-transform:none;letter-spacing:0;font-weight:400;font-size:.8rem}
-.prbox input,.prbox textarea{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:600 1rem var(--body);width:100%;min-width:0;resize:vertical}
+.prbox h2{margin:0;font:var(--chief-fw-heavy) var(--chief-fs-lg) var(--display)}
+.prbox label{display:flex;flex-direction:column;gap:4px;font:600 var(--chief-fs-xs) var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.prbox label small{text-transform:none;letter-spacing:0;font-weight:400;font-size:var(--chief-fs-xs)}
+.prbox input,.prbox textarea{min-height:var(--chief-tap);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px;font:600 var(--chief-fs-md) var(--body);width:100%;min-width:0;resize:vertical}
 .prbox input:focus-visible,.prbox textarea:focus-visible{outline:3px solid var(--hit);outline-offset:1px}
 .prrow{display:grid;grid-template-columns:9em minmax(0,1fr);gap:8px}
 .prbox .seg{align-self:flex-start}
 .prbtn{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.prbtn button,.prbar button{min-height:var(--chief-tap);border:1px solid var(--line);border-radius:12px;padding:11px 16px;font:800 .95rem var(--body);cursor:pointer;background:var(--bg);color:var(--ink)}
+.prbtn button,.prbar button{min-height:var(--chief-tap);border:1px solid var(--line);border-radius:12px;padding:11px 16px;font:800 var(--chief-fs-md) var(--body);cursor:pointer;background:var(--bg);color:var(--ink)}
 .prbtn .yes,.prbar .yes{background:var(--hit);color:var(--dauber-ink);border-color:var(--hit)}
 .prbtn button:disabled{opacity:.5;cursor:default}
 .prview{position:fixed;inset:0;z-index:80;background:var(--chief-border);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .prbar{position:sticky;top:0;z-index:1;background:var(--bg);border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:center;
   padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
-.prbar .prinfo{flex:1 1 100%;margin:0;color:var(--muted);font-weight:600;font-size:.9rem}
+.prbar .prinfo{flex:1 1 100%;margin:0;color:var(--muted);font-weight:600;font-size:var(--chief-fs-sm)}
 .prbar .prinfo b{color:var(--ink)}
 .prbar .confirm,.prbar .pnote{flex:1 1 100%}
 .sheets{display:flex;flex-direction:column;align-items:center;gap:16px;padding:16px 16px calc(28px + env(safe-area-inset-bottom,0px))}
@@ -308,10 +317,15 @@ html.prv,html.prv body{overflow:hidden}
 </style>
 </head>
 <body>
+<header class="chief-gamebar" id="hdr">
+  <a class="chief-wordmark" href="/bingo/">Chief<span>Bingo</span></a>
+  <div class="chief-gamebar__actions">
+    <button id="btn-help" class="chief-gamebar__btn chief-gamebar__btn--help" type="button" aria-label="How to play" aria-haspopup="dialog" aria-controls="help" aria-expanded="false">?</button>
+    <a id="btn-home" class="chief-gamebar__btn chief-gamebar__btn--home" href="https://chiefke.com/" aria-label="Home (chiefke.com)">⌂</a>
+  </div>
+</header>
 <div class="wrap">
-  <a class="home" href="/">← chiefke.com</a>
-  <header>
-    <h1>Chief<span>Bingo</span></h1>
+  <div class="opts">
     <div class="seg" role="group" aria-label="Game type">
       <button id="m75" type="button">75 balls</button>
       <button id="m90" type="button">90 balls</button>
@@ -320,7 +334,7 @@ html.prv,html.prv body{overflow:hidden}
       <button id="cBought" type="button">Bought cards</button>
       <button id="cOwn" type="button">Own cards</button>
     </div>
-  </header>
+  </div>
 
   <section class="stage">
     <div id="ball" class="ball idle" aria-live="assertive"><span class="letter" id="letter"></span><span class="num" id="num">Ready</span></div>
@@ -377,6 +391,28 @@ html.prv,html.prv body{overflow:hidden}
       <div id="pList"></div>
     </div>
   </section>
+</div>
+<!-- How to play: the ONE source for the ?-sheet (Games UI ronde 3). Patterns, points, bonus balls and the tie rule are
+     NOT written here: they are filled in from CB (the config block that chief-bingo.command sync-web generates from
+     15_BINGO/config.json). Never repeat this text elsewhere on the page. -->
+<template id="howto-src">
+<ul class="howto">
+  <li>Draw ball calls the next ball. Start auto draws one every few seconds; − and + set the pause.</li>
+  <li>The check board marks every ball that has been drawn. Undo takes the last ball back.</li>
+  <li>Play with 75 or 90 balls. Switching, or New game, asks first and then ends the current game.</li>
+  <li>Full screen is the caller view: the ball, big. Tap to draw; tap ✕ or press Escape to close it.</li>
+  <li>Own cards (75 balls): add each player with the card numbers printed on their Chief Bingo cards. Scoreboard and patterns update with every ball.</li>
+  <li>Print cards makes new A4 cards, 4 per page, that Own cards can score.</li>
+</ul>
+<h3>Points (Own cards)</h3>
+<ul class="howto" data-cb="patterns"></ul>
+<p class="howto-bonus" data-cb="rules"></p>
+</template>
+<div id="help" class="chief-sheet" hidden>
+  <div class="chief-sheet__box" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="chief-sheet__head"><h2 id="help-title">How to play</h2><button id="btn-help-close" class="chief-gamebar__btn" type="button" aria-label="Close">✕</button></div>
+    <div id="help-body"></div>
+  </div>
 </div>
 <!-- CHIEF-FOOTER:START -->
 <!-- GENERATED by chief_brand_sync_engine.py — bron chief-assets brand/footer/chief-footer.html sha256:43a71205cc93 cfg:3298cecd — NIET MET DE HAND BEWERKEN -->
@@ -596,6 +632,7 @@ $("focus").addEventListener("click",e=>{
 $("fClose").onclick=e=>{e.stopPropagation();closeFocus()};
 $("fHist").onclick=e=>{e.stopPropagation();S.hist=HIST[(HIST.indexOf(S.hist)+1)%HIST.length];save();render(false)};
 document.addEventListener("keydown",e=>{
+  if(!$("help").hidden){if(e.key==="Escape"){e.preventDefault();closeHelp()}return}
   if(!$("prSetup").hidden||!$("prView").hidden){if(e.key==="Escape"){e.preventDefault();prCloseAll()}return}
   if(!$("win").hidden){if(e.key==="Escape"||e.key===" "||e.key==="Enter"){e.preventDefault();closeWin()}return}
   if(e.key==="Escape"&&!$("focus").hidden){closeFocus();return}
@@ -1125,6 +1162,26 @@ function prAddRun(skipOk){
 $("prAdd").onclick=()=>prAddRun(false);
 $("prAskYes").onclick=()=>prAddRun(true);
 $("prAskNo").onclick=()=>{$("prAsk").hidden=true};
+/* How to play (Games UI ronde 3): ?-sheet below the header. Content = clone of #howto-src (one source) + patterns, points,
+   tie rule and bonus balls from CB (= 15_BINGO/config.json via sync-web, same as the scoreboard and the print legend).
+   Closes with ✕, Escape, a tap beside it and ⌂ (⌂ then leaves for chiefke.com; the game stays saved); focus back on ?. */
+function renderHowto(){
+  const frag=$("howto-src").content.cloneNode(true);
+  frag.querySelector('[data-cb="patterns"]').replaceChildren(...CB.patterns.map(p=>el("li",{"data-key":p.key,text:`${p.label}: ${fmtPts(p.points)} pt`})));
+  frag.querySelector('[data-cb="rules"]').textContent="Each pattern scores once per game, for the first card(s) to complete it"
+    +(CB.tie==="split"?"; on a tie the winners split the points. ":"; on a tie every winning card gets the full points. ")+bonusLine()+".";
+  $("help-body").replaceChildren(frag);
+}
+function placeHelp(){document.documentElement.style.setProperty("--hdr",Math.max(0,Math.round($("hdr").getBoundingClientRect().bottom))+"px")}
+function openHelp(){placeHelp();$("help").hidden=false;$("btn-help").setAttribute("aria-expanded","true");try{$("btn-help-close").focus({preventScroll:true})}catch(e){}}
+function closeHelp(){if($("help").hidden)return;$("help").hidden=true;$("btn-help").setAttribute("aria-expanded","false");try{$("btn-help").focus({preventScroll:true})}catch(e){}}
+$("btn-help").onclick=()=>$("help").hidden?openHelp():closeHelp();
+$("btn-help-close").onclick=closeHelp;
+$("help").addEventListener("click",e=>{if(e.target===$("help"))closeHelp()});
+$("btn-home").addEventListener("click",()=>{if(!$("help").hidden){$("help").hidden=true;$("btn-help").setAttribute("aria-expanded","false")}});
+window.addEventListener("resize",()=>{if(!$("help").hidden)placeHelp()});
+window.addEventListener("scroll",()=>{if(!$("help").hidden)placeHelp()},{passive:true});
+renderHowto();
 $("cOwn").onclick=()=>{if(S.mode!==75)return;P.own=true;psave();render(false)};
 $("cBought").onclick=()=>{P.own=false;psave();if(S.winOpen){S.winOpen=null;save()}render(false)};
 prload();pload();$("pSet").value=P.set;setNote();if(loadMsg)$("pErr").textContent=loadMsg;

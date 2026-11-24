@@ -24,12 +24,15 @@
 <meta name="twitter:image" content="https://chiefke.com/assets/og/dice.png">
 <meta name="twitter:site" content="@ChiefXBelgium">
 <link rel="stylesheet" href="../assets/brand/chief-tokens.css">
+<link rel="stylesheet" href="../assets/brand/chief-gamebar.css">
 <link rel="stylesheet" href="../assets/brand/chief-footer.css">
 <style>
-/* Layout: the page is exactly one screen tall; the dice area takes what is left and JS sizes the dice to fit it.
-   Portrait = one column, landscape (≥700 px wide) = dice left, controls right. Chief huisstijl (../assets/brand/chief-tokens.css), dark only.
-   Site variables = aliases of --chief-* (--die = --chief-die, cream die face). Fonts = system font via the tokens (no webfonts),
-   former display text heavy via --chief-fw-heavy. Controls tap ≥ --chief-tap (44 px); dice are game pieces (exempt). */
+/* Layout: the first screen = game chrome (.chief-gamebar, ../assets/brand/chief-gamebar.css) + the tool (.app); the dice area
+   takes what is left and JS sizes the dice to fit it. Portrait = one column, landscape (≥700 px wide) = dice left, controls right.
+   Chief huisstijl (../assets/brand/chief-tokens.css), dark only. Site variables = aliases of --chief-* (--die = --chief-die).
+   Fonts = system font via the tokens, sizes only via var(--chief-fs-*) — exceptions (game pieces that scale with the die):
+   the HOLD badge (calc(var(--s) …)) and the full-screen total (calc(var(--fs-s) …), the full-screen die size).
+   Controls tap ≥ --chief-tap (44 px); dice are game pieces (exempt). Header: [Play ChiefYatzy] [?] [⌂], no language toggle (no i18n). */
 :root{
   --bg:var(--chief-bg); --paper:var(--chief-surface); --ink:var(--chief-text); --muted:var(--chief-muted); --line:var(--chief-border);
   --hit:var(--chief-accent); --hit-ink:var(--chief-accent-ink); --die:var(--chief-die); --pip:var(--chief-bg);
@@ -39,23 +42,26 @@
 }
 *{box-sizing:border-box}
 html{color-scheme:dark;height:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--chief-fs-body)}
 [hidden]{display:none!important}
 html.fopen,html.fopen body{overflow:hidden}
 html.fopen .chief-footer{display:none} /* Chief-footer (chief-brand-sync) onder de tafel, weg in full screen */
-.app{height:100vh;height:100dvh;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:10px;
-  padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.home{display:inline-flex;align-items:center;min-height:var(--chief-tap);color:var(--muted);font-size:.85rem;font-weight:600;text-decoration:none}
-.home:hover,.home:focus-visible{color:var(--ink)}
-h1{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:var(--chief-fs-wordmark);margin:0;letter-spacing:.01em;line-height:1.1}
-h1 span{color:var(--hit)}
-/* Link naar het volledige spel ChiefYatzy (2026-11-13): pill in de kop; de dobbelsteen-tool zelf is ongewijzigd */
-.play{flex:none;display:inline-flex;align-items:center;min-height:var(--chief-tap);padding:4px 12px;border:1px solid var(--hit);border-radius:999px;
-  color:var(--hit);font:700 .78rem var(--body);text-decoration:none;white-space:nowrap}
+/* first screen = header + tool, exactly one screen tall; the footer sits below the fold */
+.screen{height:100vh;height:100dvh;display:flex;flex-direction:column}
+.screen>.chief-gamebar{flex:none}
+.app{flex:1 1 0;min-height:0;width:100%;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:10px;
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+/* game chrome (Games UI ronde 3): local additions on top of the shared chief-gamebar.css */
+.chief-wordmark{line-height:var(--chief-tap)}                     /* tap area ≥ 44 px */
+.chief-gamebar__actions>*{flex-shrink:0}
+.chief-sheet{top:var(--hdr,0px)}                                   /* below the header: ? and ⌂ stay tappable */
+.howto{margin:0;padding-left:1.2em}
+.howto li+li{margin-top:var(--chief-space-2)}
+/* Link naar het volledige spel ChiefYatzy (2026-11-13): pill = [extra] in de gamebar; de dobbelsteen-tool zelf is ongewijzigd */
+.play{flex:none;display:inline-flex;align-items:center;min-height:var(--chief-tap);padding:4px 12px;border:1px solid var(--hit);border-radius:var(--chief-radius-pill);
+  color:var(--hit);font:700 var(--chief-fs-xs) var(--body);text-decoration:none;white-space:nowrap}
 .play:hover,.play:focus-visible{background:var(--hit);color:var(--hit-ink)}
-.top .play{margin-left:auto}
-@media (max-width:400px){.play{padding:4px 9px;font-size:.72rem}.home{font-size:.78rem}h1{font-size:1.2rem}}
+@media (max-width:400px){.play{padding:4px 9px}}
 .main{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:10px}
 .area{flex:1 1 0;min-height:0;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:12px;
   display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;
@@ -71,7 +77,7 @@ h1 span{color:var(--hit)}
 .die svg circle.one{fill:var(--hit)}
 .die.held{outline:max(3px,calc(var(--s) * .04)) solid var(--hit);outline-offset:max(2px,calc(var(--s) * .02))}
 .die .hold{position:absolute;left:50%;bottom:0;transform:translate(-50%,50%);display:none;pointer-events:none;
-  background:var(--hit);color:var(--hit-ink);font:800 max(10px,calc(var(--s) * .1))/1 var(--body);letter-spacing:.08em;padding:.25em .6em;border-radius:999px}
+  background:var(--hit);color:var(--hit-ink);font:800 max(10px,calc(var(--s) * .1))/1 var(--body);letter-spacing:.08em /* game piece: scales with the die */;padding:.25em .6em;border-radius:999px}
 .die.held .hold{display:block}
 .die:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .die.held:focus-visible{outline-color:var(--hit)}
@@ -79,37 +85,37 @@ h1 span{color:var(--hit)}
 @keyframes tumble{0%{transform:rotate(0) scale(1)}20%{transform:rotate(-16deg) scale(.88)}45%{transform:rotate(12deg) scale(1.05)}
   70%{transform:rotate(-6deg) scale(.97)}100%{transform:rotate(0) scale(1)}}
 @media (prefers-reduced-motion:reduce){.tumble .fc{animation:none}}
-.hint{margin:-4px 0 0;color:var(--muted);font-size:.78rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hint{margin:-4px 0 0;color:var(--muted);font-size:var(--chief-fs-xs);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .side{display:flex;flex-direction:column;gap:10px;min-width:0}
 .total{display:flex;align-items:baseline;justify-content:center;gap:12px;min-height:3.2rem}
-.total .tl{color:var(--muted);font:800 .75rem var(--body);letter-spacing:.14em;text-transform:uppercase}
-.total b{font:var(--chief-fw-heavy) clamp(2.4rem,6.5vh,4.4rem)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums}
-.total b.idle{font:800 1.15rem/1.6 var(--body);color:var(--muted)}
+.total .tl{color:var(--muted);font:800 var(--chief-fs-xs) var(--body);letter-spacing:.14em;text-transform:uppercase}
+.total b{font:var(--chief-fw-heavy) var(--chief-fs-title)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums}
+.total b.idle{font:800 var(--chief-fs-lg)/1.6 var(--body);color:var(--muted)}
 .total b.busy{opacity:.45}
-.total b.allheld{color:var(--hit);font-size:1rem;text-align:center}
+.total b.allheld{color:var(--hit);font-size:var(--chief-fs-md);text-align:center}
 .actions{display:grid;grid-template-columns:1fr auto;gap:8px}
-.roll{border:0;border-radius:16px;background:var(--hit);color:var(--hit-ink);font:var(--chief-fw-heavy) 1.6rem var(--display);padding:14px;cursor:pointer;letter-spacing:.02em;touch-action:manipulation}
+.roll{border:0;border-radius:16px;background:var(--hit);color:var(--hit-ink);font:var(--chief-fw-heavy) var(--chief-fs-xl) var(--display);padding:14px;cursor:pointer;letter-spacing:.02em;touch-action:manipulation}
 .roll:active{transform:translateY(1px)}
-.ghost{min-height:var(--chief-tap);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:8px 12px;font:600 .85rem var(--body);cursor:pointer;touch-action:manipulation}
+.ghost{min-height:var(--chief-tap);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:8px 12px;font:600 var(--chief-fs-sm) var(--body);cursor:pointer;touch-action:manipulation}
 .ghost[aria-pressed="true"]{border-color:var(--hit);color:var(--hit)}
 .ghost:disabled,.step button:disabled{opacity:.4;cursor:default}
 button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 .ctrls{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));gap:8px}
 .ctrls.nohaptic{grid-template-columns:auto repeat(2,minmax(0,1fr))}
 .step{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
-.step button{border:0;background:none;color:var(--ink);font:800 1.25rem var(--body);width:44px;min-height:44px;cursor:pointer;touch-action:manipulation}
+.step button{border:0;background:none;color:var(--ink);font:800 var(--chief-fs-lg) var(--body);width:var(--chief-tap);min-height:var(--chief-tap);cursor:pointer;touch-action:manipulation}
 .step output{min-width:62px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums}
 .hrow{display:flex;align-items:center;gap:8px;min-width:0}
-.hrow .hl{color:var(--muted);font:800 .7rem var(--body);letter-spacing:.12em;text-transform:uppercase}
+.hrow .hl{color:var(--muted);font:800 var(--chief-fs-xs) var(--body);letter-spacing:.12em;text-transform:uppercase}
 .strip{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .strip::-webkit-scrollbar{display:none}
-.strip:empty::before{content:"No rolls yet";color:var(--muted);font-size:.85rem}
+.strip:empty::before{content:"No rolls yet";color:var(--muted);font-size:var(--chief-fs-sm)}
 .strip span{flex:none;display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;
-  white-space:nowrap;font-variant-numeric:tabular-nums;font-size:.85rem}
+  white-space:nowrap;font-variant-numeric:tabular-nums;font-size:var(--chief-fs-sm)}
 .strip span:first-child{border-color:var(--hit)}
 .strip b{color:var(--hit);font-weight:800}
-.strip small{color:var(--muted);font-size:.78rem}
-.hrow .ghost{padding:6px 10px;font-size:.8rem}
+.strip small{color:var(--muted);font-size:var(--chief-fs-xs)}
+.hrow .ghost{padding:6px 10px;font-size:var(--chief-fs-sm)}
 @media (orientation:landscape) and (min-width:700px){
   .main{flex-direction:row}
   .side{width:clamp(270px,28vw,340px);justify-content:center}
@@ -118,7 +124,7 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
   .ctrls .step{grid-column:1/-1;justify-content:space-between}
   .hint{display:none}
   .total{flex-direction:column;align-items:center;gap:4px}
-  .total b{font-size:clamp(3rem,10vh,5.5rem)}
+  .total b{font-size:var(--chief-fs-title)}
 }
 /* Full screen: dice + total + roll only; tap anywhere (except a button) = roll */
 .focus{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;gap:2vh;cursor:pointer;
@@ -129,31 +135,35 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 /* bar: total (fixed box, so the hint never shifts the dice) · Roll · Release all */
 .focus .fbar{display:flex;align-items:center;justify-content:center;gap:min(4vw,32px)}
 .focus .ftot{flex:0 0 min(32vw,240px);min-height:min(15vmin,8rem);display:flex;align-items:center;justify-content:center;text-align:center;
-  font:var(--chief-fw-heavy) min(15vmin,8rem)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums}
-.focus .ftot.idle{font:800 min(4.2vmin,1.3rem)/1.25 var(--body);color:var(--muted)}
+  font:var(--chief-fw-heavy) min(calc(var(--fs-s,120px) * .62),15vmin,8rem)/1 var(--display);color:var(--hit);font-variant-numeric:tabular-nums} /* game piece: scales with the full-screen die (--fs-s) */
+.focus .ftot.idle{font:800 var(--chief-fs-lg)/1.25 var(--body);color:var(--muted)}
 .focus .ftot.allheld{color:var(--hit)}
 .focus .ftot.busy{opacity:.45}
-.focus .roll{flex:0 1 420px;min-width:0;font-size:min(7vmin,2.2rem);padding:min(3vmin,20px)}
-.focus .frel{flex:none;min-height:max(var(--chief-tap),min(13vmin,64px));padding:0 min(3vw,18px);font-size:min(3.8vmin,1rem)}
+.focus .roll{flex:0 1 420px;min-width:0;font-size:var(--chief-fs-title);padding:min(3vmin,20px)}
+.focus .frel{flex:none;min-height:max(var(--chief-tap),min(13vmin,64px));padding:0 min(3vw,18px);font-size:var(--chief-fs-md)}
 .focus .fx{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));
-  width:44px;height:44px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:800 1.2rem var(--body);cursor:pointer}
+  width:var(--chief-tap);height:var(--chief-tap);border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:800 var(--chief-fs-lg) var(--body);cursor:pointer}
 .focus .die{cursor:pointer}
 @media (orientation:landscape) and (max-height:500px){.focus{padding-top:calc(14px + env(safe-area-inset-top,0px));padding-right:calc(68px + env(safe-area-inset-right,0px))}}
 </style>
 </head>
 <body>
-<div class="app">
-  <header class="top">
-    <a class="home" href="/">← chiefke.com</a>
+<div class="screen">
+<header class="chief-gamebar" id="hdr">
+  <a class="chief-wordmark" href="/dice/">Chief<span>Dice</span></a>
+  <div class="chief-gamebar__actions">
     <a class="play" href="https://www.chiefyatzy.com" rel="noopener">Play ChiefYatzy →</a>
-    <h1>Chief<span>Dice</span></h1>
-  </header>
+    <button id="btn-help" class="chief-gamebar__btn chief-gamebar__btn--help" type="button" aria-label="How to play" aria-haspopup="dialog" aria-controls="help" aria-expanded="false">?</button>
+    <a id="btn-home" class="chief-gamebar__btn chief-gamebar__btn--home" href="https://chiefke.com/" aria-label="Home (chiefke.com)">⌂</a>
+  </div>
+</header>
+<div class="app">
   <div class="main">
     <section class="area" id="area" aria-label="Dice — tap a die to hold it, tap the table to roll">
       <div class="dice" id="dice"></div>
     </section>
     <div class="side">
-      <p class="hint">Tap a die to hold it · tap the table or press Space to roll</p>
+      <p class="hint" id="hint"></p>
       <div class="total"><span class="tl">Total</span><b id="total" aria-live="polite">Tap to roll</b></div>
       <div class="actions">
         <button class="roll" id="roll" type="button">Roll</button>
@@ -175,6 +185,25 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
         <button class="ghost" id="clear" type="button">Clear</button>
       </div>
     </div>
+  </div>
+</div>
+</div>
+<!-- How to play: the ONE source (Games UI ronde 3). The ?-sheet clones this list; the hint line under the dice = the
+     data-hint phrases joined with " · ". Never repeat this text elsewhere on the page. -->
+<template id="howto-src">
+<ul class="howto">
+  <li data-hint="Tap a die to hold it">Tap a die to hold it: a held die keeps its value. Tap it again, or use Release all, to let it roll again.</li>
+  <li data-hint="tap the table or press Space to roll">Tap the table, press Roll or press Space to roll the dice that are not held.</li>
+  <li>Use − and + to roll 1 to 10 dice. Changing the number releases every hold.</li>
+  <li>Last 10 shows the latest rolls, newest first. Clear empties the list.</li>
+  <li>Full screen shows only the dice, the total and Roll. Tap ✕ or press Escape to close it.</li>
+  <li>Every roll uses crypto.getRandomValues, so each face is equally likely.</li>
+</ul>
+</template>
+<div id="help" class="chief-sheet" hidden>
+  <div class="chief-sheet__box" role="dialog" aria-modal="true" aria-labelledby="help-title">
+    <div class="chief-sheet__head"><h2 id="help-title">How to play</h2><button id="btn-help-close" class="chief-gamebar__btn" type="button" aria-label="Close">✕</button></div>
+    <div id="help-body"></div>
   </div>
 </div>
 <!-- CHIEF-FOOTER:START -->
@@ -253,6 +282,7 @@ function fit(box,maxS){
   const s=Math.max(40,Math.floor(Math.min(best,maxS)));   // hit area = 1.14 s ≥ 45 px
   box.style.setProperty("--s",s+"px");
   box.style.width=Math.ceil(bc*s+(bc-1)*s*G+1)+"px";
+  if(box.id==="fDice")$("focus").style.setProperty("--fs-s",s+"px");   // full-screen total scales with the die
 }
 function fitAll(){fit($("dice"),380);if(!$("focus").hidden)fit($("fDice"),460)}
 
@@ -403,7 +433,21 @@ $("plus").onclick=()=>setCount(S.count+1);
 $("sound").onclick=()=>{S.sound=!S.sound;save();if(S.sound)actx();render()};
 $("haptic").onclick=()=>{S.haptic=!S.haptic;save();render();buzz(20)};
 $("clear").onclick=()=>{S.hist=[];save();render()};
+/* How to play (Games UI ronde 3): ?-sheet below the header; content = clone of #howto-src (one source, also the hint line).
+   Closes with ✕, Escape, a tap beside it and ⌂ (⌂ then leaves for chiefke.com); focus back on ?. */
+const help=$("help"),helpBtn=$("btn-help");
+$("help-body").replaceChildren($("howto-src").content.cloneNode(true));
+$("hint").textContent=[...$("howto-src").content.querySelectorAll("[data-hint]")].map(li=>li.dataset.hint).join(" · ");
+function placeHelp(){document.documentElement.style.setProperty("--hdr",Math.max(0,Math.round($("hdr").getBoundingClientRect().bottom))+"px")}
+function openHelp(){placeHelp();help.hidden=false;helpBtn.setAttribute("aria-expanded","true");try{$("btn-help-close").focus({preventScroll:true})}catch(e){}}
+function closeHelp(){if(help.hidden)return;help.hidden=true;helpBtn.setAttribute("aria-expanded","false");try{helpBtn.focus({preventScroll:true})}catch(e){}}
+helpBtn.onclick=()=>help.hidden?openHelp():closeHelp();
+$("btn-help-close").onclick=closeHelp;
+help.addEventListener("click",e=>{if(e.target===help)closeHelp()});
+$("btn-home").addEventListener("click",()=>{if(!help.hidden){help.hidden=true;helpBtn.setAttribute("aria-expanded","false")}});
+window.addEventListener("resize",()=>{if(!help.hidden)placeHelp()});
 document.addEventListener("keydown",e=>{
+  if(!help.hidden){if(e.key==="Escape"){e.preventDefault();closeHelp()}return}
   if(e.key==="Escape"&&!$("focus").hidden){e.preventDefault();closeFocus();return}
   if(e.key!==" "&&e.key!=="Enter")return;
   const t=e.target;if(t&&t.closest&&t.closest("button,a,input,select,textarea"))return;

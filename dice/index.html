@@ -30,9 +30,11 @@
 /* Layout: the first screen = game chrome (.chief-gamebar, ../assets/brand/chief-gamebar.css) + the tool (.app); the dice area
    takes what is left and JS sizes the dice to fit it. Portrait = one column, landscape (≥700 px wide) = dice left, controls right.
    Chief huisstijl (../assets/brand/chief-tokens.css), dark only. Site variables = aliases of --chief-* (--die = --chief-die).
-   Fonts = system font via the tokens, sizes only via var(--chief-fs-*) — exceptions (game pieces that scale with the die):
-   the HOLD badge (calc(var(--s) …)) and the full-screen total (calc(var(--fs-s) …), the full-screen die size).
-   Controls tap ≥ --chief-tap (44 px); dice are game pieces (exempt). Header: [Play ChiefYatzy] [?] [⌂], no language toggle (no i18n). */
+   Fonts = system font via the tokens, sizes only via var(--chief-fs-*) — exceptions, each by name in the guard (test_chiefhub_chrome.py):
+   the HOLD badge (calc(var(--s) …), game piece that scales with the die) and the full-screen total (calc(var(--fs-s) …), the
+   full-screen die size; full-screen projection view, CLAUDE.md: Uitzondering lettergrootte projectie).
+   Controls tap ≥ --chief-tap (44 px); dice are game pieces (exempt). Header: [Play ChiefYatzy] [?] [⌂], English only, no language
+   toggle (CLAUDE.md: Uitzondering ChiefDice en ChiefBingo (enkel Engels)). */
 :root{
   --bg:var(--chief-bg); --paper:var(--chief-surface); --ink:var(--chief-text); --muted:var(--chief-muted); --line:var(--chief-border);
   --hit:var(--chief-accent); --hit-ink:var(--chief-accent-ink); --die:var(--chief-die); --pip:var(--chief-bg);
@@ -51,17 +53,10 @@ html.fopen .chief-footer{display:none} /* Chief-footer (chief-brand-sync) onder 
 .screen>.chief-gamebar{flex:none}
 .app{flex:1 1 0;min-height:0;width:100%;max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:10px;
   padding:10px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-/* game chrome (Games UI ronde 3): local additions on top of the shared chief-gamebar.css */
-.chief-wordmark{line-height:var(--chief-tap)}                     /* tap area ≥ 44 px */
-.chief-gamebar__actions>*{flex-shrink:0}
-.chief-sheet{top:var(--hdr,0px)}                                   /* below the header: ? and ⌂ stay tappable */
+/* game chrome = the shared chief-gamebar.css only (UI ronde 4: wordmark tap area, flex-shrink, the sheet below the header via
+   --chief-gamebar-h and the [extra] link-pill .chief-gamebar__pill all come from there; no local additions) */
 .howto{margin:0;padding-left:1.2em}
 .howto li+li{margin-top:var(--chief-space-2)}
-/* Link naar het volledige spel ChiefYatzy (2026-11-13): pill = [extra] in de gamebar; de dobbelsteen-tool zelf is ongewijzigd */
-.play{flex:none;display:inline-flex;align-items:center;min-height:var(--chief-tap);padding:4px 12px;border:1px solid var(--hit);border-radius:var(--chief-radius-pill);
-  color:var(--hit);font:700 var(--chief-fs-xs) var(--body);text-decoration:none;white-space:nowrap}
-.play:hover,.play:focus-visible{background:var(--hit);color:var(--hit-ink)}
-@media (max-width:400px){.play{padding:4px 9px}}
 .main{flex:1 1 0;min-height:0;display:flex;flex-direction:column;gap:10px}
 .area{flex:1 1 0;min-height:0;min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:12px;
   display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;
@@ -116,6 +111,10 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 .strip b{color:var(--hit);font-weight:800}
 .strip small{color:var(--muted);font-size:var(--chief-fs-xs)}
 .hrow .ghost{padding:6px 10px;font-size:var(--chief-fs-sm)}
+/* Clear armed ("Tap again — …", UI ronde 4): the shared .chief-btn--confirming (chief-gamebar.css, specificity 0,1,0) loses
+   against .ghost/.hrow .ghost declared here; this bridge repeats only the properties those override, same tokens. */
+.hrow .ghost.chief-btn--confirming{background:var(--chief-err-dim);border-color:var(--chief-err);color:var(--chief-text);
+  font-size:var(--chief-fs-xs);font-weight:var(--chief-fw-bold);line-height:var(--chief-lh-tight)}
 @media (orientation:landscape) and (min-width:700px){
   .main{flex-direction:row}
   .side{width:clamp(270px,28vw,340px);justify-content:center}
@@ -152,7 +151,7 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 <header class="chief-gamebar" id="hdr">
   <a class="chief-wordmark" href="/dice/">Chief<span>Dice</span></a>
   <div class="chief-gamebar__actions">
-    <a class="play" href="https://www.chiefyatzy.com" rel="noopener">Play ChiefYatzy →</a>
+    <a class="chief-gamebar__pill" href="https://www.chiefyatzy.com" rel="noopener" aria-label="Play ChiefYatzy"><span class="chief-gamebar__label">Play ChiefYatzy</span><span class="chief-gamebar__icon" aria-hidden="true">🎲→</span></a>
     <button id="btn-help" class="chief-gamebar__btn chief-gamebar__btn--help" type="button" aria-label="How to play" aria-haspopup="dialog" aria-controls="help" aria-expanded="false">?</button>
     <a id="btn-home" class="chief-gamebar__btn chief-gamebar__btn--home" href="https://chiefke.com/" aria-label="Home (chiefke.com)">⌂</a>
   </div>
@@ -182,6 +181,7 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
       <div class="hrow">
         <span class="hl">Last 10</span>
         <div class="strip" id="hist" aria-label="Last 10 rolls, newest first"></div>
+        <button class="ghost" id="clearCancel" type="button" hidden>Cancel</button>
         <button class="ghost" id="clear" type="button">Clear</button>
       </div>
     </div>
@@ -195,7 +195,7 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
   <li data-hint="Tap a die to hold it">Tap a die to hold it: a held die keeps its value. Tap it again, or use Release all, to let it roll again.</li>
   <li data-hint="tap the table or press Space to roll">Tap the table, press Roll or press Space to roll the dice that are not held.</li>
   <li>Use − and + to roll 1 to 10 dice. Changing the number releases every hold.</li>
-  <li>Last 10 shows the latest rolls, newest first. Clear empties the list.</li>
+  <li>Last 10 shows the latest rolls, newest first. Clear empties the list after a second tap (Tap again); Cancel keeps it.</li>
   <li>Full screen shows only the dice, the total and Roll. Tap ✕ or press Escape to close it.</li>
   <li>Every roll uses crypto.getRandomValues, so each face is equally likely.</li>
 </ul>
@@ -432,13 +432,25 @@ $("minus").onclick=()=>setCount(S.count-1);
 $("plus").onclick=()=>setCount(S.count+1);
 $("sound").onclick=()=>{S.sound=!S.sound;save();if(S.sound)actx();render()};
 $("haptic").onclick=()=>{S.haptic=!S.haptic;save();render();buzz(20)};
-$("clear").onclick=()=>{S.hist=[];save();render()};
+/* Clear (Games UI ronde 4): inline confirmation on the button itself, same pattern as ChiefRami — first tap = "Tap again — clear
+   history" (.chief-btn--confirming) with Cancel to its left (Clear keeps its right edge, so a quick second tap still hits Clear),
+   second tap within ARM_MS clears, otherwise back. No alert/confirm/toast. */
+const ARM_MS=5000;let clearArm=0;
+function paintClear(on){const b=$("clear");b.textContent=on?"Tap again — clear history":"Clear";b.classList.toggle("chief-btn--confirming",on);$("clearCancel").hidden=!on}
+function disarmClear(){if(!clearArm)return;clearTimeout(clearArm);clearArm=0;paintClear(false)}
+$("clear").onclick=()=>{
+  if(clearArm){disarmClear();S.hist=[];save();render();return}
+  if(!S.hist.length)return;
+  clearArm=setTimeout(disarmClear,ARM_MS);paintClear(true);
+};
+$("clearCancel").onclick=disarmClear;
 /* How to play (Games UI ronde 3): ?-sheet below the header; content = clone of #howto-src (one source, also the hint line).
    Closes with ✕, Escape, a tap beside it and ⌂ (⌂ then leaves for chiefke.com); focus back on ?. */
 const help=$("help"),helpBtn=$("btn-help");
 $("help-body").replaceChildren($("howto-src").content.cloneNode(true));
 $("hint").textContent=[...$("howto-src").content.querySelectorAll("[data-hint]")].map(li=>li.dataset.hint).join(" · ");
-function placeHelp(){document.documentElement.style.setProperty("--hdr",Math.max(0,Math.round($("hdr").getBoundingClientRect().bottom))+"px")}
+/* --chief-gamebar-h = bottom of the header: the shared chief-gamebar.css puts the sheet there (UI ronde 4; was a local sheet top) */
+function placeHelp(){document.body.style.setProperty("--chief-gamebar-h",Math.max(0,Math.ceil($("hdr").getBoundingClientRect().bottom))+"px")}
 function openHelp(){placeHelp();help.hidden=false;helpBtn.setAttribute("aria-expanded","true");try{$("btn-help-close").focus({preventScroll:true})}catch(e){}}
 function closeHelp(){if(help.hidden)return;help.hidden=true;helpBtn.setAttribute("aria-expanded","false");try{helpBtn.focus({preventScroll:true})}catch(e){}}
 helpBtn.onclick=()=>help.hidden?openHelp():closeHelp();
@@ -446,6 +458,7 @@ $("btn-help-close").onclick=closeHelp;
 help.addEventListener("click",e=>{if(e.target===help)closeHelp()});
 $("btn-home").addEventListener("click",()=>{if(!help.hidden){help.hidden=true;helpBtn.setAttribute("aria-expanded","false")}});
 window.addEventListener("resize",()=>{if(!help.hidden)placeHelp()});
+if(window.ResizeObserver)try{new ResizeObserver(placeHelp).observe($("hdr"))}catch(e){}
 document.addEventListener("keydown",e=>{
   if(!help.hidden){if(e.key==="Escape"){e.preventDefault();closeHelp()}return}
   if(e.key==="Escape"&&!$("focus").hidden){e.preventDefault();closeFocus();return}

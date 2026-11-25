@@ -32,10 +32,12 @@
    color-mix with --chief-bg); the A4 print sheets (.sheet, .th-*, @media print) keep their literal print colours (print exception, CLAUDE.md).
    Fonts = system font via the tokens, former display text heavy via --chief-fw-heavy; Archivo Black + JetBrains Mono only on the print sheets.
    Controls tap ≥ --chief-tap (44 px); balls and board cells are game pieces (exempt).
-   Games UI ronde 3: header = .chief-gamebar (../assets/brand/chief-gamebar.css) with [?] [⌂], no language toggle (no i18n).
-   Font sizes only via var(--chief-fs-*); exceptions = print (A4 sheets, mm) and game pieces that scale with the piece:
-   the ball (cqi of .ball), the caller-view ball (vw/vh/vmin, the drawn ball shown full screen), the caller-view history balls
-   (cqi of .hist), the winning card in the winner overlay (calc(var(--gw) …)) and the ×N bonus marker on a card cell. */
+   Games UI ronde 3: header = .chief-gamebar (../assets/brand/chief-gamebar.css) with [?] [⌂], English only, no language toggle
+   (CLAUDE.md: Uitzondering ChiefDice en ChiefBingo (enkel Engels)).
+   Font sizes only via var(--chief-fs-*); exceptions, each by name in the guard (test_chiefhub_chrome.py): print (A4 sheets, mm),
+   game pieces that scale with the piece — the ball (cqi of .ball), the winning card in the winner overlay (calc(var(--gw) …)),
+   the ×N bonus marker on a card cell — and the caller view, a full-screen projection view that scales with the screen
+   (drawn ball vw/vh/vmin, history balls cqi of .hist; CLAUDE.md: Uitzondering lettergrootte projectie). */
 :root{
   --bg:var(--chief-bg); --paper:var(--chief-surface); --ink:var(--chief-text); --muted:var(--chief-muted);
   --dauber:var(--chief-accent); --dauber-ink:var(--chief-accent-ink); --line:var(--chief-border); --hit:var(--chief-accent); --hit-soft:var(--chief-accent-dim);
@@ -51,10 +53,8 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var
 /* .wrap carries the page padding (was on body), so the gamebar runs full width; content stays 560 px wide */
 .wrap{box-sizing:content-box;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px;
   padding:16px max(16px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-/* game chrome (Games UI ronde 3): local additions on top of the shared chief-gamebar.css */
-.chief-wordmark{line-height:var(--chief-tap)}                     /* tap area ≥ 44 px */
-.chief-gamebar__actions>*{flex-shrink:0}
-.chief-sheet{top:var(--hdr,0px)}                                   /* below the header: ? and ⌂ stay tappable */
+/* game chrome = the shared chief-gamebar.css only (UI ronde 4: wordmark tap area, flex-shrink and the sheet below the header via
+   --chief-gamebar-h come from there; no local additions) */
 .howto{margin:0;padding-left:1.2em}
 .howto li+li{margin-top:var(--chief-space-2)}
 .chief-sheet h3{margin:var(--chief-space-4) 0 var(--chief-space-2);font-size:var(--chief-fs-sm);text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
@@ -64,6 +64,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var
 .seg{display:inline-flex;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:3px}
 .seg button{min-height:var(--chief-tap);border:0;background:none;color:var(--muted);font:600 var(--chief-fs-sm) var(--body);padding:6px 14px;border-radius:999px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--hit);color:var(--dauber-ink)}
+/* armed "Tap again — …" (UI ronde 4, New game and the 75/90 switch): the shared .chief-btn--confirming (chief-gamebar.css,
+   specificity 0,1,0) loses against .seg button/.tools button declared here; this bridge repeats only what those override,
+   same tokens (the borderless segment gets the error edge as an inset ring, so its size does not change). */
+.seg button.chief-btn--confirming,.tools button.chief-btn--confirming{background:var(--chief-err-dim);border-color:var(--chief-err);color:var(--chief-text);
+  font-size:var(--chief-fs-xs);font-weight:var(--chief-fw-bold);line-height:var(--chief-lh-tight)}
+.seg button.chief-btn--confirming{box-shadow:inset 0 0 0 1px var(--chief-err)}
 .stage{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
 .ball{width:min(62vw,240px);aspect-ratio:1;max-width:100%;border-radius:50%;container-type:inline-size;background:var(--dauber);color:var(--dauber-ink);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -98,8 +104,10 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var
 .tools button[aria-pressed="true"]{border-color:var(--hit);color:var(--hit)}
 .tools button:disabled{opacity:.4;cursor:default}
 .tools button.copy{grid-column:1/-1}
+.tools button.arm-cancel{grid-column:4}    /* Cancel of an armed New game: directly below it (column 4), nothing above moves */
 .tools button.copy.ok{border-color:var(--hit);color:var(--hit)}
 button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
+/* .confirm = the "Add to Own cards" question in the print view (a choice, not a destructive double tap) */
 .confirm{width:100%;display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--hit-soft);border-radius:12px;padding:10px 12px}
 .confirm p{margin:0;font-weight:600}
 .confirm div{display:flex;gap:8px}
@@ -176,11 +184,9 @@ details.pl summary::before{content:"▸";color:var(--muted)}
 details.pl[open] summary::before{content:"▾"}
 details.pl summary .nm{font-weight:800;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 details.pl summary .pts{color:var(--hit);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
-/* Remove: small destructive button — looks 24 px (pill on ::before), taps ≥ --chief-tap; the negative margin keeps the row height */
-details.pl summary .rm{position:relative;min-height:var(--chief-tap);margin:-10px 0;border:0;background:none;color:var(--muted);border-radius:999px;padding:0 10px;font:600 var(--chief-fs-sm) var(--body);cursor:pointer;white-space:nowrap}
-details.pl summary .rm::before{content:"";position:absolute;left:0;right:0;top:50%;height:24px;transform:translateY(-50%);border:1px solid var(--line);border-radius:999px;pointer-events:none;box-sizing:border-box}
-details.pl summary .rm.armed{color:var(--chief-err)}
-details.pl summary .rm.armed::before{border-color:var(--chief-err)}
+/* Remove = shared small destructive button .chief-btn--danger-small (looks small, taps ≥ --chief-tap) + .chief-btn--confirming
+   when armed (UI ronde 4); here only the negative margin that keeps the row height */
+details.pl summary .rm{flex:none;margin:-10px 0;white-space:nowrap}
 .minis{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:10px;padding:0 12px 12px}
 .mini{display:flex;flex-direction:column;gap:4px}
 .mini .mg{display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
@@ -357,12 +363,9 @@ html.prv,html.prv body{overflow:hidden}
       <button id="voice" type="button" aria-pressed="false">Voice</button>
       <button id="full" type="button">Full screen</button>
       <button id="reset" type="button">New game</button>
+      <button class="arm-cancel" id="resetCancel" type="button" hidden>Cancel</button>
       <button class="copy" id="copy" type="button" title="Copy drawn balls in draw order">Copy calls</button>
       <button class="wide" id="print" type="button" title="Make new Chief Bingo cards: A4, 4 per page">Print cards</button>
-    </div>
-    <div class="confirm" id="confirm" hidden>
-      <p id="confirmText">Start a new game?</p>
-      <div><button class="no" id="cNo" type="button">Cancel</button><button class="yes" id="cYes" type="button">Yes, restart</button></div>
     </div>
   </section>
 
@@ -399,7 +402,7 @@ html.prv,html.prv body{overflow:hidden}
 <ul class="howto">
   <li>Draw ball calls the next ball. Start auto draws one every few seconds; − and + set the pause.</li>
   <li>The check board marks every ball that has been drawn. Undo takes the last ball back.</li>
-  <li>Play with 75 or 90 balls. Switching, or New game, asks first and then ends the current game.</li>
+  <li>Play with 75 or 90 balls. Switching, or New game, ends the current game after a second tap (Tap again).</li>
   <li>Full screen is the caller view: the ball, big. Tap to draw; tap ✕ or press Escape to close it.</li>
   <li>Own cards (75 balls): add each player with the card numbers printed on their Chief Bingo cards. Scoreboard and patterns update with every ball.</li>
   <li>Print cards makes new A4 cards, 4 per page, that Own cards can score.</li>
@@ -479,7 +482,7 @@ const KEY="chief-bingo-v1";
 const STEPS=[3,5,8,10,15,20,30,45,60];
 let S={mode:75,order:[],idx:0,voice:false,interval:10,startedAt:null,endedAt:null,hist:10,pauseWin:true,winOpen:null};
 const HIST=[10,5,0];
-let pendingMode=null, auto=false, wasAuto=false, due=0, timer=null, raf=0, annWait=false, annT=null, winPause=false;
+let rmArm=null, auto=false, wasAuto=false, due=0, timer=null, raf=0, annWait=false, annT=null, winPause=false;
 
 function rnd(n){const a=new Uint32Array(1);const lim=Math.floor(0x100000000/n)*n;let x;do{crypto.getRandomValues(a);x=a[0]}while(x>=lim);return x%n}
 function shuffle(n){const arr=Array.from({length:n},(_,i)=>i+1);for(let i=n-1;i>0;i--){const j=rnd(i+1);[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
@@ -669,15 +672,25 @@ $("copy").onclick=async e=>{
   b.textContent=ok?`Copied ✓ (${n})`:"Copy failed";b.classList.toggle("ok",ok);
   copyT=setTimeout(copyDone,2000);
 };
-function ask(mode,text){
-  if(S.idx===0){newGame(mode);return}
-  pendingMode=mode;$("confirmText").textContent=text;$("confirm").hidden=false;
+/* New game and the 75/90 switch (Games UI ronde 4): inline confirmation on the button itself, same pattern as ChiefRami —
+   first tap = "Tap again — …" (.chief-btn--confirming), second tap within ARM_MS = new game, otherwise back. New game gets a
+   Cancel directly below it; a 75/90 switch is cancelled by the active segment. No game yet (0 balls) = no question.
+   No alert/confirm, no box or toast. */
+const ARM_MS=5000;
+const ARM={reset:{label:"New game",ask:"Tap again — new game",cancel:"resetCancel"},
+  m75:{label:"75 balls",ask:"Tap again — new 75-ball game"},m90:{label:"90 balls",ask:"Tap again — new 90-ball game"}};
+let armed=null;
+function paintArm(id,on){const c=ARM[id],b=$(id);b.textContent=on?c.ask:c.label;b.classList.toggle("chief-btn--confirming",on);if(c.cancel)$(c.cancel).hidden=!on}
+function disarm(){if(!armed)return;const id=armed.id;clearTimeout(armed.t);armed=null;paintArm(id,false)}
+function ask(id,mode){
+  if(S.idx===0){disarm();newGame(mode);return}
+  if(armed&&armed.id===id){disarm();wasAuto=false;newGame(mode);return}
+  disarm();armed={id,t:setTimeout(disarm,ARM_MS)};paintArm(id,true);
 }
-$("reset").onclick=()=>ask(S.mode,"Start a new game? The current draw will be lost.");
-$("m75").onclick=()=>{if(S.mode!==75)ask(75,"Switch to 75 balls? The current game ends.")};
-$("m90").onclick=()=>{if(S.mode!==90)ask(90,"Switch to 90 balls? The current game ends.")};
-$("cNo").onclick=()=>{$("confirm").hidden=true;pendingMode=null};
-$("cYes").onclick=()=>{$("confirm").hidden=true;wasAuto=false;newGame(pendingMode);pendingMode=null};
+$("reset").onclick=()=>ask("reset",S.mode);
+$("m75").onclick=()=>{if(S.mode!==75)ask("m75",75);else disarm()};
+$("m90").onclick=()=>{if(S.mode!==90)ask("m90",90);else disarm()};
+$("resetCancel").onclick=disarm;
 
 /* Own cards: Chief Bingo cards (CB-YYYYMMDD-NNNN) rebuilt in the browser + live scoring.
    Card algorithm + salt + scoring = chief-bingo (toolbox engine); cross-language contract = the VECTORS below.
@@ -932,6 +945,8 @@ $("win").addEventListener("click",e=>{
   if(d&&(Math.abs(e.clientX-d.x)>10||Math.abs(e.clientY-d.y)>10||Math.abs($("win").scrollTop-d.s)>10))return;
   closeWin();
 });
+/* armed Remove (rmArm = {pid, t}) back to normal */
+function disarmRm(){if(!rmArm)return;clearTimeout(rmArm.t);rmArm=null;renderPlayers()}
 function renderPlayers(){
   const can=S.mode===75,show=P.own&&can,panel=$("players");
   $("cOwn").disabled=!can;$("cOwn").textContent=can?"Own cards":"Own cards (75 only)";
@@ -979,10 +994,16 @@ function renderPlayers(){
   ]));
   /* players + mini-cards */
   $("pList").replaceChildren(...P.players.map(p=>{
-    const rm=el("button",{cls:"rm",type:"button",text:"Remove"});
+    /* Remove: first tap = "Tap again — remove" on the button itself (UI ronde 4: shared classes, ARM_MS like New game, the armed
+       player survives a re-render by a draw), second tap within ARM_MS removes, otherwise back */
+    const on=!!rmArm&&rmArm.pid===p.id;
+    const rm=el("button",{cls:"rm chief-btn--danger-small"+(on?" chief-btn--confirming":""),type:"button",text:on?"Tap again — remove":"Remove"});
     rm.onclick=e=>{e.preventDefault();e.stopPropagation();
-      if(rm.classList.contains("armed")){P.players=P.players.filter(x=>x.id!==p.id);psave();renderPlayers();return}
-      rm.classList.add("armed");rm.textContent="Tap again";setTimeout(()=>{rm.classList.remove("armed");rm.textContent="Remove"},3000)};
+      if(rmArm&&rmArm.pid===p.id){clearTimeout(rmArm.t);rmArm=null;P.players=P.players.filter(x=>x.id!==p.id);psave();renderPlayers();return}
+      if(rmArm){clearTimeout(rmArm.t);rmArm=null;renderPlayers()}
+      rmArm={pid:p.id,t:setTimeout(disarmRm,ARM_MS)};
+      const b=document.querySelector(`details.pl[data-pid="${CSS.escape(p.id)}"] .rm`);
+      if(b){b.textContent="Tap again — remove";b.classList.add("chief-btn--confirming")}};
     const d=el("details",{cls:"pl","data-pid":p.id},[
       el("summary",null,[el("span",{cls:"nm",text:p.name}),el("span",{cls:"pts",text:fmtPts(sc.perPlayer[p.id])+" pt"}),rm]),
       el("div",{cls:"minis"},p.cards.map(id=>{
@@ -1172,7 +1193,8 @@ function renderHowto(){
     +(CB.tie==="split"?"; on a tie the winners split the points. ":"; on a tie every winning card gets the full points. ")+bonusLine()+".";
   $("help-body").replaceChildren(frag);
 }
-function placeHelp(){document.documentElement.style.setProperty("--hdr",Math.max(0,Math.round($("hdr").getBoundingClientRect().bottom))+"px")}
+/* --chief-gamebar-h = bottom of the header: the shared chief-gamebar.css puts the sheet there (UI ronde 4; was a local sheet top) */
+function placeHelp(){document.body.style.setProperty("--chief-gamebar-h",Math.max(0,Math.ceil($("hdr").getBoundingClientRect().bottom))+"px")}
 function openHelp(){placeHelp();$("help").hidden=false;$("btn-help").setAttribute("aria-expanded","true");try{$("btn-help-close").focus({preventScroll:true})}catch(e){}}
 function closeHelp(){if($("help").hidden)return;$("help").hidden=true;$("btn-help").setAttribute("aria-expanded","false");try{$("btn-help").focus({preventScroll:true})}catch(e){}}
 $("btn-help").onclick=()=>$("help").hidden?openHelp():closeHelp();
@@ -1181,6 +1203,7 @@ $("help").addEventListener("click",e=>{if(e.target===$("help"))closeHelp()});
 $("btn-home").addEventListener("click",()=>{if(!$("help").hidden){$("help").hidden=true;$("btn-help").setAttribute("aria-expanded","false")}});
 window.addEventListener("resize",()=>{if(!$("help").hidden)placeHelp()});
 window.addEventListener("scroll",()=>{if(!$("help").hidden)placeHelp()},{passive:true});
+if(window.ResizeObserver)try{new ResizeObserver(placeHelp).observe($("hdr"))}catch(e){}
 renderHowto();
 $("cOwn").onclick=()=>{if(S.mode!==75)return;P.own=true;psave();render(false)};
 $("cBought").onclick=()=>{P.own=false;psave();if(S.winOpen){S.winOpen=null;save()}render(false)};

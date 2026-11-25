@@ -69,6 +69,20 @@
       ]
     },
     {
+      "name": "ChiefSolitaire",
+      "section": "cards",
+      "short": "Klondike, FreeCell and Spider",
+      "url": "https://www.chiefshuffle.com/solitaire/",
+      "tag": "Card game",
+      "category": "GameApplication",
+      "desc": "Classic solitaire in your browser: Klondike, FreeCell and Spider with 1, 2 or 4 suits. Tap or drag your cards, with hints and unlimited undo. A new daily deal for each game that is always solvable.",
+      "points": [
+        "Klondike draw 1 or 3, FreeCell, Spider 1, 2 or 4 suits",
+        "Daily deals: the same for everyone, proven solvable",
+        "Family stats, daily ranking and streaks"
+      ]
+    },
+    {
       "name": "ChiefJINX",
       "section": "cards",
       "short": "family card game",

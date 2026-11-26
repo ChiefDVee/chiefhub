@@ -14,10 +14,22 @@
 # (bekende sectie-id). Volgorde = sectievolgorde, daarbinnen apps.json-volgorde; lege sectie = niet gerenderd.
 # JSON-LD volgt dezelfde (getoonde) volgorde.
 #
+# [2026-11-26] Updates ronde 2: leest LOKAAL alle changelog-JSON's (CHANGELOGS hieronder = de enige plek met de paden,
+# ook die in de andere repo's: ../16_CHIEFJINX/… enz.), valideert ze (chief_updates.py, kopie per repo) en schrijft:
+#   - index.html tussen <!-- LATEST:START -->/<!-- LATEST:END -->: blok "Latest updates" = max. één entry per spel
+#     (de nieuwste; gelijke datum → de eerste in het bestand), datum aflopend (gelijke datum → spelnaam), de LATEST_N
+#     bovenste, met spelnaam + link naar de updates-pagina; enkel Engels; geen runtime-requests (statische HTML);
+#     [2026-11-26] was eerst de LATEST_N nieuwste entries over alle spellen (één spel kon het blok vullen);
+#   - dice/updates/index.html en bingo/updates/index.html ("What's new", Engels zoals het spel) volledig, behalve het
+#     footerblok tussen de CHIEF-FOOTER-markers (dat blijft van chief-brand-sync en wordt overgenomen);
+#   - in dice/ en bingo/index.html tussen <!-- UPDLINK:START -->/<!-- UPDLINK:END --> (in de ?-sheet): link "What's new" +
+#     updates.js met data-latest (bolletje op ?).
+#   Ontbreekt of faalt een bronbestand → luid falen (exit 2), ook bij --check.
 # Gebruik : /usr/bin/python3 build.py [--check]
-#           --check = enkel controleren of index.html up-to-date is
-# Exit    : 0 = ok/up-to-date, 1 = --check: index.html verouderd,
-#           2 = apps.json of markers ongeldig
+#           --check = enkel controleren of index.html, het Latest-blok, de UPDLINK-blokken en de updates-pagina's
+#           up-to-date zijn
+# Exit    : 0 = ok/up-to-date, 1 = --check: iets verouderd,
+#           2 = apps.json, markers of een changelog ongeldig/ontbrekend
 # ============================================================
 import html
 import json
@@ -26,6 +38,9 @@ import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import chief_updates  # noqa: E402  (kopie per repo, zelfde inhoud)
+
 APPS_JSON = os.path.join(HERE, "apps.json")
 INDEX = os.path.join(HERE, "index.html")
 REQUIRED = ("name", "section", "short", "url", "tag", "category", "desc", "points")
@@ -36,6 +51,28 @@ META_DESCRIPTION = ("Small tools, no accounts, no strings: free card games, dice
                     "and Bitcoin tools by @ChiefXBelgium.")
 META_MAX = 155
 NAME_PREFIX = "Chief"  # kaarttitel: NAME_PREFIX + <span class="name-accent">rest</span>
+# [2026-11-26] Changelogs: (id, spelnaam, pad t.o.v. 14_CHIEFHUB, updates-URL, eigen pagina op chiefke.com of None).
+# Eén config voor alle paden; tie-break bij gelijke datum in "Latest updates" = spelnaam (niet deze volgorde).
+CHANGELOGS = (
+    ("jinx", "ChiefJINX", "../16_CHIEFJINX/app/changelog/jinx.json", "https://www.chiefjinx.com/updates/", None),
+    ("yatzy", "ChiefYatzy", "../17_CHIEFYATZY/app/changelog/yatzy.json", "https://www.chiefyatzy.com/updates/", None),
+    ("pairs", "ChiefPairs", "../18_CHIEFSHUFFLE/app/changelog/pairs.json", "https://www.chiefshuffle.com/pairs/updates/", None),
+    ("rami", "ChiefRami", "../18_CHIEFSHUFFLE/app/changelog/rami.json", "https://www.chiefshuffle.com/rami/updates/", None),
+    ("mahjong", "ChiefMahjong", "../18_CHIEFSHUFFLE/app/changelog/mahjong.json",
+     "https://www.chiefshuffle.com/mahjong/updates/", None),
+    ("solitaire", "ChiefSolitaire", "../18_CHIEFSHUFFLE/app/changelog/solitaire.json",
+     "https://www.chiefshuffle.com/solitaire/updates/", None),
+    ("words", "ChiefWords", "../20_CHIEFLETTERS/app/changelog/words.json", "https://www.chiefletters.com/words/updates/", None),
+    ("daily", "ChiefDaily", "../20_CHIEFLETTERS/app/changelog/daily.json", "https://www.chiefletters.com/daily/updates/", None),
+    ("count", "ChiefCount", "../09_CHIEFCOUNT/changelog/count.json", "https://www.chiefcount.com/updates/", None),
+    ("dice", "ChiefDice", "changelog/dice.json", "https://chiefke.com/dice/updates/", "dice"),
+    ("bingo", "ChiefBingo", "changelog/bingo.json", "https://chiefke.com/bingo/updates/", "bingo"),
+)
+LATEST_N = 6
+# basis voor de relatieve CHANGELOGS-paden; CHIEF_HUB_CHANGELOG_BASE enkel voor tests (build op een kopie in 05_TMP)
+CHANGELOG_BASE = os.environ.get("CHIEF_HUB_CHANGELOG_BASE") or HERE
+FOOTER_RE = re.compile(r"<!-- CHIEF-FOOTER:START -->.*?<!-- CHIEF-FOOTER:END -->", re.S)
+EMPTY_FOOTER = "<!-- CHIEF-FOOTER:START -->\n<!-- CHIEF-FOOTER:END -->"
 
 
 def fail(msg):
@@ -170,6 +207,188 @@ def render_jsonld(apps, nl, indent):
     return nl.join(indent + l for l in lines)
 
 
+def load_changelogs():
+    """→ [(cfg, data)] in CHANGELOGS-volgorde; ontbrekend of ongeldig → fail (exit 2)."""
+    out = []
+    for cfg in CHANGELOGS:
+        gid, name, rel, url, own = cfg
+        path = os.path.normpath(os.path.join(CHANGELOG_BASE, rel))
+        if not os.path.isfile(path):
+            fail("changelog %s ontbreekt: %s" % (gid, path))
+        try:
+            data = chief_updates.load(path, gid)
+        except chief_updates.ChangelogError as exc:
+            fail(str(exc))
+        out.append((cfg, data))
+    return out
+
+
+def latest_entries(logs, n=LATEST_N):
+    """Max. één entry per spel: per spel de nieuwste (gelijke datum → de eerste in het bestand), daarna datum aflopend,
+    gelijke datum → spelnaam (A→Z); de n bovenste."""
+    rows = []
+    for cfg, data in logs:
+        if not data["entries"]:
+            continue
+        newest = max(e["date"] for e in data["entries"])
+        ent = next(e for e in data["entries"] if e["date"] == newest)
+        rows.append((cfg, ent))
+    rows.sort(key=lambda r: r[0][1])                     # spelnaam A→Z (stabiele sort: tie-break bij gelijke datum)
+    rows.sort(key=lambda r: r[1]["date"], reverse=True)  # datum aflopend
+    return rows[:n]
+
+
+def render_latest(logs, nl, indent):
+    e = lambda s: html.escape(s, quote=False)
+    a = html.escape
+    out = [indent + '<section class="latest" id="latest" aria-labelledby="latest-title">',
+           indent + '  <h2 class="section-title" id="latest-title">Latest updates</h2>',
+           indent + '  <ol class="latest-list">']
+    for cfg, ent in latest_entries(logs):
+        gid, name, rel, url, own = cfg
+        out += [indent + '    <li><a class="latest-item" href="%s"><span class="latest-meta"><span class="latest-game">%s</span>'
+                         '<span class="latest-kind">%s</span><time datetime="%s">%s</time></span><span class="latest-text">%s</span></a></li>'
+                % (a(url), render_name(name), e(chief_updates.KIND_LABEL[ent["kind"]]["en"]), a(ent["date"]),
+                   e(chief_updates.fmt_date(ent["date"], "en")), e(ent["en"]))]
+    out += [indent + "  </ol>", indent + "</section>"]
+    return nl.join(out)
+
+
+def render_updlink(cfg, data, nl, indent):
+    """Link "What's new" in de ?-sheet van dice/bingo + updates.js (bolletje op ?), enkel Engels."""
+    gid, name, rel, url, own = cfg
+    return nl.join([
+        indent + '<a id="upd-link" class="chief-upd-link" href="/%s/updates/">What&#39;s new</a>' % own,
+        indent + '<script src="../assets/updates/updates.js" data-game="%s" data-latest="%s" defer></script>'
+        % (gid, chief_updates.latest(data)),
+    ])
+
+
+def render_updates_page(cfg, data, footer):
+    """Volledige statische pagina <own>/updates/index.html (Engels, zoals het spel); footerblok = dat van chief-brand-sync."""
+    gid, name, rel, url, own = cfg
+    e = lambda s: html.escape(s, quote=False)
+    a = html.escape
+    ctx = chief_updates.page_context(data, name)
+    t = ctx["upd_t"]["en"]
+    desc = chief_updates.description(name, data)
+    title = "What's new in %s" % name
+    icons = "../../assets/icons/%s/" % own
+    lines = [
+        "<!doctype html>",
+        '<html lang="en">',
+        "<head>",
+        '<meta charset="utf-8">',
+        '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">',
+        '<meta name="theme-color" content="#0a0a0a">',
+        "<!-- GENERATED by build.py uit changelog/%s.json (enkel het footerblok komt van chief-brand-sync) -->" % gid,
+        '<link rel="icon" href="%sfavicon.ico" sizes="16x16 32x32 48x48">' % icons,
+        '<link rel="icon" href="%sfavicon.svg" type="image/svg+xml">' % icons,
+        '<link rel="icon" type="image/png" sizes="32x32" href="%sfavicon-32.png">' % icons,
+        '<link rel="apple-touch-icon" href="%sapple-touch-icon.png">' % icons,
+        "<title>%s</title>" % e(title),
+        '<meta name="description" content="%s">' % a(desc),
+        '<link rel="canonical" href="%s">' % a(url),
+        '<meta property="og:type" content="website">',
+        '<meta property="og:url" content="%s">' % a(url),
+        '<meta property="og:title" content="%s">' % a(title),
+        '<meta property="og:description" content="%s">' % a(desc),
+        '<meta property="og:site_name" content="chiefke">',
+        '<meta property="og:image" content="https://chiefke.com/assets/og/%s.png">' % own,
+        '<meta property="og:image:width" content="1200">',
+        '<meta property="og:image:height" content="630">',
+        '<meta name="twitter:card" content="summary_large_image">',
+        '<meta name="twitter:site" content="@ChiefXBelgium">',
+        '<meta name="twitter:title" content="%s">' % a(title),
+        '<meta name="twitter:description" content="%s">' % a(desc),
+        '<meta name="twitter:image" content="https://chiefke.com/assets/og/%s.png">' % own,
+        '<link rel="stylesheet" href="../../assets/brand/chief-tokens.css">',
+        '<link rel="stylesheet" href="../../assets/brand/chief-gamebar.css">',
+        '<link rel="stylesheet" href="../../assets/brand/chief-footer.css">',
+        '<link rel="stylesheet" href="../../assets/updates/updates.css">',
+        "<style>",
+        "html{color-scheme:dark}",
+        "body{margin:0;background:var(--chief-bg);color:var(--chief-text);font-family:var(--chief-font-body);"
+        "min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;overflow-x:hidden}",
+        ".chief-wordmark span{color:var(--chief-accent)}",
+        "</style>",
+        '<script src="../../assets/updates/updates.js" data-game="%s" data-latest="%s" data-page="updates" defer></script>'
+        % (gid, chief_updates.latest(data)),
+        "</head>",
+        "<body>",
+        '<header class="chief-gamebar">',
+        '  <a class="chief-wordmark" href="/%s/">Chief<span>%s</span></a>' % (own, e(name[len(NAME_PREFIX):])),
+        '  <div class="chief-gamebar__actions">',
+        '    <button id="btn-help" class="chief-gamebar__btn chief-gamebar__btn--help" type="button" aria-label="How to play" '
+        'aria-haspopup="dialog" aria-controls="help">?</button>',
+        '    <a id="btn-home" class="chief-gamebar__btn chief-gamebar__btn--home" href="/%s/" aria-label="%s">⌂</a>' % (own, a(name)),
+        "  </div>",
+        "</header>",
+        "",
+        '<main class="upd">',
+        "  <h1>%s</h1>" % e(t["title"]),
+        '  <p class="upd-about">%s</p>' % e(t["about"]),
+    ]
+    for m in ctx["upd_months"]:
+        lines += ['  <section class="upd-month" aria-labelledby="m-%s">' % m["key"],
+                  '    <h2 id="m-%s">%s</h2>' % (m["key"], e(m["en"])),
+                  '    <ol class="upd-list">']
+        for ent in m["entries"]:
+            lines += ['      <li class="upd-entry">',
+                      '        <div class="upd-meta"><time class="upd-date" datetime="%s">%s</time>'
+                      '<span class="upd-kind upd-kind--%s">%s</span></div>'
+                      % (a(ent["date"]), e(ent["day"]["en"]), ent["kind"], e(ent["label"]["en"])),
+                      '        <p class="upd-text">%s</p>' % e(ent["en"]),
+                      "      </li>"]
+        lines += ["    </ol>", "  </section>"]
+    lines += [
+        '  <p class="upd-launched">%s</p>' % e(t["launched"]),
+        "</main>",
+        "",
+        '<div id="help" class="chief-sheet" hidden>',
+        '  <div class="chief-sheet__box" role="dialog" aria-modal="true" aria-labelledby="help-title">',
+        '    <div class="chief-sheet__head"><h2 id="help-title">%s</h2><button id="btn-help-close" class="chief-gamebar__btn" '
+        'type="button" aria-label="Close">✕</button></div>' % e(t["title"]),
+        '    <p class="upd-sheet-text">%s</p>' % e(t["about"]),
+        '    <a class="chief-upd-link" href="/%s/">%s</a>' % (own, e(t["back"])),
+        "  </div>",
+        "</div>",
+        footer,
+        "</body>",
+        "</html>",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def updates_page_path(own):
+    return os.path.join(HERE, own, "updates", "index.html")
+
+
+def build_updates_page(cfg, data):
+    """→ (pad, oude inhoud of None, nieuwe inhoud); het bestaande footerblok blijft (chief-brand-sync)."""
+    path = updates_page_path(cfg[4])
+    old = None
+    footer = EMPTY_FOOTER
+    if os.path.isfile(path):
+        with open(path, encoding="utf-8", newline="") as f:
+            old = f.read()
+        m = FOOTER_RE.search(old)
+        if m:
+            footer = m.group(0)
+    return path, old, render_updates_page(cfg, data, footer)
+
+
+def write_atomic(path, text):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = os.path.join(os.path.dirname(path), "." + os.path.basename(path) + ".partial")
+    with open(tmp, "w", encoding="utf-8", newline="") as f:
+        f.write(text)
+    if os.path.exists(path):
+        os.chmod(tmp, os.stat(path).st_mode)
+    os.replace(tmp, path)
+
+
 def replace_block(src, name, render, nl):
     pat = re.compile(r"(<!-- %s:START -->)(.*?)(\n?)([ \t]*)(<!-- %s:END -->)" % (name, name), re.S)
     matches = pat.findall(src)
@@ -183,26 +402,42 @@ def main():
     check = "--check" in sys.argv[1:]
     groups = load_apps()
     apps = flat(groups)
+    logs = load_changelogs()
     with open(INDEX, encoding="utf-8", newline="") as f:
         src = f.read()
     nl = "\r\n" if "\r\n" in src else "\n"
     out = replace_block(src, "APPS", lambda n, i: render_cards(groups, n, i), nl)
     out = replace_block(out, "JSONLD", lambda n, i: render_jsonld(apps, n, i), nl)
     out = replace_block(out, "META", render_meta, nl)
+    out = replace_block(out, "LATEST", lambda n, i: render_latest(logs, n, i), nl)
     plain = unprefixed(apps)
     if plain:
         print("NOTE: no '%s' prefix, title rendered plain: %s" % (NAME_PREFIX, ", ".join(plain)))
-    if out == src:
-        print("index.html up-to-date (%d apps, %d sections)" % (len(apps), len(groups)))
+    # (pad, oud, nieuw) voor elk gegenereerd bestand; index.html eerst
+    todo = [(INDEX, src, out)]
+    for cfg, data in logs:
+        own = cfg[4]
+        if own is None:
+            continue
+        page = os.path.join(HERE, own, "index.html")
+        with open(page, encoding="utf-8", newline="") as f:
+            psrc = f.read()
+        pnl = "\r\n" if "\r\n" in psrc else "\n"
+        todo.append((page, psrc, replace_block(psrc, "UPDLINK", lambda n, i, c=cfg, d=data: render_updlink(c, d, n, i), pnl)))
+        todo.append(build_updates_page(cfg, data))
+    stale = [p for p, old, new in todo if old != new]
+    if not stale:
+        print("index.html up-to-date (%d apps, %d sections, %d changelogs)" % (len(apps), len(groups), len(logs)))
         return 0
     if check:
-        print("index.html is stale — run /usr/bin/python3 build.py", file=sys.stderr)
+        for p in stale:
+            print("stale: %s — run /usr/bin/python3 build.py" % os.path.relpath(p, HERE), file=sys.stderr)
         return 1
-    tmp = INDEX + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="") as f:
-        f.write(out)
-    os.replace(tmp, INDEX)
-    print("index.html rebuilt (%d apps, %d sections)" % (len(apps), len(groups)))
+    for p, old, new in todo:
+        if old != new:
+            write_atomic(p, new)
+            print("rebuilt %s" % os.path.relpath(p, HERE))
+    print("build ok (%d apps, %d sections, %d changelogs)" % (len(apps), len(groups), len(logs)))
     return 0
 
 

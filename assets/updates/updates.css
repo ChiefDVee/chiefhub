@@ -1,0 +1,57 @@
+/* updates.css — "What's new"-pagina per spel + link en bolletje in de ?-sheet (2026-11-26, updates ronde 2).
+   Kopie per repo (zelfde inhoud). Enkel var(--chief-*), lettergroottes enkel via --chief-fs-*.
+   Beide talen staan in de server-HTML: [data-l="en"] / [data-l="nl"]; <html lang> (i18n van de site) kiest. */
+
+[data-l="nl"] { display: none; }
+html[lang="nl"] [data-l="nl"] { display: inline; }
+html[lang="nl"] [data-l="en"] { display: none; }
+
+/* ------------------------------------------------------------ link in de ?-sheet + bolletje */
+.chief-upd-link {
+  position: relative; display: inline-flex; align-items: center; min-height: var(--chief-tap); margin: var(--chief-space-3) 0 0;
+  padding: 0 var(--chief-space-4); border: 1px solid var(--chief-border); border-radius: var(--chief-radius-pill);
+  color: var(--chief-text); text-decoration: none; font-weight: var(--chief-fw-bold); font-size: var(--chief-fs-body);
+}
+.chief-upd-link:hover, .chief-upd-link:focus-visible { border-color: var(--chief-accent); }
+.chief-upd-link:focus-visible { outline: 2px solid var(--chief-accent); outline-offset: 2px; }
+.chief-upd-new { position: relative; }
+.chief-upd-new::after {
+  content: ""; position: absolute; top: 3px; right: 3px; width: 10px; height: 10px; border-radius: var(--chief-radius-pill);
+  background: var(--chief-accent); box-shadow: 0 0 0 2px var(--chief-bg); pointer-events: none;
+}
+
+/* ------------------------------------------------------------ updates-pagina */
+.upd { flex: 1; width: 100%; max-width: 720px; margin: 0 auto; padding: var(--chief-space-6) var(--chief-space-4) var(--chief-space-7); }
+.upd h1 { margin: 0 0 var(--chief-space-2); font-size: var(--chief-fs-title); line-height: var(--chief-lh-tight); overflow-wrap: anywhere; }
+.upd-about { margin: 0 0 var(--chief-space-6); color: var(--chief-muted); font-size: var(--chief-fs-body); }
+.upd-month { margin: 0 0 var(--chief-space-6); }
+.upd-month h2 {
+  margin: 0 0 var(--chief-space-3); color: var(--chief-muted); font-size: var(--chief-fs-md); text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.upd-list { display: grid; gap: var(--chief-space-3); margin: 0; padding: 0; list-style: none; }
+.upd-entry {
+  display: grid; gap: var(--chief-space-2); padding: var(--chief-space-3) var(--chief-space-4); background: var(--chief-surface);
+  border: 1px solid var(--chief-border); border-radius: var(--chief-radius);
+}
+.upd-meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--chief-space-2); }
+.upd-date { color: var(--chief-muted); font-family: var(--chief-font-mono); font-size: var(--chief-fs-sm); }
+.upd-text { margin: 0; font-size: var(--chief-fs-body); line-height: var(--chief-lh-body); overflow-wrap: anywhere; }
+.upd-launched { margin: var(--chief-space-6) 0 0; color: var(--chief-muted); font-size: var(--chief-fs-sm); text-align: center; }
+.upd-back { margin: var(--chief-space-4) 0 0; }
+
+/* soortlabel: vorm én kleur (New = pill + bol, Improved = afgerond + driehoek, Fixed = recht, gestreept + vierkant) */
+.upd-kind {
+  display: inline-flex; align-items: center; gap: var(--chief-space-1); padding: 2px var(--chief-space-2);
+  border: 1px solid; font-size: var(--chief-fs-xs); font-weight: var(--chief-fw-bold); line-height: var(--chief-lh-tight);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.upd-kind::before { content: ""; flex: none; width: 8px; height: 8px; background: currentColor; }
+.upd-kind--new { color: var(--chief-accent-ink); background: var(--chief-accent); border-color: var(--chief-accent); border-radius: var(--chief-radius-pill); }
+.upd-kind--new::before { border-radius: var(--chief-radius-pill); }
+.upd-kind--improved { color: var(--chief-ok); background: var(--chief-ok-dim); border-color: var(--chief-ok); border-radius: var(--chief-radius-sm); }
+.upd-kind--improved::before { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.upd-kind--fixed { color: var(--chief-text); background: transparent; border-color: var(--chief-border-strong); border-style: dashed; border-radius: 0; }
+
+/* ?-sheet van de updates-pagina */
+.upd-sheet-text { margin: 0 0 var(--chief-space-3); color: var(--chief-muted); font-size: var(--chief-fs-body); }

@@ -1,0 +1,90 @@
+{
+  "game": "bingo",
+  "launched": "2026-11-05",
+  "entries": [
+    {
+      "date": "2026-11-25",
+      "kind": "improved",
+      "en": "The header fits small phones and landscape, and How to play opens just below it.",
+      "nl": "De kop past op kleine telefoons en in landschap, en Hoe speel je opent er net onder."
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "improved",
+      "en": "Same header as the other games, with ? for How to play, in the system font with larger buttons.",
+      "nl": "Dezelfde kop als de andere spellen, met ? voor Hoe speel je, in het systeemlettertype met grotere knoppen."
+    },
+    {
+      "date": "2026-11-12",
+      "kind": "improved",
+      "en": "Printed cards and the screen now use the house colours, with new icons.",
+      "nl": "Gedrukte kaarten en het scherm gebruiken nu de huiskleuren, met nieuwe iconen."
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "new",
+      "en": "Bonus numbers are marked on the cards.",
+      "nl": "Bonusnummers staan aangeduid op de kaarten."
+    },
+    {
+      "date": "2026-11-11",
+      "kind": "new",
+      "en": "New Top & Bottom pattern, new points, and bonus balls 7, 28, 31, 58 and 67.",
+      "nl": "Nieuw patroon Top & Bottom, nieuwe punten, en bonusballen 7, 28, 31, 58 en 67."
+    },
+    {
+      "date": "2026-11-09",
+      "kind": "new",
+      "en": "Generate and print your own cards right in the browser.",
+      "nl": "Maak en print je eigen kaarten rechtstreeks in de browser."
+    },
+    {
+      "date": "2026-11-07",
+      "kind": "new",
+      "en": "A win pauses the game and shows the winning cards full screen.",
+      "nl": "Een winst pauzeert het spel en toont de winnende kaarten op volledig scherm."
+    },
+    {
+      "date": "2026-11-07",
+      "kind": "fixed",
+      "en": "Win announcements are no longer cut off by the next ball.",
+      "nl": "Winstaankondigingen worden niet meer afgebroken door de volgende bal."
+    },
+    {
+      "date": "2026-11-07",
+      "kind": "new",
+      "en": "Own-card mode: players follow their own cards live, with scoring.",
+      "nl": "Eigen-kaartmodus: spelers volgen hun eigen kaarten live, met puntentelling."
+    },
+    {
+      "date": "2026-11-07",
+      "kind": "new",
+      "en": "Copy calls: copy the full draw order in one tap.",
+      "nl": "Trekkingen kopiëren: kopieer de volledige trekvolgorde in één tik."
+    },
+    {
+      "date": "2026-11-06",
+      "kind": "fixed",
+      "en": "Pressing a key on the caller view buttons no longer draws a ball.",
+      "nl": "Een toets indrukken op de knoppen van de omroeperweergave trekt geen bal meer."
+    },
+    {
+      "date": "2026-11-06",
+      "kind": "new",
+      "en": "Caller view history: show the last 10 or 5 balls, or none.",
+      "nl": "Geschiedenis in de omroeperweergave: toon de laatste 10 of 5 ballen, of geen."
+    },
+    {
+      "date": "2026-11-06",
+      "kind": "new",
+      "en": "Auto-draw, a game clock and a full-screen caller view, now in English.",
+      "nl": "Automatisch trekken, een spelklok en een omroeperweergave op volledig scherm, nu in het Engels."
+    },
+    {
+      "date": "2026-11-05",
+      "kind": "new",
+      "en": "ChiefBingo launched.",
+      "nl": "ChiefBingo gelanceerd."
+    }
+  ]
+}

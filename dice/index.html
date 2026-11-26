@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="../assets/brand/chief-tokens.css">
 <link rel="stylesheet" href="../assets/brand/chief-gamebar.css">
 <link rel="stylesheet" href="../assets/brand/chief-footer.css">
+<link rel="stylesheet" href="../assets/updates/updates.css">
 <style>
 /* Layout: the first screen = game chrome (.chief-gamebar, ../assets/brand/chief-gamebar.css) + the tool (.app); the dice area
    takes what is left and JS sizes the dice to fit it. Portrait = one column, landscape (≥700 px wide) = dice left, controls right.
@@ -204,6 +205,10 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
   <div class="chief-sheet__box" role="dialog" aria-modal="true" aria-labelledby="help-title">
     <div class="chief-sheet__head"><h2 id="help-title">How to play</h2><button id="btn-help-close" class="chief-gamebar__btn" type="button" aria-label="Close">✕</button></div>
     <div id="help-body"></div>
+    <!-- UPDLINK:START -->
+    <a id="upd-link" class="chief-upd-link" href="/dice/updates/">What&#39;s new</a>
+    <script src="../assets/updates/updates.js" data-game="dice" data-latest="2026-11-25" defer></script>
+    <!-- UPDLINK:END -->
   </div>
 </div>
 <!-- CHIEF-FOOTER:START -->

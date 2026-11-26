@@ -1,0 +1,42 @@
+{
+  "game": "dice",
+  "launched": "2026-11-07",
+  "entries": [
+    {
+      "date": "2026-11-25",
+      "kind": "improved",
+      "en": "The header fits small phones and landscape, and How to play opens just below it.",
+      "nl": "De kop past op kleine telefoons en in landschap, en Hoe speel je opent er net onder."
+    },
+    {
+      "date": "2026-11-24",
+      "kind": "improved",
+      "en": "Same header as the other games, with ? for How to play, in the system font with larger buttons.",
+      "nl": "Dezelfde kop als de andere spellen, met ? voor Hoe speel je, in het systeemlettertype met grotere knoppen."
+    },
+    {
+      "date": "2026-11-13",
+      "kind": "new",
+      "en": "A Play ChiefYatzy button in the header, for a full game with the same dice.",
+      "nl": "Een knop Speel ChiefYatzy in de kop, voor een volledig spel met dezelfde stenen."
+    },
+    {
+      "date": "2026-11-12",
+      "kind": "improved",
+      "en": "New icons and the house colours: black, white and orange.",
+      "nl": "Nieuwe iconen en de huiskleuren: zwart, wit en oranje."
+    },
+    {
+      "date": "2026-11-08",
+      "kind": "fixed",
+      "en": "Hold and release dice in full screen too, and no dead end when every die is held.",
+      "nl": "Stenen vasthouden en loslaten kan ook in volledig scherm, en geen doodlopend spel meer als alle stenen vastgezet zijn."
+    },
+    {
+      "date": "2026-11-07",
+      "kind": "new",
+      "en": "ChiefDice launched.",
+      "nl": "ChiefDice gelanceerd."
+    }
+  ]
+}

@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://chiefke.com/</loc>
+    <loc>https://www.chiefke.com/</loc>
+    <lastmod>2026-11-27</lastmod>
+  </url>
+  <url>
+    <loc>https://www.chiefke.com/bingo/</loc>
     <lastmod>2026-11-26</lastmod>
   </url>
   <url>
-    <loc>https://chiefke.com/bingo/</loc>
+    <loc>https://www.chiefke.com/bingo/updates/</loc>
     <lastmod>2026-11-26</lastmod>
   </url>
   <url>
-    <loc>https://chiefke.com/bingo/updates/</loc>
+    <loc>https://www.chiefke.com/dice/</loc>
     <lastmod>2026-11-26</lastmod>
   </url>
   <url>
-    <loc>https://chiefke.com/dice/</loc>
+    <loc>https://www.chiefke.com/dice/updates/</loc>
     <lastmod>2026-11-26</lastmod>
   </url>
   <url>
-    <loc>https://chiefke.com/dice/updates/</loc>
-    <lastmod>2026-11-26</lastmod>
-  </url>
-  <url>
-    <loc>https://chiefke.com/qotd/</loc>
+    <loc>https://www.chiefke.com/qotd/</loc>
     <lastmod>2026-11-23</lastmod>
   </url>
 </urlset>

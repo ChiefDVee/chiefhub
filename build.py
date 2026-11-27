@@ -44,6 +44,10 @@
 # https://www.chiefke.com/chiefdaily/ → /chiefdaily/), zodat ze op elke host werken (testhost, lokaal, www). Enkel
 # canonical en <link rel=alternate>, og:*, twitter:*, JSON-LD, sitemaps en de QOTD-deellink (permalink) blijven
 # absoluut https://www.chiefke.com/… (guard: 21_CHIEFKE/tests/test_sitebuild.py scant alle HTML van de doelbuild).
+# [2026-11-27, ronde C] Productstatus uit de mountmap (products.<n>.status): enkel "live"-producten worden naar
+# /chief<naam>/ herschreven. "legacy"-producten (draaien nog op hun oude domein) houden in de doelbuild hun oude URL
+# (kaart, getoonde host, Latest updates, JSON-LD) — zo linkt de hub niet naar een 302 en klapt hij in ronde D vanzelf
+# om (status → live + deploy = sitebuild). Status ontbreekt of ongeldig = exit 2. Pages-uitvoer ongewijzigd.
 # Gebruik : /usr/bin/python3 build.py [--check]
 #           /usr/bin/python3 build.py --target chiefke --out <map> [--urlmap <pad>] [--check]
 #           --check = enkel controleren of index.html, het Latest-blok, de UPDLINK-blokken en de updates-pagina's
@@ -433,7 +437,12 @@ def load_urlmap(path):
         with open(path, encoding="utf-8") as f:
             cfg = json.load(f)
         origin = cfg["origin"].rstrip("/")
-        pairs = [(p["old"], origin + p["path"]) for p in cfg["products"]]
+        # [2026-11-27, ronde C] enkel producten met status "live" worden herschreven; "legacy" houdt zijn oude URL
+        # (kaarten, Latest updates en JSON-LD wijzen rechtstreeks naar het oude domein tot ronde D)
+        for p in cfg["products"]:
+            if p.get("status") not in ("legacy", "live"):
+                fail("urlmap %s: product %s zonder geldige status (legacy|live)" % (path, p.get("path")))
+        pairs = [(p["old"], origin + p["path"]) for p in cfg["products"] if p["status"] == "live"]
         pairs += [(s["old"], origin + s["path"]) for s in cfg["sites"]]
         dirs = {s["dir"]: s["path"].strip("/") for s in cfg["sites"] if s.get("dir") and s.get("site") == "hub"}
     except (OSError, ValueError, KeyError, TypeError) as e:

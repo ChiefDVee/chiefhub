@@ -25,11 +25,22 @@
 #   - in dice/ en bingo/index.html tussen <!-- UPDLINK:START -->/<!-- UPDLINK:END --> (in de ?-sheet): link "What's new" +
 #     updates.js met data-latest (bolletje op ?).
 #   Ontbreekt of faalt een bronbestand → luid falen (exit 2), ook bij --check.
+#
+# [2026-11-27] Doelmodus (chiefke-app ronde A): --target chiefke --out <map> [--urlmap <mounts.json>] schrijft een
+# VOLLEDIGE kopie van de hub voor www.chiefke.com in <map> (nooit in deze repo): dice/ bingo/ qotd/ → chiefdice/
+# chiefbingo/ chiefqotd/, elke product-URL (oud domein) → https://www.chiefke.com/chief<naam>/…, chiefke.com en
+# fees.chiefke.com → www.chiefke.com(/chieffees/), root-paden "/dice/" → "/chiefdice/", sitemap.xml → sitemap-hub.xml
+# (de app serveert /sitemap.xml als index en /robots.txt zelf). Bron van oud → nieuw = de mountmap van de chiefke-repo
+# (standaard ../21_CHIEFKE/chiefke/mounts.json: "origin", "products", "sites"); geen tweede kopie hier.
+# Gegenereerde blokken komen uit dezelfde generatie als de Pages-build (kaarten met de nieuwe URL's, zodat ook de
+# getoonde host klopt). Schrijven per bestand atomisch; bestanden die niet meer in de uitvoer horen worden gemeld,
+# nooit gewist. Zonder --target: exact het gedrag van vroeger (Pages-uitvoer byte-identiek, guard in de chiefke-tests).
 # Gebruik : /usr/bin/python3 build.py [--check]
+#           /usr/bin/python3 build.py --target chiefke --out <map> [--urlmap <pad>] [--check]
 #           --check = enkel controleren of index.html, het Latest-blok, de UPDLINK-blokken en de updates-pagina's
-#           up-to-date zijn
+#           up-to-date zijn (met --target: of <map> exact de doeluitvoer bevat)
 # Exit    : 0 = ok/up-to-date, 1 = --check: iets verouderd,
-#           2 = apps.json, markers of een changelog ongeldig/ontbrekend
+#           2 = apps.json, markers, een changelog of de urlmap ongeldig/ontbrekend, of usage
 # ============================================================
 import html
 import json
@@ -398,8 +409,195 @@ def replace_block(src, name, render, nl):
     return pat.sub(lambda m: m.group(1) + nl + render(nl, indent) + nl + indent + m.group(5), src)
 
 
+# ---------------------------------------------------------------------- doelmodus (chiefke-app, 2026-11-27)
+TARGETS = ("chiefke",)
+DEFAULT_URLMAP = os.path.join(HERE, "..", "21_CHIEFKE", "chiefke", "mounts.json")
+# niet in de doeluitvoer: repo-/buildbestanden, Pages-config, en wat de chiefke-app zelf serveert (robots, sitemap-index)
+TARGET_SKIP_FILES = {"CNAME", "README.md", "build.py", "chief_updates.py", "apps.json", "robots.txt", "sitemap.xml"}
+TARGET_SKIP_DIRS = {".git", "__pycache__", "changelog"}
+TARGET_TEXT = (".html", ".js", ".css", ".json", ".xml", ".txt", ".webmanifest", ".svg")
+
+
+def load_urlmap(path):
+    """→ (origin, [(oude URL, nieuwe URL)], {oude map: nieuwe map}) uit de mountmap van de chiefke-repo."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            cfg = json.load(f)
+        origin = cfg["origin"].rstrip("/")
+        pairs = [(p["old"], origin + p["path"]) for p in cfg["products"]]
+        pairs += [(s["old"], origin + s["path"]) for s in cfg["sites"]]
+        dirs = {s["dir"]: s["path"].strip("/") for s in cfg["sites"] if s.get("dir") and s.get("site") == "hub"}
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        fail("urlmap %s: %s" % (path, e))
+    for old, new in pairs:
+        if not (old.startswith("https://") and old.endswith("/") and new.startswith("https://") and new.endswith("/")):
+            fail("urlmap: oude en nieuwe URL moeten https:// zijn en op / eindigen: %s → %s" % (old, new))
+    return origin, pairs, dirs
+
+
+def url_rewriter(pairs, dirs):
+    """Eén pass (geen dubbele vervanging): elke oude URL (met én zonder www., ook zonder afsluitende / als het pad
+    / is) → nieuwe URL, langste pad eerst; root-paden "/<map>/" van de hub → "/<nieuwe map>/"."""
+    alts, target = [], {}
+    for old, new in sorted(pairs, key=lambda p: -len(p[0])):
+        host, _, path = old[len("https://"):].partition("/")
+        host = host[4:] if host.startswith("www.") else host
+        key = (host, "/" + path)
+        target[key] = new
+        rx = r"https://(?:www\.)?%s/%s" % (re.escape(host), re.escape(path))
+        if path == "":
+            rx += r"|https://(?:www\.)?%s(?![\w./-])" % re.escape(host)
+        alts.append((rx, new))
+    big = re.compile("|".join("(%s)" % rx for rx, _ in alts))
+    news = [n for _, n in alts]
+    dir_rx = re.compile(r"""(?<=["'(=])/(%s)(?=[/"'?#])""" % "|".join(re.escape(d) for d in sorted(dirs, key=len, reverse=True))) if dirs else None
+
+    def rewrite(text):
+        def sub(m):
+            for i, n in enumerate(news):
+                if m.group(i + 1) is not None:
+                    return n if m.group(i + 1).endswith("/") else n.rstrip("/") + ("/" if n.count("/") > 3 else "")
+            return m.group(0)
+        out = big.sub(sub, text)
+        if dir_rx is not None:
+            out = dir_rx.sub(lambda m: "/" + dirs[m.group(1)], out)
+        return out
+    return rewrite
+
+
+def target_files(generated, rewrite, dirs):
+    """→ {relatief pad in de uitvoer: bytes}: elk bestand van de hub (min TARGET_SKIP_*), gegenereerde inhoud waar
+    build.py die maakt, tekstbestanden herschreven, mappen hernoemd; sitemap.xml → sitemap-hub.xml."""
+    out = {}
+    for base, subdirs, files in os.walk(HERE):
+        rel_base = os.path.relpath(base, HERE)
+        subdirs[:] = sorted(d for d in subdirs if d not in TARGET_SKIP_DIRS and not d.startswith("."))
+        for name in sorted(files):
+            if name.startswith(".") or name.endswith(".partial") or name.endswith(".pyc"):
+                continue
+            if rel_base == "." and name in TARGET_SKIP_FILES:
+                continue
+            src = os.path.join(base, name)
+            rel = os.path.normpath(os.path.join(rel_base, name))
+            parts = rel.split(os.sep)
+            if parts[0] in dirs:
+                parts[0] = dirs[parts[0]]
+            dest = "/".join(parts)
+            if src in generated:
+                data = generated[src].encode("utf-8")
+            else:
+                with open(src, "rb") as f:
+                    data = f.read()
+            if name.endswith(TARGET_TEXT):
+                data = rewrite(data.decode("utf-8")).encode("utf-8")
+            out[dest] = data
+    sm = os.path.join(HERE, "sitemap.xml")
+    if os.path.isfile(sm):
+        with open(sm, encoding="utf-8", newline="") as f:
+            out["sitemap-hub.xml"] = rewrite(f.read()).encode("utf-8")
+    return out
+
+
+def write_bytes_atomic(path, data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = os.path.join(os.path.dirname(path), "." + os.path.basename(path) + ".partial")
+    with open(tmp, "wb") as f:
+        f.write(data)
+    os.replace(tmp, path)
+
+
+def build_target(generated, out_dir, urlmap, check, groups_for_target):
+    """Doeluitvoer schrijven (of --check). generated = {pad in de hub: nieuwe inhoud} van de doel-generatie."""
+    origin, pairs, dirs = load_urlmap(urlmap)
+    rewrite = url_rewriter(pairs, dirs)
+    files = target_files(generated, rewrite, dirs)
+    out_dir = os.path.abspath(out_dir)
+    if out_dir == HERE or out_dir.startswith(HERE + os.sep):
+        fail("--out mag niet in de hub-repo liggen (%s)" % out_dir)
+    stale, extra = [], []
+    for rel, data in sorted(files.items()):
+        p = os.path.join(out_dir, *rel.split("/"))
+        old = None
+        if os.path.isfile(p):
+            with open(p, "rb") as f:
+                old = f.read()
+        if old != data:
+            stale.append(rel)
+    if os.path.isdir(out_dir):
+        for base, subdirs, names in os.walk(out_dir):
+            for n in names:
+                rel = os.path.relpath(os.path.join(base, n), out_dir).replace(os.sep, "/")
+                if rel not in files and not n.endswith(".partial"):
+                    extra.append(rel)
+    for rel in sorted(extra):
+        print("NOTE: %s staat in %s maar hoort niet meer bij de doeluitvoer (niet gewist)" % (rel, out_dir))
+    if check:
+        if stale:
+            for rel in stale:
+                print("stale: %s — run build.py --target chiefke --out %s" % (rel, out_dir), file=sys.stderr)
+            return 1
+        print("doeluitvoer up-to-date: %s (%d bestanden)" % (out_dir, len(files)))
+        return 0
+    for rel in stale:
+        write_bytes_atomic(os.path.join(out_dir, *rel.split("/")), files[rel])
+    print("doelbuild chiefke ok: %s (%d bestanden, %d geschreven, origin %s)" % (out_dir, len(files), len(stale), origin))
+    return 0
+
+
+def parse_args(argv):
+    a = {"check": False, "target": None, "out": None, "urlmap": DEFAULT_URLMAP}
+    i = 0
+    while i < len(argv):
+        x = argv[i]
+        if x == "--check":
+            a["check"] = True
+        elif x in ("--target", "--out", "--urlmap") and i + 1 < len(argv):
+            a[x[2:]] = argv[i + 1]
+            i += 1
+        else:
+            fail("usage: build.py [--check] [--target chiefke --out <map> [--urlmap <mounts.json>]] (onbekend: %s)" % x)
+        i += 1
+    if a["target"] is not None and (a["target"] not in TARGETS or not a["out"]):
+        fail("usage: --target %s vereist --out <map>" % "|".join(TARGETS))
+    if a["out"] and a["target"] is None:
+        fail("usage: --out enkel samen met --target")
+    return a
+
+
+def main_target(a):
+    groups = load_apps()
+    origin, pairs, dirs = load_urlmap(a["urlmap"])
+    rewrite = url_rewriter(pairs, dirs)
+    groups = [(sec, [dict(app, url=rewrite(app["url"])) for app in grp]) for sec, grp in groups]
+    apps = flat(groups)
+    logs = load_changelogs()
+    with open(INDEX, encoding="utf-8", newline="") as f:
+        src = f.read()
+    nl = "\r\n" if "\r\n" in src else "\n"
+    out = replace_block(src, "APPS", lambda n, i: render_cards(groups, n, i), nl)
+    out = replace_block(out, "JSONLD", lambda n, i: render_jsonld(apps, n, i), nl)
+    out = replace_block(out, "META", render_meta, nl)
+    out = replace_block(out, "LATEST", lambda n, i: render_latest(logs, n, i), nl)
+    generated = {INDEX: out}
+    for cfg, data in logs:
+        own = cfg[4]
+        if own is None:
+            continue
+        page = os.path.join(HERE, own, "index.html")
+        with open(page, encoding="utf-8", newline="") as f:
+            psrc = f.read()
+        pnl = "\r\n" if "\r\n" in psrc else "\n"
+        generated[page] = replace_block(psrc, "UPDLINK", lambda n, i, c=cfg, d=data: render_updlink(c, d, n, i), pnl)
+        path, _old, new = build_updates_page(cfg, data)
+        generated[path] = new
+    return build_target(generated, a["out"], a["urlmap"], a["check"], groups)
+
+
 def main():
-    check = "--check" in sys.argv[1:]
+    a = parse_args(sys.argv[1:])
+    if a["target"] is not None:
+        return main_target(a)
+    check = a["check"]
     groups = load_apps()
     apps = flat(groups)
     logs = load_changelogs()

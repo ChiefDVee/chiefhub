@@ -3,6 +3,11 @@
 # Script Name : build.py
 # Author      : Devriendt Chief
 # Datum       : 2026-10-18
+# Last Run    : $(date +'%Y-%m-%d %H:%M:%S')
+#
+# NOTICE: Internal System Chiefbase/Chiefmobile.
+# APOCALYPSE WARNING: Apocalypse alert if misconfigured.
+# © Devriendt Chief – Private Internal Tool
 #
 # Genereert de app-kaarten (per sectie: <section> + <h2> + grid) en de JSON-LD in index.html uit apps.json,
 # tussen <!-- APPS:START -->/<!-- APPS:END --> en
@@ -35,6 +40,10 @@
 # Gegenereerde blokken komen uit dezelfde generatie als de Pages-build (kaarten met de nieuwe URL's, zodat ook de
 # getoonde host klopt). Schrijven per bestand atomisch; bestanden die niet meer in de uitvoer horen worden gemeld,
 # nooit gewist. Zonder --target: exact het gedrag van vroeger (Pages-uitvoer byte-identiek, guard in de chiefke-tests).
+# [2026-11-27, ronde B] Links BINNEN de site zijn in de doelmodus pad-relatief vanaf de root (href/src/action in HTML:
+# https://www.chiefke.com/chiefdaily/ → /chiefdaily/), zodat ze op elke host werken (testhost, lokaal, www). Enkel
+# canonical en <link rel=alternate>, og:*, twitter:*, JSON-LD, sitemaps en de QOTD-deellink (permalink) blijven
+# absoluut https://www.chiefke.com/… (guard: 21_CHIEFKE/tests/test_sitebuild.py scant alle HTML van de doelbuild).
 # Gebruik : /usr/bin/python3 build.py [--check]
 #           /usr/bin/python3 build.py --target chiefke --out <map> [--urlmap <pad>] [--check]
 #           --check = enkel controleren of index.html, het Latest-blok, de UPDLINK-blokken en de updates-pagina's
@@ -465,7 +474,25 @@ def url_rewriter(pairs, dirs):
     return rewrite
 
 
-def target_files(generated, rewrite, dirs):
+TAG_RX = re.compile(r"<([a-zA-Z][a-zA-Z0-9-]*)\b[^>]*>")
+SEO_LINK_REL = re.compile(r"""\brel\s*=\s*["']?\s*(canonical|alternate)\b""", re.I)
+
+
+def link_relativizer(origin):
+    """[2026-11-27, ronde B] → functie(html) die href/src/action naar <origin>/… pad-relatief maakt (vanaf de root),
+    behalve in <link rel="canonical|alternate">. og/twitter (content=), JSON-LD ("url": …) en tekst blijven absoluut."""
+    attr_rx = re.compile(r"""(\b(?:href|src|action)\s*=\s*)(["'])%s(/[^"']*)?\2""" % re.escape(origin.rstrip("/")))
+
+    def tag(m):
+        t = m.group(0)
+        if m.group(1).lower() == "link" and SEO_LINK_REL.search(t):
+            return t
+        return attr_rx.sub(lambda a: a.group(1) + a.group(2) + (a.group(3) or "/") + a.group(2), t)
+
+    return lambda text: TAG_RX.sub(tag, text)
+
+
+def target_files(generated, rewrite, dirs, relativize=None):
     """→ {relatief pad in de uitvoer: bytes}: elk bestand van de hub (min TARGET_SKIP_*), gegenereerde inhoud waar
     build.py die maakt, tekstbestanden herschreven, mappen hernoemd; sitemap.xml → sitemap-hub.xml."""
     out = {}
@@ -489,7 +516,10 @@ def target_files(generated, rewrite, dirs):
                 with open(src, "rb") as f:
                     data = f.read()
             if name.endswith(TARGET_TEXT):
-                data = rewrite(data.decode("utf-8")).encode("utf-8")
+                text = rewrite(data.decode("utf-8"))
+                if relativize is not None and name.endswith(".html"):
+                    text = relativize(text)
+                data = text.encode("utf-8")
             out[dest] = data
     sm = os.path.join(HERE, "sitemap.xml")
     if os.path.isfile(sm):
@@ -510,7 +540,7 @@ def build_target(generated, out_dir, urlmap, check, groups_for_target):
     """Doeluitvoer schrijven (of --check). generated = {pad in de hub: nieuwe inhoud} van de doel-generatie."""
     origin, pairs, dirs = load_urlmap(urlmap)
     rewrite = url_rewriter(pairs, dirs)
-    files = target_files(generated, rewrite, dirs)
+    files = target_files(generated, rewrite, dirs, link_relativizer(origin))
     out_dir = os.path.abspath(out_dir)
     if out_dir == HERE or out_dir.startswith(HERE + os.sep):
         fail("--out mag niet in de hub-repo liggen (%s)" % out_dir)

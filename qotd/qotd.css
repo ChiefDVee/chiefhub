@@ -39,6 +39,13 @@ svg { width: 1.1em; height: 1.1em; fill: none; stroke: currentColor; stroke-widt
 .home { display: inline-block; text-decoration: none; font-weight: 700; letter-spacing: -0.02em; font-size: 1.05rem; color: var(--text); }
 .home .ke { color: var(--accent); }
 .home .tld { color: var(--muted); font-size: .7em; font-weight: 500; }
+/* ⌂ naar de hub (hubnav 2026-11-27): rechts naast het wordmark, tikvlak ≥ --chief-tap, zelfde venster */
+.top-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.home-btn { display: inline-flex; align-items: center; justify-content: center; min-width: var(--chief-tap); min-height: var(--chief-tap);
+  border: 1px solid var(--chief-border); border-radius: var(--chief-radius-pill); color: var(--muted);
+  font-size: var(--chief-fs-lg); line-height: 1; text-decoration: none; }
+.home-btn:hover { color: var(--text); }
+.home-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 h1 {
   margin: 22px 0 0; font-family: var(--q-font); font-weight: 700; color: var(--q-text);
   font-size: clamp(2rem, 7vw, 3.4rem); line-height: 1.05; letter-spacing: .01em;

@@ -67,6 +67,14 @@ import chief_updates  # noqa: E402  (kopie per repo, zelfde inhoud)
 
 APPS_JSON = os.path.join(HERE, "apps.json")
 INDEX = os.path.join(HERE, "index.html")
+# [2026-11-27 hubnav] hub-PWA: manifest.webmanifest (gegenereerd, --check bewaakt hem) met id/scope/start_url "/", zodat
+# een geïnstalleerde chiefke.com alle spellen in hetzelfde venster opent. Kleuren = --chief-bg uit de brand-sync-kopie
+# van de tokens (nooit een getypte hex); iconen = de bestaande hub-set (chief_icon_engine.py --site hub, 192/512
+# maskable-safe). Elk spel houdt zijn eigen manifest met scope = eigen pad (/chief<spel>/).
+MANIFEST = os.path.join(HERE, "manifest.webmanifest")
+TOKENS = os.path.join(HERE, "assets", "brand", "chief-tokens.css")
+MANIFEST_NAME = "Chief"
+MANIFEST_ICONS = (("icon-192.png", "192x192"), ("icon-512.png", "512x512"))
 REQUIRED = ("name", "section", "short", "url", "tag", "category", "desc", "points")
 SECTION_ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 # [2026-11-21] Eén vaste beschrijving voor <meta name="description">, og:description én twitter:description,
@@ -413,6 +421,40 @@ def write_atomic(path, text):
     os.replace(tmp, path)
 
 
+def token_value(name):
+    """Waarde van een --chief-*-token uit de brand-sync-kopie (de bron is 11_CHIEF_ASSETS/brand/chief-tokens.css)."""
+    try:
+        with open(TOKENS, encoding="utf-8") as f:
+            css = f.read()
+    except OSError as e:
+        fail("tokens: %s" % e)
+    m = re.search(r"%s\s*:\s*([^;]+);" % re.escape(name), css)
+    if not m:
+        fail("tokens: %s ontbreekt in %s" % (name, os.path.relpath(TOKENS, HERE)))
+    return m.group(1).strip()
+
+
+def render_manifest():
+    """manifest.webmanifest van de hub (scope /). Idempotent: zelfde tokens → identieke bytes."""
+    for icon, _ in MANIFEST_ICONS:
+        if not os.path.isfile(os.path.join(HERE, icon)):
+            fail("manifest: icoon %s ontbreekt (chief_icon_engine.py --site hub)" % icon)
+    bg = token_value("--chief-bg")
+    icons = [{"src": "/" + icon, "sizes": size, "type": "image/png", "purpose": purpose}
+             for purpose in ("any", "maskable") for icon, size in MANIFEST_ICONS]
+    data = {"id": "/", "name": MANIFEST_NAME, "short_name": MANIFEST_NAME, "start_url": "/", "scope": "/",
+            "display": "standalone", "background_color": bg, "theme_color": bg, "icons": icons}
+    return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
+
+
+def read_text(path):
+    try:
+        with open(path, encoding="utf-8", newline="") as f:
+            return f.read()
+    except FileNotFoundError:
+        return ""
+
+
 def replace_block(src, name, render, nl):
     pat = re.compile(r"(<!-- %s:START -->)(.*?)(\n?)([ \t]*)(<!-- %s:END -->)" % (name, name), re.S)
     matches = pat.findall(src)
@@ -617,7 +659,7 @@ def main_target(a):
     out = replace_block(out, "JSONLD", lambda n, i: render_jsonld(apps, n, i), nl)
     out = replace_block(out, "META", render_meta, nl)
     out = replace_block(out, "LATEST", lambda n, i: render_latest(logs, n, i), nl)
-    generated = {INDEX: out}
+    generated = {INDEX: out, MANIFEST: render_manifest()}
     for cfg, data in logs:
         own = cfg[4]
         if own is None:
@@ -651,7 +693,7 @@ def main():
     if plain:
         print("NOTE: no '%s' prefix, title rendered plain: %s" % (NAME_PREFIX, ", ".join(plain)))
     # (pad, oud, nieuw) voor elk gegenereerd bestand; index.html eerst
-    todo = [(INDEX, src, out)]
+    todo = [(INDEX, src, out), (MANIFEST, read_text(MANIFEST), render_manifest())]
     for cfg, data in logs:
         own = cfg[4]
         if own is None:

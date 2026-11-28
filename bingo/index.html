@@ -36,9 +36,9 @@
    Games UI ronde 3: header = .chief-gamebar (../assets/brand/chief-gamebar.css) with [?] [⌂], English only, no language toggle
    (CLAUDE.md: Uitzondering ChiefDice en ChiefBingo (enkel Engels)).
    Font sizes only via var(--chief-fs-*); exceptions, each by name in the guard (test_chiefhub_chrome.py): print (A4 sheets, mm),
-   game pieces that scale with the piece — the ball (cqi of .ball), the winning card in the winner overlay (calc(var(--gw) …)),
-   the ×N bonus marker on a card cell — and the caller view, a full-screen projection view that scales with the screen
-   (drawn ball vw/vh/vmin, history balls cqi of .hist; CLAUDE.md: Uitzondering lettergrootte projectie). */
+   game pieces that scale with the piece — every ball (ballSVG(): text in SVG viewBox units, .bsv …), the winning card in the
+   winner overlay (calc(var(--gw) …)), the ×N bonus marker on a card cell — and the caller view, a full-screen projection view
+   whose ball scales with the screen (.focus .fball in vw/vh; CLAUDE.md: Uitzondering lettergrootte projectie). */
 :root{
   --bg:var(--chief-bg); --paper:var(--chief-surface); --ink:var(--chief-text); --muted:var(--chief-muted);
   --dauber:var(--chief-accent); --dauber-ink:var(--chief-accent-ink); --line:var(--chief-border); --hit:var(--chief-accent); --hit-soft:var(--chief-accent-dim);
@@ -72,24 +72,57 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var
   font-size:var(--chief-fs-xs);font-weight:var(--chief-fw-bold);line-height:var(--chief-lh-tight)}
 .seg button.chief-btn--confirming{box-shadow:inset 0 0 0 1px var(--chief-err)}
 .stage{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
-.ball{width:min(62vw,240px);aspect-ratio:1;max-width:100%;border-radius:50%;container-type:inline-size;background:var(--dauber);color:var(--dauber-ink);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  box-shadow:inset -14px -18px 0 color-mix(in srgb,var(--chief-bg) 12%,transparent)}
-.ball .letter{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:var(--chief-fs-xl);font-size:11cqi;line-height:1;opacity:.85;min-height:1.6rem}
-.ball .num{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:var(--chief-fs-title);font-size:40cqi;line-height:1;font-variant-numeric:tabular-nums}
-.ball.idle{background:var(--hit-soft);color:var(--muted);box-shadow:none}
-.ball.idle .num{font-size:var(--chief-fs-xl);font-family:var(--body);font-weight:800}
-.pop{animation:pop .35s ease-out}
+/* Balls + drum (2026-11-28): ballSVG() = one inline-SVG renderer for every ball, viewBox 0 0 100 100, ChiefCards back motif
+   (diagonal lattice, accent ring, dim inner ring, plate). Big = current ball + caller view, middle = history, small = board.
+   Colours only via the var(--chief-*) classes below (never hex); no defs/pattern/clipPath/ids (dozens of balls per page):
+   the lattice is clipped mathematically on the inner circle. Scale-aware: strokes ≥ 1 screen px, lattice step ≥ ±6 screen px;
+   the wordmark goes below 72 px, the lattice below 48 px. Ball text = SVG viewBox units (game piece, by name in the guard). */
+.bz{position:relative;width:100%;display:flex;justify-content:center}
+.ball{position:relative;width:min(62vw,240px);aspect-ratio:1;max-width:100%}
+.art{width:100%;height:100%}
+.bghost{position:absolute;inset:0;pointer-events:none;z-index:1}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;border:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.bsv,.dsv{display:block;width:100%;height:100%;overflow:visible}
+.bsv text{font-family:var(--chief-font-display);font-weight:var(--chief-fw-heavy);text-anchor:middle;dominant-baseline:central;font-variant-numeric:tabular-nums}
+.bsv .b-face{fill:var(--chief-bg);stroke:var(--chief-border-strong)}
+.bsv .b-lat{fill:none;stroke:var(--chief-border-strong)}
+.bsv .b-ring{fill:none;stroke:var(--chief-accent)}
+.bsv .b-dim{fill:none;stroke:var(--chief-accent-dim)}
+.bsv .b-plate{fill:var(--chief-bg);stroke:var(--chief-accent)}
+.bsv .b-pill{fill:var(--chief-bg);stroke:var(--chief-border-strong)}
+.bsv .b-bx{fill:var(--chief-accent);stroke:var(--chief-bg)}
+.bsv.idle .b-ring,.bsv.idle .b-plate{stroke:var(--chief-border-strong)}
+.bsv .t-let{fill:var(--chief-accent);font-size:12px}
+.bsv .t-num{fill:var(--chief-text);font-size:25px}
+.bsv .t-n90{fill:var(--chief-text);font-size:30px}
+.bsv .t-idle{fill:var(--chief-muted);font-size:8px}
+.bsv .t-wm{fill:var(--chief-text);font-size:7px}
+.bsv .t-wm2{fill:var(--chief-accent)}
+.bsv .t-bx{fill:var(--chief-accent-ink);font-size:10px}
+.bsv .m-let{fill:var(--chief-accent);font-size:24px}
+.bsv .m-num{fill:var(--chief-text);font-size:40px}
+.bsv .m-n90{fill:var(--chief-text);font-size:46px}
+.bsv .m-bx{fill:var(--chief-accent-ink);font-size:17px}
+.bsv .s-ring{fill:none;stroke:var(--chief-border)}
+.bsv .s-num{fill:var(--chief-muted);font-weight:600;font-size:36px}
+/* drum: accent rim, spokes, mini balls; .d-rot turns during a draw (WAAPI, transform only) */
+.drum{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.bz .drum{position:absolute;left:0;top:0;width:min(56px,14vw);aspect-ratio:1}
+@media (min-width:520px){.bz .drum{width:88px;top:auto;bottom:4px;left:calc(50% - 224px)}}
+.dsv .d-face{fill:var(--chief-bg);stroke:var(--chief-border-strong)}
+.dsv .d-spk{fill:none;stroke:var(--chief-border-strong)}
+.dsv .d-mb{fill:var(--chief-accent-dim);stroke:var(--chief-accent)}
+.dsv .d-rim{fill:none;stroke:var(--chief-accent)}
+.dsv .d-hub{fill:var(--chief-accent)}
+.dsv .d-rot{transform-origin:50px 50px}
 @keyframes pop{0%{transform:scale(.7)}70%{transform:scale(1.06)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion:reduce){.pop{animation:none}}
 .meta{display:flex;gap:18px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;flex-wrap:wrap;justify-content:center}
 .meta b{color:var(--ink)}
 .bar{width:100%;height:6px;border-radius:999px;background:var(--hit-soft);overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--hit);border-radius:inherit}
 .barnote{width:100%;text-align:center;font-weight:800;font-size:var(--chief-fs-xs);letter-spacing:.08em;color:var(--muted);margin-top:-8px}
-.recent{display:flex;gap:6px;min-height:34px;flex-wrap:wrap;justify-content:center}
-.recent span{min-width:34px;height:34px;padding:0 6px;border-radius:999px;border:2px solid var(--hit);color:var(--hit);
-  display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-variant-numeric:tabular-nums;font-size:var(--chief-fs-sm)}
+.recent{display:flex;gap:6px;min-height:40px;flex-wrap:wrap;justify-content:center}
+.recent .mb{display:block;width:40px;height:40px}
 .draw{width:100%;border:0;border-radius:16px;background:var(--hit);color:var(--dauber-ink);font:var(--chief-fw-heavy) var(--chief-fs-xl) var(--display);padding:18px;cursor:pointer;letter-spacing:.02em}
 .draw:active{transform:translateY(1px)}
 .draw:disabled{opacity:.4;cursor:default}
@@ -118,34 +151,33 @@ button:focus-visible{outline:3px solid var(--hit);outline-offset:2px}
 .board{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:14px}
 .board h2{font-size:var(--chief-fs-xs);text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0 0 10px}
 .grid{display:grid;gap:4px}
-.cell{aspect-ratio:1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;
-  font-size:var(--chief-fs-sm);color:var(--muted);font-variant-numeric:tabular-nums;border:1px solid var(--line)}
-.cell.on{background:var(--hit);border-color:var(--hit);color:var(--dauber-ink);font-weight:800}
-.cell.last{outline:3px solid var(--ink);outline-offset:1px}
+/* board = small balls: not drawn = muted ring + text, drawn = accent ring, last = accent fill with --chief-bg text */
+.cell{aspect-ratio:1;min-width:0}
+.cell.on .s-ring{stroke:var(--chief-accent)}
+.cell.on .s-num{fill:var(--chief-text);font-weight:800}
+.cell.last .s-ring{fill:var(--chief-accent);stroke:var(--chief-accent)}
+.cell.last .s-num{fill:var(--chief-bg)}
 .colhead{font-family:var(--display);font-weight:var(--chief-fw-heavy);text-align:center;color:var(--hit);font-size:var(--chief-fs-md)}
 /* Chief-footer (chief-brand-sync) verborgen zolang de caller-view open is */
 body:has(#focus:not([hidden])) .chief-footer{display:none}
 
-/* Caller view: number only */
+/* Caller view: the big ball (+ drum in its empty top-left corner), scaled with the screen (projection view) */
 .focus{position:fixed;inset:0;z-index:50;background:var(--bg);color:var(--hit);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2vh;cursor:pointer;user-select:none;-webkit-user-select:none;
   padding:calc(64px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(48px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.focus .now{display:flex;flex-direction:column;align-items:center;min-height:0}
-.focus .fl{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:min(12vmin,8rem);line-height:1;opacity:.75;min-height:1em}
-.focus .fn{font-family:var(--display);font-weight:var(--chief-fw-heavy);font-size:min(60vw,46vh);line-height:.9;font-variant-numeric:tabular-nums}
-.focus.nohist .fn{font-size:min(66vw,62vh)}
-.focus .fn.small{font-family:var(--body);font-weight:800;font-size:var(--chief-fs-title);color:var(--ink)}
-.focus .hist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:min(2vw,12px);width:min(100%,720px);container-type:inline-size}
-.focus .hist span{aspect-ratio:1;border-radius:50%;border:3px solid var(--line);color:var(--ink);background:var(--paper);
-  display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1;
-  font:var(--chief-fw-heavy) var(--chief-fs-title) var(--display);font-size:7.5cqi;font-variant-numeric:tabular-nums}
-.focus .hist span small{font-size:.45em;color:var(--hit);margin-bottom:.15em}
-.focus .hist span:first-child{border-color:var(--hit)}
+.focus .now{position:relative;display:flex;flex-direction:column;align-items:center;min-height:0}
+.focus .fball{position:relative;width:min(78vw,46vh);aspect-ratio:1}
+.focus.nohist .fball{width:min(86vw,62vh)}
+.focus .fdrum{position:absolute;left:0;top:0;width:16%;aspect-ratio:1}
+.focus .hist{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:min(2vw,12px);width:min(100%,720px)}
+.focus .hist .hb{display:block;aspect-ratio:1;min-width:0}
+.focus .hist .hb:not(:first-child) .b-ring{stroke:var(--chief-border-strong)}
 .focus .hlabel{color:var(--muted);font:800 var(--chief-fs-xs) var(--body);letter-spacing:.14em;text-transform:uppercase}
 .focus .hside{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
 @media (orientation:landscape){
   .focus{flex-direction:row;gap:4vw}
-  .focus .fn{font-size:min(40vw,62vh)}
+  .focus .fball{width:min(40vw,64vh)}
+  .focus.nohist .fball{width:min(60vw,70vh)}
   .focus .hside{width:min(42vw,560px)}
 }
 .focus .fx,.focus .fh{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));height:var(--chief-tap);border-radius:999px;border:1px solid var(--line);
@@ -344,7 +376,10 @@ html.prv,html.prv body{overflow:hidden}
   </div>
 
   <section class="stage">
-    <div id="ball" class="ball idle" aria-live="assertive"><span class="letter" id="letter"></span><span class="num" id="num">Ready</span></div>
+    <div class="bz">
+      <div class="drum" id="drum" aria-hidden="true"></div>
+      <div id="ball" class="ball idle" aria-live="assertive"><div class="art" id="ballArt"></div><span class="sr"><span id="letter"></span> <span id="num">Ready</span></span></div>
+    </div>
     <div class="meta"><span id="count"><b>0</b> / 75 drawn</span><span>Game time <b id="clock">0:00</b></span></div>
     <div class="bar" id="bar" hidden><i id="barFill"></i></div>
     <div class="barnote" id="barNote" hidden>waiting for announcement</div>
@@ -418,7 +453,7 @@ html.prv,html.prv body{overflow:hidden}
     <div id="help-body"></div>
     <!-- UPDLINK:START -->
     <a id="upd-link" class="chief-upd-link" href="/bingo/updates/">What&#39;s new</a>
-    <script src="../assets/updates/updates.js" data-game="bingo" data-latest="2026-11-25" defer></script>
+    <script src="../assets/updates/updates.js" data-game="bingo" data-latest="2026-11-28" defer></script>
     <!-- UPDLINK:END -->
   </div>
 </div>
@@ -443,7 +478,8 @@ html.prv,html.prv body{overflow:hidden}
 <div class="focus" id="focus" hidden role="dialog" aria-label="Caller view">
   <button class="fx" id="fClose" type="button" aria-label="Close full screen">✕</button>
   <button class="fh" id="fHist" type="button">Last 10</button>
-  <div class="now"><span class="fl" id="fLetter"></span><span class="fn" id="fNum"></span></div>
+  <div class="now"><div class="fball" id="fBall"><div class="art" id="fBallArt"></div></div><div class="drum fdrum" id="fDrum" aria-hidden="true"></div>
+    <span class="sr"><span class="fl" id="fLetter"></span> <span class="fn" id="fNum"></span></span></div>
   <div class="hside" id="fSide"><span class="hlabel" id="fLabel">Previous</span><div class="hist" id="fList"></div></div>
   <span class="fs" id="fStatus"></span>
   <div class="fb" id="fBar" hidden><i id="fBarFill"></i></div>
@@ -500,23 +536,160 @@ const $=id=>document.getElementById(id);
 const drawn=()=>S.order.slice(0,S.idx);
 const done=()=>S.idx>=S.mode;
 
-function newGame(mode){stopAuto();sqClear();S.mode=mode;S.order=shuffle(mode);S.idx=0;S.winOpen=null;S.startedAt=null;S.endedAt=null;save();buildGrid();render(false)}
+/* ---------- Balls + drum (2026-11-28) ----------
+   ballSVG(num, size, opts) → inline SVG string (viewBox 0 0 100 100), the only ball renderer on this page.
+   size "l" = big (current ball, caller view): face, lattice clipped on the inner circle, accent ring, dim inner ring, plate with
+   letter + number, wordmark pill; "m" = middle (history): rings + letter + number; "s" = small (board): ring + number.
+   opts.px = rendered width in screen px (scale-aware: every stroke ≥ 1 screen px, lattice step = max(viewBox step, 6 screen px),
+   ≥ 3 lines per direction; no wordmark below 72 px, no lattice below 48 px); opts.mode = 75|90 (default S.mode); opts.idle =
+   plate text of an empty big ball. Bonus balls (CB.bonus, 75 only) get the ×CB.mult badge on "l" and "m".
+   Only numbers, letters and constants end up in the string (escaped); colours via CSS classes (var(--chief-*)). */
+const BALL={face:1,lat:.7,latStep:6.8,minGapPx:6,minLines:3,ring:3.2,dim:1.6,plate:1.4,rLat:39,wmMin:72,latMin:48};
+const f2=v=>String(Math.round(v*100)/100);
+const escX=s=>String(s).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";");
+/* diagonal lattice y = ±x + c inside the circle (cx, cy, r): each line = the chord of the circle, so it ends exactly on the circle */
+function ballLattice(cx,cy,r,px){
+  let step=Math.max(BALL.latStep,BALL.minGapPx*100/px);
+  while(2*Math.floor((r-1e-6)/step)+1<BALL.minLines)step*=.9;
+  const K=Math.floor((r-1e-6)/step),q=Math.SQRT1_2;let d="";
+  for(const [ax,ay,nx,ny] of [[q,q,q,-q],[q,-q,q,q]])
+    for(let k=-K;k<=K;k++){const o=k*step,h=Math.sqrt(r*r-o*o),mx=cx+o*nx,my=cy+o*ny;
+      d+=`M${f2(mx-h*ax)},${f2(my-h*ay)}L${f2(mx+h*ax)},${f2(my+h*ay)}`}
+  return {d,step,lines:2*K+1};
+}
+function ballSVG(num,size,opts){
+  const o=opts||{},px=o.px>0?o.px:({l:240,m:40,s:48}[size]||48),u=100/px,mode=o.mode||S.mode;
+  const n=Number.isInteger(num)&&num>0?num:0,L=n&&mode===75?"BINGO"[Math.floor((n-1)/15)]:"";
+  const bonus=!!n&&mode===75&&CB.bonus.includes(n),sw=v=>f2(Math.max(v,u));
+  /* text y = visual centre (dominant-baseline:central); sizes only in the CSS classes */
+  const badge=(x,y,r,cls)=>`<circle class="b-bx" cx="${x}" cy="${y}" r="${r}" stroke-width="${sw(1.2)}"/>`
+    +`<text class="${cls}" x="${x}" y="${y}">×${escX(fmtPts(CB.mult))}</text>`;
+  let s=`<svg class="bsv bs-${size}${n?"":" idle"}" viewBox="0 0 100 100"${size==="s"?"":' aria-hidden="true"'} focusable="false"`
+    +` data-size="${size}" data-num="${n||""}" data-letter="${L}" data-px="${f2(px)}"${bonus?' data-bonus="1"':""}>`;
+  if(size==="s")
+    return s+`<circle class="s-ring" cx="50" cy="50" r="45" stroke-width="${sw(4)}"/><text class="s-num" x="50" y="50">${n}</text></svg>`;
+  if(size==="m"){
+    s+=`<circle class="b-face" cx="50" cy="50" r="48" stroke-width="${sw(1)}"/><circle class="b-ring" cx="50" cy="50" r="44" stroke-width="${sw(5)}"/>`
+      +`<circle class="b-dim" cx="50" cy="50" r="37.5" stroke-width="${sw(2.5)}"/>`;
+    s+=L?`<text class="m-let" x="50" y="30.5">${L}</text><text class="m-num" x="50" y="61">${n}</text>`
+      :`<text class="m-n90" x="50" y="50">${n}</text>`;
+    if(bonus)s+=badge(83,17,15,"m-bx");
+    return s+"</svg>";
+  }
+  s+=`<circle class="b-face" cx="50" cy="50" r="49" stroke-width="${sw(BALL.face)}"/>`;
+  if(px>=BALL.latMin){const l=ballLattice(50,50,BALL.rLat,px);
+    s+=`<path class="b-lat" d="${l.d}" stroke-width="${sw(BALL.lat)}" data-step="${f2(l.step)}" data-lines="${l.lines}" data-r="${BALL.rLat}"/>`}
+  s+=`<circle class="b-ring" cx="50" cy="50" r="44.5" stroke-width="${sw(BALL.ring)}"/><circle class="b-dim" cx="50" cy="50" r="40.5" stroke-width="${sw(BALL.dim)}"/>`;
+  const pcy=L?44:47,pr=23;   /* 90 balls (no letter): the plate moves to the middle */
+  s+=`<circle class="b-plate" cx="50" cy="${pcy}" r="${pr}" stroke-width="${sw(BALL.plate)}"/>`;
+  if(!n){const t=String(o.idle||"");s+=`<text class="t-idle" x="50" y="${pcy}" textLength="${f2(Math.min(38,t.length*4.6))}" lengthAdjust="spacingAndGlyphs">${escX(t)}</text>`}
+  else if(L)s+=`<text class="t-let" x="50" y="33">${L}</text><text class="t-num" x="50" y="51.5">${n}</text>`;
+  else s+=`<text class="t-n90" x="50" y="${pcy}">${n}</text>`;
+  if(px>=BALL.wmMin){const py=pcy+pr+3.5;   /* wordmark pill: "Chief" in --chief-text, "Bingo" in --chief-accent (= the gamebar wordmark) */
+    s+=`<rect class="b-pill" x="32" y="${f2(py)}" width="36" height="9" rx="4.5" stroke-width="${sw(.8)}"/>`
+      +`<text class="t-wm" x="50" y="${f2(py+4.5)}" textLength="29" lengthAdjust="spacingAndGlyphs">Chief<tspan class="t-wm2">Bingo</tspan></text>`}
+  if(bonus)s+=badge(83,17,11,"t-bx");
+  return s+"</svg>";
+}
+/* drum: accent rim, spokes + 4 mini balls in the turning group .d-rot */
+function drumSVG(px){
+  const u=100/(px>0?px:56),sw=v=>f2(Math.max(v,u));
+  let s=`<svg class="dsv" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><circle class="d-face" cx="50" cy="50" r="47" stroke-width="${sw(1.2)}"/><g class="d-rot">`;
+  for(let a=0;a<180;a+=30){const t=a*Math.PI/180,x=40*Math.cos(t),y=40*Math.sin(t);
+    s+=`<path class="d-spk" d="M${f2(50-x)},${f2(50-y)}L${f2(50+x)},${f2(50+y)}" stroke-width="${sw(1.2)}"/>`}
+  for(const [r,a] of [[24,20],[24,135],[22,250],[13,320]]){const t=a*Math.PI/180;
+    s+=`<circle class="d-mb" cx="${f2(50+r*Math.cos(t))}" cy="${f2(50+r*Math.sin(t))}" r="8.5" stroke-width="${sw(1.6)}"/>`}
+  return s+`</g><circle class="d-rim" cx="50" cy="50" r="44" stroke-width="${sw(4)}"/><circle class="d-hub" cx="50" cy="50" r="4"/></svg>`;
+}
+const Z={main:{ball:$("ball"),art:$("ballArt"),drum:$("drum"),hist:$("recent"),idle:"Ready",nominal:240},
+  focus:{ball:$("fBall"),art:$("fBallArt"),drum:$("fDrum"),hist:$("fList"),idle:"Tap to draw",nominal:480}};
+const pxOf=e=>Math.round(e.getBoundingClientRect().width);
+function paintBig(z,num){
+  const px=pxOf(z.art)||z.nominal,k=[num||0,S.mode,px].join("|");
+  if(z.art.dataset.k===k)return;
+  z.art.dataset.k=k;z.art.innerHTML=ballSVG(num||0,"l",{px,idle:z.idle});
+}
+function paintDrum(z){const px=pxOf(z.drum)||56;if(z.drum.dataset.k===String(px))return;z.drum.dataset.k=String(px);z.drum.innerHTML=drumSVG(px)}
+function fHistPx(){const l=$("fList"),w=l.clientWidth;if(!w)return 100;const g=parseFloat(getComputedStyle(l).columnGap)||0;return Math.max(20,(w-4*g)/5)}
+function paintHist(z,list,px){
+  const k=list.join(",")+"|"+S.mode+"|"+Math.round(px);if(z.hist.dataset.k===k)return;z.hist.dataset.k=k;
+  z.hist.innerHTML=list.map(n=>`<span class="${z===Z.main?"mb":"hb"}" role="img" aria-label="${escX((letter(n)?letter(n)+" ":"")+n)}">${ballSVG(n,"m",{px})}</span>`).join("");
+}
+function paintHists(){const p=drawn().slice(0,-1).reverse();paintHist(Z.main,p.slice(0,5),40);paintHist(Z.focus,p.slice(0,S.hist),fHistPx())}
+function paintBoard(){
+  const g=$("grid"),c=g.querySelector(".cell");if(!c)return;
+  const px=pxOf(c)||48,k=S.mode+"|"+px;if(g.dataset.k===k)return;g.dataset.k=k;
+  g.querySelectorAll(".cell").forEach(e=>{e.innerHTML=ballSVG(+e.dataset.n,"s",{px})});
+}
+function paintSizes(){
+  roRaf=0;const last=drawn().slice(-1)[0];
+  paintDrum(Z.main);paintBig(Z.main,last);
+  if(!$("focus").hidden){paintDrum(Z.focus);paintBig(Z.focus,last)}
+  paintBoard();paintHists();
+}
+let roRaf=0;
+const reflow=()=>{if(!roRaf)roRaf=requestAnimationFrame(paintSizes)};
+if(window.ResizeObserver)try{const ro=new ResizeObserver(reflow);[Z.main.art,Z.focus.art,Z.main.drum,Z.focus.drum,$("grid"),$("fList")].forEach(e=>ro.observe(e))}catch(e){}
+window.addEventListener("resize",reflow);
+
+/* Draw animation (purely visual — state, board, scoring, Copy calls and speech never wait for it): the drum turns T_SPIN ms,
+   then the new ball rolls T_ROLL ms out of the drum to its place (translate + rotate, ends upright) while the previous ball
+   slides to the history. transform/opacity only, WAAPI. A new draw, Undo, New game, the 75/90 switch or a tap on the ball/drum
+   ends a running animation at once (endRoll: finish() = end state); never a queue. prefers-reduced-motion: no animation.
+   The winner overlay waits for the landing (ROLL.win, shown by endRoll). */
+const ROLL={on:false,anims:[],ghosts:[],t:0,win:false};
+const T_SPIN=500,T_ROLL=400;
+const RMQ=window.matchMedia?window.matchMedia("(prefers-reduced-motion: reduce)"):null;
+function endRoll(keepWin){
+  clearTimeout(ROLL.t);ROLL.t=0;
+  const a=ROLL.anims;ROLL.anims=[];
+  a.forEach(x=>{try{x.finish()}catch(e){try{x.cancel()}catch(e2){}}});
+  ROLL.ghosts.forEach(g=>g.remove());ROLL.ghosts=[];
+  const was=ROLL.on;ROLL.on=false;
+  if(ROLL.win){ROLL.win=false;if(was&&keepWin!==false)renderPlayers()}
+}
+function roll(prev){
+  endRoll();
+  if((RMQ&&RMQ.matches)||typeof Element.prototype.animate!=="function")return;
+  const z=$("focus").hidden?Z.main:Z.focus,br=z.art.getBoundingClientRect();
+  if(!br.width)return;
+  ROLL.on=true;
+  const A=(el,k,o)=>{try{ROLL.anims.push(el.animate(k,o))}catch(e){}};
+  const cx=br.left+br.width/2,cy=br.top+br.height/2,dr=z.drum.getBoundingClientRect(),rot=z.drum.querySelector(".d-rot");
+  if(rot)A(rot,[{transform:"rotate(0deg)"},{transform:"rotate(540deg)"}],{duration:T_SPIN,easing:"cubic-bezier(.45,.05,.55,.95)"});
+  const dx=dr.width?dr.left+dr.width/2-cx:0,dy=dr.width?dr.top+dr.height/2-cy:0,s0=dr.width?Math.max(.06,dr.width*.3/br.width):.3;
+  A(z.art,[{transform:`translate(${f2(dx)}px,${f2(dy)}px) scale(${f2(s0)}) rotate(-330deg)`,opacity:0},{opacity:1,offset:.1},{transform:"none",opacity:1}],
+    {duration:T_ROLL,delay:T_SPIN,easing:"cubic-bezier(.2,.7,.25,1)",fill:"backwards"});
+  const h=z.hist.firstElementChild;
+  if(prev){
+    const g=document.createElement("div");g.className="bghost";g.setAttribute("aria-hidden","true");
+    g.innerHTML=ballSVG(prev,"l",{px:br.width});z.ball.appendChild(g);ROLL.ghosts.push(g);
+    const hr=h&&!z.hist.closest("[hidden]")?h.getBoundingClientRect():null;
+    const to=hr&&hr.width?`translate(${f2(hr.left+hr.width/2-cx)}px,${f2(hr.top+hr.height/2-cy)}px) scale(${f2(hr.width/br.width)})`:"scale(.6)";
+    A(g,[{transform:"none",opacity:1},{transform:to,opacity:1,offset:.8},{transform:to,opacity:0}],{duration:450,easing:"cubic-bezier(.4,0,.6,1)",fill:"forwards"});
+  }
+  if(h)A(h,[{opacity:0},{opacity:1}],{duration:150,delay:380,fill:"backwards"});
+  ROLL.t=setTimeout(()=>endRoll(),T_SPIN+T_ROLL+10);
+}
+[Z.main.ball,Z.main.drum].forEach(e=>e.addEventListener("click",()=>{if(ROLL.on)endRoll()}));
+window.ChiefBingoBalls=Object.freeze({ballSVG,drumSVG,rolling:()=>ROLL.on,T:T_SPIN+T_ROLL});   /* pure renderers + state, for the tests */
+
+function newGame(mode){endRoll(false);stopAuto();sqClear();S.mode=mode;S.order=shuffle(mode);S.idx=0;S.winOpen=null;S.startedAt=null;S.endedAt=null;save();buildGrid();render(false)}
 
 function buildGrid(){
-  const g=$("grid");g.innerHTML="";
-  const add=n=>{const d=document.createElement("div");d.className="cell";d.id="c"+n;d.textContent=n;g.appendChild(d)};
+  const g=$("grid");g.innerHTML="";g.dataset.k="";
+  const add=n=>{const d=document.createElement("div");d.className="cell";d.id="c"+n;d.dataset.n=String(n);g.appendChild(d)};
   if(S.mode===75){
     g.style.gridTemplateColumns="repeat(5,1fr)";
     for(const L of "BINGO"){const h=document.createElement("div");h.className="colhead";h.textContent=L;g.appendChild(h)}
     for(let r=0;r<15;r++)for(let c=0;c<5;c++)add(c*15+r+1);
   }else{g.style.gridTemplateColumns="repeat(10,1fr)";for(let n=1;n<=90;n++)add(n)}
+  paintBoard();
 }
 
 function fmt(ms){const t=Math.max(0,Math.floor(ms/1000)),h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;
   return h?`${h}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${m}:${String(s).padStart(2,"0")}`}
 function tickClock(){$("clock").textContent=S.startedAt?fmt((S.endedAt||Date.now())-S.startedAt):"0:00"}
-
-function bump(el){el.classList.remove("pop");void el.offsetWidth;el.classList.add("pop")}
 
 function render(anim){
   $("m75").setAttribute("aria-pressed",S.mode===75);$("m90").setAttribute("aria-pressed",S.mode===90);
@@ -524,19 +697,20 @@ function render(anim){
   $("iVal").textContent=S.interval+" s";
   $("iMinus").disabled=S.interval===STEPS[0];$("iPlus").disabled=S.interval===STEPS[STEPS.length-1];
   const d=drawn(),set=new Set(d);
-  document.querySelectorAll(".cell").forEach(c=>{const n=+c.textContent;c.classList.toggle("on",set.has(n));c.classList.remove("last")});
+  document.querySelectorAll(".cell").forEach(c=>{const n=+c.dataset.n;c.classList.toggle("on",set.has(n));c.classList.remove("last")});
   const last=d[d.length-1],b=$("ball");
   if(last){b.classList.remove("idle");$("num").textContent=last;$("letter").textContent=letter(last);$("c"+last).classList.add("last")}
   else{b.classList.add("idle");$("num").textContent="Ready";$("letter").textContent=""}
   $("fNum").textContent=last||"Tap to draw";$("fNum").classList.toggle("small",!last);$("fLetter").textContent=last?letter(last):"";
-  if(anim){bump(b);if(!$("focus").hidden)bump($("fNum"))}
   $("count").innerHTML=`<b>${d.length}</b> / ${S.mode} drawn`;
   const prev=d.slice(0,-1).reverse().slice(0,S.hist);
-  $("fList").innerHTML=prev.map(n=>`<span>${letter(n)?`<small>${letter(n)}</small>`:""}${n}</span>`).join("");
   $("fSide").hidden=!S.hist||!prev.length;
   $("focus").classList.toggle("nohist",$("fSide").hidden);
   $("fHist").textContent=S.hist?`Last ${S.hist}`:"History off";
-  $("recent").innerHTML=d.slice(0,-1).slice(-5).reverse().map(n=>`<span>${letter(n)}${n}</span>`).join("");
+  paintDrum(Z.main);paintBig(Z.main,last);
+  if(!$("focus").hidden){paintDrum(Z.focus);paintBig(Z.focus,last)}
+  paintHists();
+  if(anim)roll(d.length>1?d[d.length-2]:0);
   $("draw").disabled=done();$("draw").textContent=done()?"All balls drawn":"Draw ball";
   $("undo").disabled=S.idx===0;
   $("copy").disabled=S.idx===0;if(S.idx===0)copyDone();
@@ -596,6 +770,7 @@ function speak(n){enqueue((letter(n)?letter(n)+" ":"")+n,false,navigator.languag
 
 function drawOne(){
   if(done())return;
+  endRoll();   /* a running roll jumps to its end state first (never a queue) */
   if(!S.startedAt)S.startedAt=Date.now();
   S.idx++;
   if(done()){S.endedAt=Date.now();stopAuto()}
@@ -634,6 +809,7 @@ function closeFocus(){
 document.addEventListener("fullscreenchange",()=>{if(!document.fullscreenElement&&!$("focus").hidden)$("focus").hidden=true});
 $("focus").addEventListener("click",e=>{
   if(e.target.closest("#fClose,#fHist"))return;
+  if(ROLL.on&&e.target.closest("#fBall,#fDrum")){endRoll();return}   /* a tap on the ball/drum skips the roll */
   if(done())return;
   if(auto)stopAuto();else if(wasAuto&&S.idx)startAuto();else drawOne();
 });
@@ -652,7 +828,7 @@ $("draw").onclick=()=>{if(!auto)wasAuto=false;drawOne()};
 $("auto").onclick=()=>auto?stopAuto():startAuto();
 $("iMinus").onclick=()=>{const i=STEPS.indexOf(S.interval);if(i>0){S.interval=STEPS[i-1];save();render(false);if(auto)schedule()}};
 $("iPlus").onclick=()=>{const i=STEPS.indexOf(S.interval);if(i<STEPS.length-1){S.interval=STEPS[i+1];save();render(false);if(auto)schedule()}};
-$("undo").onclick=()=>{if(S.idx>0){stopAuto();sqClear();S.idx--;S.endedAt=null;if(!S.idx)S.startedAt=null;if(S.winOpen&&S.winOpen>S.idx)S.winOpen=null;save();render(false)}};
+$("undo").onclick=()=>{if(S.idx>0){endRoll(false);stopAuto();sqClear();S.idx--;S.endedAt=null;if(!S.idx)S.startedAt=null;if(S.winOpen&&S.winOpen>S.idx)S.winOpen=null;save();render(false)}};
 $("pauseWin").onclick=()=>{S.pauseWin=!S.pauseWin;save();render(false)};
 $("voice").onclick=()=>{S.voice=!S.voice;save();if(!S.voice)sqClear();render(false);if(S.voice&&S.idx)speak(S.order[S.idx-1])};
 window.addEventListener("pagehide",sqClear);
@@ -934,6 +1110,7 @@ function renderWin(sc){
     panels.push(d);
   })});
   if(!panels.length){hideWin();return}
+  if(o.hidden&&ROLL.on){ROLL.win=true;return}   /* the overlay appears once the ball has landed (endRoll), at once without animation */
   $("wPanels").replaceChildren(...panels);
   o.classList.toggle("multi",panels.length>1);
   /* one name size for all panels (longest name), so the grids line up side by side */
